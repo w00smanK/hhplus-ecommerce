@@ -10,7 +10,7 @@ import org.testcontainers.utility.DockerImageName;
 
 @Configuration
 class TestcontainersConfiguration {
-
+  //test
 	public static final MySQLContainer<?> MYSQL_CONTAINER;
 
 	static {
