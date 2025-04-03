@@ -1,4 +1,4 @@
-package kr.hhplus.be.server;
+package kr.hhplus;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
