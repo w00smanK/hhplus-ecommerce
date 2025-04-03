@@ -1,13 +1,9 @@
-## 프로젝트
 
-## Getting Started
 
-### Prerequisites
+### e-commerce service 설계 문서
 
-#### Running Docker Containers
-
-`local` profile 로 실행하기 위하여 인프라가 설정되어 있는 Docker 컨테이너를 실행해주셔야 합니다.
-
-```bash
-docker-compose up -d
-```
++ [1️⃣ 요구사항 분석 문서](docs/Requirements.md)
++ [2️⃣ 시퀀스 다이어그램 문서](docs/Sequence.md)
++ [3️⃣ 플로우 차트 문서](docs/FlowChart.md)
++ [4️⃣ ERD 문서](docs/ERD.md)
++ [5️⃣ API 명세](docs/ApiDocs.md)
