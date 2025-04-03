@@ -135,12 +135,10 @@
 ### Request
 
 - **Method** : GET
-- **Endpoint** : `/api/products/top`
+- **Endpoint** : `/api/products/top5`
 - **Description** : 지정된 기간 동안 가장 많이 판매된 상위 N개의 상품을 조회합니다.
 - **Query Parameter** :
-    - limit : 조회할 상품의 개수, 예를 들어 limit=5로 설정 시 상위 5개 조회
-
-
+    - limit(추가옵션) : 조회할 상품의 개수, 예를 들어 limit=5로 설정 시 상위 5개 조회
 
 ### Response Body (limit 수만큼 상품 정보 반복)
 ```json
@@ -155,6 +153,18 @@
     {
       "productId": 456,
       "name": "상품명2"
+    },
+    {
+      "productId": 789,
+      "name": "상품명3"
+    },
+    {
+      "productId": 101,
+      "name": "상품명4"
+    },
+    {
+      "productId": 102,
+      "name": "상품명5"
     }
   ]
 }
