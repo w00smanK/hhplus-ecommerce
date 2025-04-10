@@ -11,8 +11,8 @@
 ```mermaid
 
 erDiagram
-user ||--o{ user_point : "1:N"
-user_point ||--o{ user_point_history : "1:N"
+user ||--o{ point : "1:N"
+point ||--o{ point_history : "1:N"
 user ||--o{ issued_coupon : "1:N"
 user ||--o{ order : "1:N"
 coupon ||--o{ issued_coupon : "1:N"
@@ -29,15 +29,15 @@ order_item ||--o{ product_order_stat : "1:N"
         TIMESTAMP updated_at "수정일시"
     }
 
-    user_point {
+    point {
         BiGINT point_id PK "잔고 ID"
         BIGINT user_id FK "사용자 ID"
-        BIGINT account "잔고 금액"
+        BIGINT amount "잔고 금액"
         TIMESTAMP registered_dt "등록일시"
         TIMESTAMP updated_at "수정일시"
     }
 
-    user_point_history {
+    point_history {
         BIGINT point_history_id PK "잔액 이력 ID"
         BIGINT user_id FK "사용자 ID"
         VARCHAR type "거래 유형 (충전, 사용)"
@@ -91,26 +91,23 @@ order_item ||--o{ product_order_stat : "1:N"
         BIGINT payment_id PK "결제 ID"
         BIGINT order_id FK "주문 ID"
         VARCHAR status "결제 상태 (예: SUCCESS, FAIL)"
-        BIGINT volume "결제 금액"
+        BIGINT amount "결제 금액"
         TIMESTAMP registered_dt "등록일시"
         TIMESTAMP updated_at "수정일시"
     }
 
     product {
         BIGINT product_id PK "상품 ID"
-        VARCHAR brand "브랜드명"
         VARCHAR name "상품명"
         BIGINT price "가격"
-        BIGINT stock "재고수"
         TIMESTAMP registered_dt "등록일시"
         TIMESTAMP updated_at "수정일시"
     }
 
     product_stock {
-        BIGINT product_history_id PK "상품 주문 ID"
+        BIGINT stock_id PK "상품 주문 ID"
         BIGINT product_id FK "상품 ID"
         INT amount "재고"
-        BIGINT price "가격"
         TIMESTAMP registered_dt "등록일시"
         TIMESTAMP updated_at "수정일시"
     }
