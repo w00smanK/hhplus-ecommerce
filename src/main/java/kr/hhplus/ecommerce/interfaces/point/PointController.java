@@ -1,19 +1,17 @@
-package kr.hhplus.ecommerce.interfaces.presentation.controller;
+package kr.hhplus.ecommerce.interfaces.point;
 
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import kr.hhplus.ecommerce.interfaces.presentation.request.AccountUpdateRequest;
-import kr.hhplus.ecommerce.interfaces.presentation.response.AccountResponse;
 import kr.hhplus.ecommerce.interfaces.presentation.response.StatusResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
-public class AccountController {
+public class PointController {
 
     /**
      * 1. 잔액 충전 API

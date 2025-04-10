@@ -1,6 +1,6 @@
-package kr.hhplus.ecommerce.interfaces.presentation.controller;
+package kr.hhplus.ecommerce.interfaces.point;
 
-import kr.hhplus.ecommerce.interfaces.presentation.common.ControllerCommonTest;
+import kr.hhplus.ecommerce.interfaces.ControllerCommonTest;
 import org.junit.jupiter.api.Test;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class AccountControllerTest extends ControllerCommonTest {
+class PointControllerTest extends ControllerCommonTest {
 
     @Test
     void updateAccount() {

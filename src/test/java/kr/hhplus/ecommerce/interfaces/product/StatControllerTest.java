@@ -1,6 +1,6 @@
-package kr.hhplus.ecommerce.interfaces.presentation.controller;
+package kr.hhplus.ecommerce.interfaces.product;
 
-import kr.hhplus.ecommerce.interfaces.presentation.common.ControllerCommonTest;
+import kr.hhplus.ecommerce.interfaces.ControllerCommonTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

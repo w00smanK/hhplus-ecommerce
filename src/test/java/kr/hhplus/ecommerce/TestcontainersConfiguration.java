@@ -1,4 +1,4 @@
-package kr.hhplus.ecommerce.interfaces.presentation;
+package kr.hhplus.ecommerce;
 
 import jakarta.annotation.PreDestroy;
 import org.springframework.context.annotation.Configuration;

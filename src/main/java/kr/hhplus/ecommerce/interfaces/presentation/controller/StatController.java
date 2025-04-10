@@ -3,7 +3,7 @@ package kr.hhplus.ecommerce.interfaces.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import kr.hhplus.ecommerce.interfaces.presentation.response.ProductResponse;
+import kr.hhplus.ecommerce.interfaces.product.ProductResponse;
 import kr.hhplus.ecommerce.interfaces.presentation.response.StatProductsResponse;
 import kr.hhplus.ecommerce.interfaces.presentation.response.StatusResponse;
 import org.springframework.http.ResponseEntity;
