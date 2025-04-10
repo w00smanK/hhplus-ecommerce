@@ -1,7 +1,7 @@
-package kr.hhplus.ecommerce.interfaces.presentation.controller;
+package kr.hhplus.ecommerce.interfaces.coupon;
 
-import kr.hhplus.ecommerce.interfaces.presentation.common.ControllerCommonTest;
-import kr.hhplus.ecommerce.interfaces.presentation.request.CouponIssuedRequest;
+import kr.hhplus.ecommerce.interfaces.ControllerCommonTest;
+import kr.hhplus.ecommerce.interfaces.user.CouponIssuedRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;

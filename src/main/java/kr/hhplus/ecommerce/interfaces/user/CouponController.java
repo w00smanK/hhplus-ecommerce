@@ -1,9 +1,8 @@
-package kr.hhplus.ecommerce.interfaces.presentation.controller;
+package kr.hhplus.ecommerce.interfaces.user;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
-import kr.hhplus.ecommerce.interfaces.presentation.request.CouponIssuedRequest;
 import kr.hhplus.ecommerce.interfaces.presentation.response.CouponResponse;
 import kr.hhplus.ecommerce.interfaces.presentation.response.CouponsResponse;
 import kr.hhplus.ecommerce.interfaces.presentation.response.SimpleResponse;

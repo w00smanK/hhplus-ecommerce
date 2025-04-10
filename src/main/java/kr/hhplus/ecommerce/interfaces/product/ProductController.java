@@ -1,4 +1,4 @@
-package kr.hhplus.ecommerce.interfaces.presentation.controller;
+package kr.hhplus.ecommerce.interfaces.product;
 
 
 import io.swagger.v3.oas.annotations.Operation;
