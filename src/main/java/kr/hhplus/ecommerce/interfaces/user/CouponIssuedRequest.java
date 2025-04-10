@@ -1,4 +1,4 @@
-package kr.hhplus.ecommerce.interfaces.presentation.request;
+package kr.hhplus.ecommerce.interfaces.user;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

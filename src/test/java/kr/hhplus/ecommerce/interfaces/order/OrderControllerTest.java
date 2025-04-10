@@ -1,13 +1,11 @@
-package kr.hhplus.ecommerce.interfaces.presentation.controller;
+package kr.hhplus.ecommerce.interfaces.order;
 
 
-import kr.hhplus.ecommerce.interfaces.presentation.common.ControllerCommonTest;
+import kr.hhplus.ecommerce.interfaces.ControllerCommonTest;
 import kr.hhplus.ecommerce.interfaces.presentation.request.OrderProductRequest;
 import kr.hhplus.ecommerce.interfaces.presentation.request.OrderRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.MediaType;
 
 import java.util.List;
