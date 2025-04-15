@@ -1,6 +1,7 @@
 package kr.hhplus.ecommerce.domain.product.entity;
 
 import jakarta.persistence.*;
+import kr.hhplus.ecommerce.domain.BaseEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProductStock {
+public class ProductStock extends BaseEntity {
 
     @Id
     @Column(name = "stock_id")

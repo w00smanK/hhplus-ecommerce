@@ -44,5 +44,15 @@ public class ProductInfo {
         private final Long productId;
         private final String productName;
         private final Long productPrice;
-    }
+
+        public static Product from(Product product) {
+            return Product.builder()
+                    .productId(product.getProductId())
+                    .productName(product.getProductName())
+                    .productPrice(product.getProductPrice())
+//                    .options(product.g)
+                    .build();
+        }
+
+        }
 }

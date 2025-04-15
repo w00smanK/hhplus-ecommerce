@@ -1,29 +1,28 @@
-//package kr.hhplus.ecommerce.application.product;
-//
-//import kr.hhplus.be.ecommerce.domain.order.*;
-//import kr.hhplus.be.ecommerce.domain.payment.PaymentInfo;
-//import kr.hhplus.be.ecommerce.domain.payment.PaymentService;
-//import kr.hhplus.be.ecommerce.domain.product.ProductCommand;
-//import kr.hhplus.be.ecommerce.domain.product.ProductInfo;
-//import kr.hhplus.be.ecommerce.domain.product.ProductService;
-//import kr.hhplus.be.ecommerce.domain.stock.StockInfo;
-//import kr.hhplus.be.ecommerce.domain.stock.StockService;
-//import kr.hhplus.ecommerce.application.product.dto.ProductResult;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.stereotype.Service;
-//
-//@Service
-//@RequiredArgsConstructor
-//public class ProductFacade {
-//
-//    private static final int RECENT_DAYS = 3;
-//    private static final int TOP_LIMIT = 5;
-//
-//    private final ProductService productService;
-//    private final StockService stockService;
-//    private final PaymentService paymentService;
-//    private final OrderService orderService;
-//
+package kr.hhplus.ecommerce.application.product;
+
+
+import kr.hhplus.ecommerce.application.product.dto.ProductResult;
+import kr.hhplus.ecommerce.domain.order.OrderService;
+import kr.hhplus.ecommerce.domain.payment.PaymentService;
+import kr.hhplus.ecommerce.domain.product.ProductService;
+import kr.hhplus.ecommerce.domain.product.ProductStockService;
+import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class ProductFacade {
+
+    private static final int RECENT_DAYS = 3;
+    private static final int TOP_LIMIT = 5;
+
+    private final ProductService productService;
+    private final ProductStockService productStockService;
+    private final PaymentService paymentService;
+    private final OrderService orderService;
+
 //    public ProductResult.Products getProducts() {
 //        ProductInfo.Products products = productService.getSellingProducts();
 //        return ProductResult.Products.of(products.getProducts().stream()
@@ -42,16 +41,12 @@
 //            .map(this::getProduct)
 //            .toList());
 //    }
-//
-//    private ProductResult.Product getProduct(ProductInfo.Product product) {
-//        StockInfo.Stock stock = stockService.getStock(product.getProductId());
-//
-//        return ProductResult.Product.builder()
-//            .productId(product.getProductId())
-//            .productName(product.getProductName())
-//            .productPrice(product.getProductPrice())
-//            .quantity(stock.getQuantity())
-//            .build();
-//    }
-//
-//}
+
+    @Transactional
+    public ProductResult.Product getProduct(Long productId) {
+        // 상품 정보
+        ProductInfo.Product productInfo = productService.getProduct(productId);
+        return ProductResult.Product.from(productInfo);
+    }
+
+}

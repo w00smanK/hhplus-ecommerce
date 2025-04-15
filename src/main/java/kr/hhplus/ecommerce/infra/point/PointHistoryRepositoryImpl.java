@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.infra.point;
 
-import kr.hhplus.ecommerce.domain.point.entity.PointHistory;
 import kr.hhplus.ecommerce.domain.point.PointHistoryRepository;
+import kr.hhplus.ecommerce.domain.point.entity.PointHistory;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -10,7 +10,7 @@ import java.util.Optional;
 public class PointHistoryRepositoryImpl implements PointHistoryRepository {
 
     @Override
-    public Optional<PointHistory> save(PointHistory pointHistory) {
-        return Optional.empty();
+    public PointHistory save(PointHistory pointHistory) {
+        return null;
     }
 }

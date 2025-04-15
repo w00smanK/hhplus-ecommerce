@@ -1,5 +1,6 @@
 package kr.hhplus.ecommerce.application.product.dto;
 
+import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,27 +26,20 @@ public class ProductResult {
     }
 
     @Getter
+    @Builder
     public static class Product {
 
         private final Long productId;
         private final String productName;
         private final Long productPrice;
-        private final int quantity;
+//        private final int quantity;
 
-        @Builder
-        private Product(Long productId, String productName, Long productPrice, int quantity) {
-            this.productId = productId;
-            this.productName = productName;
-            this.productPrice = productPrice;
-            this.quantity = quantity;
-        }
-
-        public static Product of(Long productId, String productName, Long productPrice, int quantity) {
+        public static Product from(ProductInfo.Product productInfo) {
             return Product.builder()
-                .productId(productId)
-                .productName(productName)
-                .productPrice(productPrice)
-                .quantity(quantity)
+                .productId(productInfo.getProductId())
+                .productName(productInfo.getProductName())
+                .productPrice(productInfo.getProductPrice())
+//                .quantity(quantity)
                 .build();
         }
     }

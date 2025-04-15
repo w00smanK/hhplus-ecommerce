@@ -9,6 +9,12 @@ public class ProductCommand {
 
     @Getter
     @Builder
+    public static class findById {
+        Long productId;
+    }
+
+    @Getter
+    @Builder
     @RequiredArgsConstructor(staticName = "of")
     public static class OrderProducts {
 

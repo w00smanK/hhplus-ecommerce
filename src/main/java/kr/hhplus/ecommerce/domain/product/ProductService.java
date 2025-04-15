@@ -1,5 +1,6 @@
 package kr.hhplus.ecommerce.domain.product;
 
+import kr.hhplus.ecommerce.application.product.dto.ProductResult;
 import kr.hhplus.ecommerce.domain.product.dto.ProductCommand;
 import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
 import kr.hhplus.ecommerce.domain.product.entity.Product;
@@ -32,12 +33,12 @@ public class ProductService {
     }
 
     private ProductInfo.OrderProduct toOrderProductInfo(ProductCommand.OrderProduct command) {
-        Product product = getProduct(command);
+        ProductInfo.Product product = getProduct(command.getProductId());
 
         return ProductInfo.OrderProduct.builder()
-                .productId(product.getId())
-                .productName(product.getName())
-                .productPrice(product.getPrice())
+                .productId(product.getProductPrice())
+                .productName(product.getProductName())
+                .productPrice(product.getProductPrice())
                 .quantity(command.getQuantity())
                 .build();
     }
@@ -50,13 +51,14 @@ public class ProductService {
                 .build();
     }
 
-    private Product getProduct(ProductCommand.OrderProduct command) {
-        Product product = productRepository.findById(command.getProductId());
+    public ProductInfo.Product getProduct(Long productId) {
+            ProductInfo.Product product = productRepository.findById(productId);
+//                .orElseThrow(() -> new IllegalArgumentException("포인트 정보가 없습니다."));
 
         if (product == null) {
             throw new IllegalArgumentException("상품이 존재하지 않습니다.");
         }
 
-        return product;
+        return ProductInfo.Product.from(product);
     }
 }

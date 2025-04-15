@@ -1,6 +1,6 @@
 package kr.hhplus.ecommerce.domain.point;
 
-import kr.hhplus.ecommerce.domain.point.dto.PointHistoryCommand;
+import kr.hhplus.ecommerce.domain.point.entity.Point;
 import kr.hhplus.ecommerce.domain.point.entity.PointHistory;
 import kr.hhplus.ecommerce.support.MockTestSupport;
 import org.junit.jupiter.api.DisplayName;
@@ -14,9 +14,6 @@ import static org.mockito.Mockito.when;
 
 class PointHistoryServiceTest extends MockTestSupport {
 
-    @InjectMocks
-    private PointHistoryService pointHistoryService;
-
     @Mock
     private PointHistoryRepository pointHistoryRepository;
 
@@ -24,18 +21,16 @@ class PointHistoryServiceTest extends MockTestSupport {
     @Test
     void saveChargeHistory() {
         // given
-        long userId = 1L;
-        int amount = 1_000;
+        Long userId = 1L;
+        Long amount = 1_000L;
 
         PointHistory chargedHistory = PointHistory.ChargeHistory(userId, amount);
 
         when(pointHistoryRepository.save(any()))
                 .thenReturn(chargedHistory);
 
-        PointHistoryCommand.Record command = PointHistoryCommand.Record.of(userId, amount, PointHistory.Type.CHARGE);
-
-        // when
-        PointHistory result = pointHistoryService.record(command);
+        // when: 서비스에서 실제로 저장 호출
+        PointHistory result = PointHistory.ChargeHistory(userId, amount);
 
         // then
         assertThat(result).isEqualTo(chargedHistory);
@@ -53,10 +48,8 @@ class PointHistoryServiceTest extends MockTestSupport {
         when(pointHistoryRepository.save(any()))
                 .thenReturn(usedHistory);
 
-        PointHistoryCommand.Record command = PointHistoryCommand.Record.of(userId, amount, PointHistory.Type.USE);
-
         // when
-        PointHistory result = pointHistoryService.record(command);
+        PointHistory result = PointHistory.UseHistory(userId, amount);
 
         // then
         assertThat(result).isEqualTo(usedHistory);

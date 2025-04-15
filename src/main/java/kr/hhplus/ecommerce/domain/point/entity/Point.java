@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class Point  extends BaseEntity {
 
     public static final int MAX_CHARGE_AMOUNT = 1000000;
-    public static final int MAX_AMOUNT= 2000000;
+    public static final long MAX_AMOUNT= 2000000;
 
 
     @Id
@@ -19,22 +19,22 @@ public class Point  extends BaseEntity {
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
     private Long id;
 
-    private long userId;
+    private Long userId;
 
-    private long account;
+    private Long account;
 
     @Builder
-    public Point(Long id, Long userId, long account) {
+    public Point(Long id, Long userId, Long account) {
         this.id = id;
         this.userId = userId;
         this.account = account;
     }
 
-    public static Point empty(long userId) {
+    public static Point empty(Long userId) {
         return new Point(null, userId, 0L);
     }
 
-    public void charge(long account) {
+    public void charge(Long account) {
         if ( account > MAX_CHARGE_AMOUNT) {
             throw new IllegalArgumentException("최대 금액을 초과할 수 없습니다.");
         }
@@ -46,7 +46,7 @@ public class Point  extends BaseEntity {
         this.account += account;
     }
 
-    public void use(long account) {
+    public void use(Long account) {
 
         if (this.account < account) {
             throw new IllegalArgumentException("잔액이 부족합니다.");

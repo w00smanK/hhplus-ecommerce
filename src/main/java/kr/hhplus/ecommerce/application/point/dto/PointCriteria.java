@@ -2,7 +2,6 @@ package kr.hhplus.ecommerce.application.point.dto;
 
 
 import kr.hhplus.ecommerce.domain.point.dto.PointCommand;
-import kr.hhplus.ecommerce.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +20,5 @@ public class PointCriteria {
         public PointCommand.Charge toCommand() {
             return PointCommand.Charge.of(userId, amount);
         }
-
     }
 }

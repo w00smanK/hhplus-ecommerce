@@ -16,22 +16,22 @@ public class PointHistory extends BaseEntity {
     private Long id;
 
     private long userId;
-    private int amount;
+    private long amount;
 
     @Enumerated(EnumType.STRING)
     private Type type;
 
-    public PointHistory(long userId, int amount, Type type) {
+    public PointHistory(long userId, long amount, Type type) {
         this.userId = userId;
         this.amount = amount;
         this.type = type;
     }
 
-    public static PointHistory ChargeHistory(long userId, int amount) {
+    public static PointHistory ChargeHistory(long userId, long amount) {
         return new PointHistory(userId, amount, Type.CHARGE);
     }
 
-    public static PointHistory UseHistory(long userId, int amount) {
+    public static PointHistory UseHistory(long userId, long amount) {
         return new PointHistory(userId, amount, Type.USE);
     }
 

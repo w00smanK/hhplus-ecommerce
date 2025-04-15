@@ -54,7 +54,7 @@ class PointServiceTest extends MockTestSupport {
         // then
         assertThat(result.getUserId()).isEqualTo(user.getId());
         assertThat(result.getAccount()).isEqualTo(20_000L);
-        verify(pointRepository, never()).save(any()); // 이미 존재하는 포인트이므로 저장 안 함
+        verify(pointRepository, never()).save(any()); // 이미 존재하는 포인트이므로 저   장 안 함
     }
 
     @DisplayName("충전 금액이 최대 허용 금액을 넘으면 예외가 발생한다.")
