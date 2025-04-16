@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface ProductRepository {
-    ProductInfo.Product findById(Long productId);
+    Product findById(Long productId);
     List<Product> findByIds(List<Long> productIds);
 }

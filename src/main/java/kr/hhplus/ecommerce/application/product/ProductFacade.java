@@ -8,27 +8,27 @@ import kr.hhplus.ecommerce.domain.product.ProductService;
 import kr.hhplus.ecommerce.domain.product.ProductStockService;
 import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class ProductFacade {
 
-    private static final int RECENT_DAYS = 3;
-    private static final int TOP_LIMIT = 5;
+//    private static final int RECENT_DAYS = 3;
+//    private static final int TOP_LIMIT = 5;
 
     private final ProductService productService;
     private final ProductStockService productStockService;
     private final PaymentService paymentService;
     private final OrderService orderService;
 
-//    public ProductResult.Products getProducts() {
-//        ProductInfo.Products products = productService.getSellingProducts();
-//        return ProductResult.Products.of(products.getProducts().stream()
-//            .map(this::getProduct)
-//            .toList());
-//    }
+    public ProductResult.Products getProducts() {
+        ProductInfo.Products products = productService.getSellingProducts();
+        return ProductResult.Products.of(products.getProducts().stream()
+            .map(this::getProduct)
+            .toList());
+    }
 //
 //    public ProductResult.Products getPopularProducts() {
 //        PaymentInfo.Orders completedOrders = paymentService.getCompletedOrdersBetweenDays(RECENT_DAYS);
@@ -45,7 +45,7 @@ public class ProductFacade {
     @Transactional
     public ProductResult.Product getProduct(Long productId) {
         // 상품 정보
-        ProductInfo.Product productInfo = productService.getProduct(productId);
+        ProductInfo.ProductDetail productInfo = productService.getProduct(productId);
         return ProductResult.Product.from(productInfo);
     }
 

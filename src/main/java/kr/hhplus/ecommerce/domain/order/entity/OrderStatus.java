@@ -1,16 +1,9 @@
 package kr.hhplus.ecommerce.domain.order.entity;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
-@Getter
-@RequiredArgsConstructor
 public enum OrderStatus {
-
-    CREATED("주문생성"),
-    PAID("결제완료"),
-    ;
-
-    private final String description;
-
+    CREATED,
+    WAITING,
+    PAYED,
+    CANCELED,
+    COMPLETED
 }

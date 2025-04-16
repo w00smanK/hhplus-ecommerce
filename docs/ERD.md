@@ -11,17 +11,23 @@
 ```mermaid
 
 erDiagram
-user ||--o{ point : "1:N"
-point ||--o{ point_history : "1:N"
+user ||--o{ point : "1:1"
 user ||--o{ issued_coupon : "1:N"
 user ||--o{ order : "1:N"
+
+point ||--o{ point_history : "1:N"
+point_history ||--o| issued_coupon: "0..1:1"
+
 coupon ||--o{ issued_coupon : "1:N"
-issued_coupon ||--|| order : "1:1"
-order ||--|| payment : "1:1"
+
+payment ||--|| order : "1:1"
 order ||--|{ order_item : "1:N"
-product ||--o{ order_item : "1:N"
+order ||--o| issued_coupon: "0..1:1"
 product ||--o{ product_stock : "1:N"
+    product_stock ||--o{ order_item : "1:N"
+
 order_item ||--o{ product_order_stat : "1:N"
+
     user {
         BIGINT user_id PK "사용자 ID"
         VARCHAR name "사용자 이름"
@@ -50,7 +56,7 @@ order_item ||--o{ product_order_stat : "1:N"
         BIGINT coupon_id PK "쿠폰 ID"
         VARCHAR name "쿠폰이름"
         VARCHAR coupon_status "쿠폰 상태"
-        FLOAT discount_rate "할인율"
+%%        FLOAT discount_rate "할인율"
         TIMESTAMP expired_at "만료일시"
         INT quantity "쿠폰 수량"
         TIMESTAMP registered_dt "등록일시"

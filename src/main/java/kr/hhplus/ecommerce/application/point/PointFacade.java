@@ -2,16 +2,15 @@ package kr.hhplus.ecommerce.application.point;
 
 import kr.hhplus.ecommerce.application.point.dto.PointCriteria;
 import kr.hhplus.ecommerce.application.point.dto.PointResult;
-
 import kr.hhplus.ecommerce.domain.point.PointService;
 import kr.hhplus.ecommerce.domain.point.dto.PointCommand;
 import kr.hhplus.ecommerce.domain.point.entity.Point;
 import kr.hhplus.ecommerce.domain.user.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class PointFacade {
 

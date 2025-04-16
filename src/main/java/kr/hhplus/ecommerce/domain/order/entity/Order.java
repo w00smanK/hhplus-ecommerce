@@ -1,83 +1,50 @@
 package kr.hhplus.ecommerce.domain.order.entity;
 
-import jakarta.persistence.*;
-import lombok.AccessLevel;
+import kr.hhplus.ecommerce.domain.BaseEntity;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
-@Entity
-@Table(name = "orders")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Order {
+@NoArgsConstructor
+@AllArgsConstructor
+public class Order extends BaseEntity {
 
-    @Id
-    @Column(name = "order_id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private Long userId;
-
-    private Long userCouponId;
-
-    private OrderStatus orderStatus;
-
-    private long totalPrice;
-
-    private long discountPrice;
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<OrderProduct> orderProducts = new ArrayList<>();
+    private Long issuedCouponId;
+    private OrderStatus status;
+    private Long totalAmount;
+    private Long discountAmount;
+    private Long paymentAmount;
 
     @Builder
-    private Order(Long userId, Long userCouponId, double discountRate, List<OrderProduct> orderProducts) {
+    public Order(Long userId, Long issuedCouponId, Long totalAmount) {
         this.userId = userId;
-        this.userCouponId = userCouponId;
-        this.orderStatus = OrderStatus.CREATED;
-
-        orderProducts.forEach(this::addOrderProduct);
-
-        long calculatedTotalPrice = totalPrice(orderProducts);
-        long calculatedDiscountPrice = discountPrice(calculatedTotalPrice, discountRate);
-
-        this.totalPrice = calculatedTotalPrice - calculatedDiscountPrice;
-        this.discountPrice = calculatedDiscountPrice;
+        this.issuedCouponId = issuedCouponId;
+        this.status = OrderStatus.CREATED;
+        this.totalAmount = totalAmount;
+        this.discountAmount = 0L;
+        this.paymentAmount = totalAmount;
     }
 
-    public static Order create(Long userId, Long userCouponId, double discountRate, List<OrderProduct> orderProducts) {
-        if (orderProducts == null || orderProducts.isEmpty()) {
-            throw new IllegalArgumentException("주문 상품이 없습니다.");
+    public void useCoupon(Long issuedCouponId, Long discountAmount) {
+        this.issuedCouponId = issuedCouponId;
+
+        if (totalAmount < discountAmount) {
+            this.discountAmount = totalAmount;
+            paymentAmount = 0L;
         }
-
-        return Order.builder()
-            .userId(userId)
-            .userCouponId(userCouponId)
-            .discountRate(discountRate)
-            .orderProducts(orderProducts)
-            .build();
+        if (totalAmount - discountAmount >= 0) {
+            this.discountAmount = discountAmount;
+            paymentAmount = totalAmount - discountAmount;
+        }
     }
 
-    public void paid() {
-        this.orderStatus = OrderStatus.PAID;
-    }
-
-    private long totalPrice(List<OrderProduct> orderProducts) {
-        return orderProducts.stream()
-            .mapToLong(OrderProduct::getPrice)
-            .sum();
-    }
-
-    private long discountPrice(long totalPrice, double discountRate) {
-        return (long) (totalPrice * discountRate);
-    }
-
-    private void addOrderProduct(OrderProduct orderProduct) {
-        this.orderProducts.add(orderProduct);
-        orderProduct.setOrder(this);
+    public Order pay() {
+        this.status = OrderStatus.PAYED;
+        return this;
     }
 
 }

@@ -1,72 +1,113 @@
 package kr.hhplus.ecommerce.domain.order;
 
+
+import kr.hhplus.ecommerce.config.exception.ErrorCode;
+import kr.hhplus.ecommerce.config.exception.Exception;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
 import kr.hhplus.ecommerce.domain.order.entity.Order;
-import kr.hhplus.ecommerce.domain.order.entity.OrderProduct;
+import kr.hhplus.ecommerce.domain.order.entity.OrderItem;
+import kr.hhplus.ecommerce.domain.order.entity.OrderStatus;
+import kr.hhplus.ecommerce.domain.order.repository.OrderItemRepository;
+import kr.hhplus.ecommerce.domain.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
 
-    public OrderInfo.Order createOrder(OrderCommand.Create command) {
-        List<OrderProduct> orderProducts = command.getProducts().stream()
-            .map(this::createOrderProduct)
-            .toList();
+    @Transactional
+    public OrderInfo.Create createOrder(OrderCommand.Create command) {
 
-        Order order = Order.create(command.getUserId(), command.getUserCouponId(), command.getDiscountRate(), orderProducts);
-        orderRepository.save(order);
+        Long totalAmount = command.orderItems().stream()
+                .mapToLong(item -> item.unitPrice() * item.quantity())
+                .sum();
 
-        return OrderInfo.Order.of(order.getId(), order.getTotalPrice(), order.getDiscountPrice());
-    }
+        Order order = Order.builder()
+                .userId(command.userId())
+                .issuedCouponId(command.issuedCouponId())
+                .totalAmount(totalAmount)
+                .build();
 
-    public void paidOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId);
-        order.paid();
+        Order savedOrder = orderRepository.save(order);
 
-        orderRepository.sendOrderMessage(order);
-    }
-
-    public OrderInfo.TopPaidProducts getTopPaidProducts(OrderCommand.TopOrders command) {
-        List<OrderProduct> orderProducts = orderRepository.findOrderIdsIn(command.getOrderIds());
-
-        Map<Long, Integer> productQuantityMap = groupingProductMap(orderProducts);
-        List<Long> sortedProductIds = sortedProducts(productQuantityMap);
-
-        return OrderInfo.TopPaidProducts.of(sortedProductIds);
-    }
-
-    private OrderProduct createOrderProduct(OrderCommand.OrderProduct product) {
-        return OrderProduct.create(
-            product.getProductId(),
-            product.getProductName(),
-            product.getProductPrice(),
-            product.getQuantity()
+        command.orderItems().forEach(item -> {
+                    OrderItem orderItem = OrderItem.builder()
+                            .orderId(savedOrder.getId())
+                            .productOptionId(item.productOptionId())
+                            .unitPrice(item.unitPrice())
+                            .quantity(item.quantity())
+                            .build();
+                    orderItemRepository.save(orderItem);
+                }
         );
+
+        return OrderInfo.Create.builder()
+                .orderId(order.getId())
+                .userId(order.getUserId())
+                .status(order.getStatus())
+                .totalAmount(order.getTotalAmount())
+                .discountAmount(order.getDiscountAmount())
+                .paymentAmount(order.getPaymentAmount())
+                .build();
     }
 
-    private Map<Long, Integer> groupingProductMap(List<OrderProduct> orderProducts) {
-        return orderProducts.stream()
-            .collect(
-                Collectors.groupingBy(
-                    OrderProduct::getProductId,
-                    Collectors.summingInt(OrderProduct::getQuantity)
-                )
-            );
+    @Transactional
+    public void holdOrder(OrderCommand.HoldOrder command) {
+
+        OrderItem orderItem = orderItemRepository.findByProductOptionId(command.productOptionId())
+                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+
+        orderItem.holdStatus();
     }
 
-    private static List<Long> sortedProducts(Map<Long, Integer> productQuantityMap) {
-        return productQuantityMap.entrySet().stream()
-            .sorted(Map.Entry.<Long, Integer>comparingByValue().reversed())
-            .map(Map.Entry::getKey)
-            .toList();
+    @Transactional
+    public OrderInfo.Create useCoupon(OrderCommand.UseCoupon command) {
+
+        Order order = orderRepository.findById(command.orderId())
+                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+
+        order.useCoupon(command.couponId(), command.discountPrice());
+
+        return OrderInfo.Create.builder()
+                .orderId(order.getId())
+                .userId(order.getUserId())
+                .issuedCouponId(order.getIssuedCouponId())
+                .status(order.getStatus())
+                .totalAmount(order.getTotalAmount())
+                .discountAmount(order.getDiscountAmount())
+                .paymentAmount(order.getPaymentAmount())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public Order findById(OrderCommand.Find command) {
+
+        Order order = orderRepository.findById(command.orderId())
+                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+
+        if (order.getStatus() != OrderStatus.PAYED){
+            throw new Exception(ErrorCode.BAD_REQUEST);
+        }
+
+        return order;
+    }
+
+    @Transactional
+    public Order pay(OrderCommand.Find command) {
+
+        Order order = orderRepository.findById(command.orderId())
+                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+
+        return order.pay();
+    }
+
+    public void sendOrder(OrderCommand.Send build) {
+        // 주문 정보 전송 비돟기 처리
     }
 }

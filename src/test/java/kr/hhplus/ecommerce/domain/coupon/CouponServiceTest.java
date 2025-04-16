@@ -1,152 +1,228 @@
-//package kr.hhplus.ecommerce.domain.coupon;
-//
-//import kr.hhplus.be.ecommerce.MockTestSupport;
-//import org.junit.jupiter.api.DisplayName;
-//import org.junit.jupiter.api.Test;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//
-//import java.time.LocalDateTime;
-//
-//import static org.assertj.core.api.Assertions.assertThat;
-//import static org.assertj.core.api.Assertions.assertThatThrownBy;
-//import static org.mockito.ArgumentMatchers.anyLong;
-//import static org.mockito.Mockito.when;
-//
-//class CouponServiceTest extends MockTestSupport {
-//
-//    @InjectMocks
-//    private CouponService couponService;
-//
-//    @Mock
-//    private CouponRepository couponRepository;
-//
-//    @DisplayName("유효한 ID로 쿠폰을 발급해야 한다.")
-//    @Test
-//    void publishCouponWithInvalidId() {
-//        // given
-//        when(couponRepository.findById(anyLong()))
-//            .thenThrow(new IllegalArgumentException("쿠폰을 찾을 수 없습니다."));
-//
-//        // when & then
-//        assertThatThrownBy(() -> couponService.publishCoupon(anyLong()))
-//            .isInstanceOf(IllegalArgumentException.class)
-//            .hasMessage("쿠폰을 찾을 수 없습니다.");
-//    }
-//
-//    @DisplayName("쿠폰 발급 가능할 때, 쿠폰을 발급할 수 있다.")
-//    @Test
-//    void publishCouponWithCannotPublishable() {
-//        // given
-//        Coupon coupon = Coupon.builder()
-//            .name("쿠폰명")
-//            .status(CouponStatus.REGISTERED)
-//            .expiredAt(LocalDateTime.now().plusDays(1))
-//            .build();
-//
-//        when(couponRepository.findById(anyLong()))
-//            .thenReturn(coupon);
-//
-//        // when & then
-//        assertThatThrownBy(() -> couponService.publishCoupon(anyLong()))
-//            .isInstanceOf(IllegalStateException.class)
-//            .hasMessage("쿠폰을 발급할 수 없습니다.");
-//    }
-//
-//    @DisplayName("쿠폰 만료 기간이 지나지 않았을 때, 쿠폰을 발급할 수 있다.")
-//    @Test
-//    void publishCouponWithExpired() {
-//        // given
-//        Coupon coupon = Coupon.builder()
-//            .name("쿠폰명")
-//            .status(CouponStatus.PUBLISHABLE)
-//            .expiredAt(LocalDateTime.now().minusDays(1))
-//            .build();
-//
-//        when(couponRepository.findById(anyLong()))
-//            .thenReturn(coupon);
-//
-//        // when & then
-//        assertThatThrownBy(() -> couponService.publishCoupon(anyLong()))
-//            .isInstanceOf(IllegalStateException.class)
-//            .hasMessage("쿠폰이 만료되었습니다.");
-//    }
-//
-//    @DisplayName("쿠폰 수량이 충분할 시, 쿠폰을 발급할 수 있다.")
-//    @Test
-//    void publishCouponWithInsufficientQuantity() {
-//        // given
-//        Coupon coupon = Coupon.builder()
-//            .name("쿠폰명")
-//            .status(CouponStatus.PUBLISHABLE)
-//            .expiredAt(LocalDateTime.now().plusDays(1))
-//            .quantity(0)
-//            .build();
-//
-//        when(couponRepository.findById(anyLong()))
-//            .thenReturn(coupon);
-//
-//        // when & then
-//        assertThatThrownBy(() -> couponService.publishCoupon(anyLong()))
-//            .isInstanceOf(IllegalStateException.class)
-//            .hasMessage("쿠폰 수량이 부족합니다.");
-//    }
-//
-//    @DisplayName("쿠폰을 발급한다.")
-//    @Test
-//    void publish() {
-//        // given
-//        Coupon coupon = Coupon.builder()
-//            .name("쿠폰명")
-//            .status(CouponStatus.PUBLISHABLE)
-//            .expiredAt(LocalDateTime.now().plusDays(1))
-//            .quantity(1)
-//            .build();
-//
-//        when(couponRepository.findById(anyLong()))
-//            .thenReturn(coupon);
-//
-//        // when
-//        couponService.publishCoupon(anyLong());
-//
-//        // then
-//        assertThat(coupon.getQuantity()).isZero();
-//    }
-//
-//    @DisplayName("유효한 ID로 쿠폰을 조회해야 한다.")
-//    @Test
-//    void getCouponWithInvalidId() {
-//        // given
-//        when(couponRepository.findById(anyLong()))
-//            .thenThrow(new IllegalArgumentException("쿠폰을 찾을 수 없습니다."));
-//
-//        // when & then
-//        assertThatThrownBy(() -> couponService.getCoupon(anyLong()))
-//            .isInstanceOf(IllegalArgumentException.class)
-//            .hasMessage("쿠폰을 찾을 수 없습니다.");
-//    }
-//
-//    @DisplayName("쿠폰을 조회한다.")
-//    @Test
-//    void getCoupon() {
-//        // given
-//        Coupon coupon = Coupon.builder()
-//            .name("쿠폰명")
-//            .status(CouponStatus.PUBLISHABLE)
-//            .discountRate(0.1)
-//            .quantity(1)
-//            .expiredAt(LocalDateTime.now().plusDays(1))
-//            .build();
-//
-//        when(couponRepository.findById(anyLong()))
-//            .thenReturn(coupon);
-//
-//        // when
-//        CouponInfo.Coupon couponInfo = couponService.getCoupon(anyLong());
-//
-//        // then
-//        assertThat(couponInfo.getName()).isEqualTo("쿠폰명");
-//        assertThat(couponInfo.getDiscountRate()).isEqualTo(0.1);
-//    }
-//
-//}
+package kr.hhplus.ecommerce.domain.coupon;
+
+import kr.hhplus.ecommerce.config.exception.ErrorCode;
+import kr.hhplus.ecommerce.domain.coupon.repository.CouponRepository;
+import kr.hhplus.ecommerce.domain.coupon.repository.IssuedCouponRepository;
+import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
+import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
+import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
+import kr.hhplus.ecommerce.domain.coupon.entity.CouponStatus;
+import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("CouponService")
+class CouponServiceTest {
+
+    @Mock
+    private CouponRepository couponRepository;
+
+    @Mock
+    private IssuedCouponRepository issuedCouponRepository;
+
+    @InjectMocks
+    private CouponService couponService;
+
+    private Long USER_ID;
+    private Long COUPON_ID;
+    private Long ISSUED_COUPON_ID;
+
+    private Coupon COUPON;
+    private IssuedCoupon ISSUED_COUPON;
+    private CouponCommand.Use COMMAND;
+
+    @BeforeEach
+    void setUp() {
+        USER_ID = 1L;
+        COUPON_ID = 11L;
+        ISSUED_COUPON_ID = 111L;
+
+        COUPON = Coupon.builder()
+                .id(COUPON_ID)
+                .discountPrice(1000L)
+                .quantity(100)
+                .build();
+
+        ISSUED_COUPON = IssuedCoupon.builder()
+                .id(ISSUED_COUPON_ID)
+                .userId(USER_ID)
+                .couponId(COUPON_ID)
+                .status(CouponStatus.ISSUED)
+                .expiredAt(LocalDateTime.now().plusDays(30))
+                .build();
+
+        COMMAND = new CouponCommand.Use(USER_ID, COUPON_ID);
+    }
+
+    @Nested
+    @DisplayName("1. 쿠폰 적용")
+    class useCoupon {
+
+        @Test
+        @DisplayName("1-1. [성공] 쿠폰 사용 시 상태가 ISSUED → USED 로 변경된다")
+        void useCoupon_ok() {
+            when(couponRepository.findById(COUPON_ID)).thenReturn(Optional.of(COUPON));
+            when(issuedCouponRepository.findByUserIdAndCouponId(USER_ID, COUPON_ID)).thenReturn(Optional.of(ISSUED_COUPON));
+
+            CouponInfo.CouponAggregate actualInfo = couponService.use(COMMAND);
+
+            verify(couponRepository, times(1)).findById(COUPON_ID);
+            verify(issuedCouponRepository, times(1)).findByUserIdAndCouponId(USER_ID, COUPON_ID);
+
+            assertThat(actualInfo.status()).isEqualTo(CouponStatus.USED);
+            assertThat(actualInfo.usedAt()).isNotNull();
+            assertThat(actualInfo.couponId()).isEqualTo(COUPON_ID);
+        }
+
+        @Test
+        @DisplayName("1-2. [실패] 존재하지 않는 쿠폰 사용 시 예외(NOT_FOUND)")
+        void useCoupon_coupon_NotFound() {
+            when(couponRepository.findById(COUPON_ID)).thenReturn(Optional.empty());
+
+            Exception exception = assertThrows(Exception.class, () -> couponService.use(COMMAND));
+
+            verify(couponRepository, times(1)).findById(COUPON_ID);
+            assertThat(exception.getMessage()).isEqualTo(ErrorCode.NOT_FOUND.getMessage());
+        }
+
+        @Test
+        @DisplayName("1-3. [실패] 사용자에게 발급된 쿠폰이 없을 경우 예외(NOT_FOUND)")
+        void useCoupon_issuedCoupon_NotFound() {
+            when(couponRepository.findById(COUPON_ID)).thenReturn(Optional.of(COUPON));
+            when(issuedCouponRepository.findByUserIdAndCouponId(USER_ID, COUPON_ID)).thenReturn(Optional.empty());
+
+            Exception exception = assertThrows(Exception.class, () -> couponService.use(COMMAND));
+
+            verify(couponRepository, times(1)).findById(COUPON_ID);
+            verify(issuedCouponRepository, times(1)).findByUserIdAndCouponId(USER_ID, COUPON_ID);
+            assertThat(exception.getMessage()).isEqualTo(ErrorCode.NOT_FOUND.getMessage());
+        }
+
+        @Test
+        @DisplayName("1-4. [실패] 쿠폰 상태가 ISSUED가 아닐 경우 예외(BAD_REQUEST)")
+        void useCoupon_BadRequest() {
+            IssuedCoupon usedIssuedCoupon = IssuedCoupon.builder()
+                    .id(ISSUED_COUPON_ID)
+                    .userId(USER_ID)
+                    .couponId(COUPON_ID)
+                    .status(CouponStatus.USED)
+                    .expiredAt(LocalDateTime.now().plusDays(30))
+                    .build();
+
+            when(couponRepository.findById(COUPON_ID)).thenReturn(Optional.of(COUPON));
+            when(issuedCouponRepository.findByUserIdAndCouponId(USER_ID, COUPON_ID)).thenReturn(Optional.of(usedIssuedCoupon));
+
+            Exception exception = assertThrows(Exception.class, () -> couponService.use(COMMAND));
+
+            verify(couponRepository, times(1)).findById(COUPON_ID);
+            verify(issuedCouponRepository, times(1)).findByUserIdAndCouponId(USER_ID, COUPON_ID);
+            assertThat(exception.getMessage()).isEqualTo(ErrorCode.BAD_REQUEST.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("2. 쿠폰 발급")
+    class issue {
+
+        @Test
+        @DisplayName("2-1. [성공] 쿠폰 발급 시 수량 1 감소")
+        void issue_ok() {
+            when(couponRepository.findById(COUPON_ID)).thenReturn(Optional.of(COUPON));
+
+            Coupon actual = couponService.issue(new CouponCommand.Issue(USER_ID, COUPON_ID));
+
+            verify(couponRepository, times(1)).findById(COUPON_ID);
+            assertThat(actual.getId()).isEqualTo(COUPON_ID);
+            assertThat(actual.getDiscountPrice()).isEqualTo(1000L);
+            assertThat(actual.getQuantity()).isEqualTo(99);
+        }
+
+        @Test
+        @DisplayName("2-2. [실패] 존재하지 않는 쿠폰일 경우 예외(NOT_FOUND)")
+        void issue_NotFound() {
+            when(couponRepository.findById(COUPON_ID)).thenReturn(Optional.empty());
+
+            Exception exception = assertThrows(Exception.class,
+                    () -> couponService.issue(new CouponCommand.Issue(USER_ID, COUPON_ID)));
+
+            verify(couponRepository, times(1)).findById(COUPON_ID);
+            assertThat(exception.getMessage()).isEqualTo(ErrorCode.NOT_FOUND.getMessage());
+        }
+
+        @Test
+        @DisplayName("2-3. [실패] 쿠폰 수량이 부족할 경우 예외(BAD_REQUEST)")
+        void issue_BadRequest() {
+            Coupon insufficientCoupon1 = Coupon.builder().id(1L).quantity(0).build();
+            Coupon insufficientCoupon2 = Coupon.builder().id(2L).quantity(-1).build();
+
+            when(couponRepository.findById(1L)).thenReturn(Optional.of(insufficientCoupon1));
+            when(couponRepository.findById(2L)).thenReturn(Optional.of(insufficientCoupon2));
+
+            Exception exception1 = assertThrows(Exception.class,
+                    () -> couponService.issue(new CouponCommand.Issue(USER_ID, 1L)));
+
+            verify(couponRepository, times(1)).findById(1L);
+            assertThat(exception1.getMessage()).isEqualTo(ErrorCode.BAD_REQUEST.getMessage());
+
+            Exception exception2 = assertThrows(Exception.class,
+                    () -> couponService.issue(new CouponCommand.Issue(USER_ID, 2L)));
+
+            verify(couponRepository, times(1)).findById(2L);
+            assertThat(exception2.getMessage()).isEqualTo(ErrorCode.BAD_REQUEST.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("3. 쿠폰 저장")
+    class save {
+
+        @Test
+        @DisplayName("3-1. [성공] 쿠폰 저장 시 ISSUED 상태로 저장")
+        void save_ok() {
+            when(issuedCouponRepository.findByUserIdAndCouponId(USER_ID, COUPON_ID)).thenReturn(Optional.empty());
+
+            IssuedCoupon issuedCoupon = new IssuedCoupon(USER_ID, COUPON_ID);
+            when(issuedCouponRepository.save(any(IssuedCoupon.class))).thenReturn(issuedCoupon);
+
+            IssuedCoupon actual = couponService.save(new CouponCommand.Save(USER_ID, COUPON_ID, 1000L));
+
+            verify(issuedCouponRepository, times(1)).findByUserIdAndCouponId(USER_ID, COUPON_ID);
+            verify(issuedCouponRepository, times(1)).save(any(IssuedCoupon.class));
+
+            assertThat(actual.getUserId()).isEqualTo(USER_ID);
+            assertThat(actual.getCouponId()).isEqualTo(COUPON_ID);
+            assertThat(actual.getStatus()).isEqualTo(CouponStatus.ISSUED);
+            assertThat(actual.getUsedAt()).isNull();
+            assertThat(actual.getExpiredAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("3-2. [실패] 이미 발급된 쿠폰일 경우 예외(BAD_REQUEST)")
+        void save_BadRequest() {
+            IssuedCoupon issuedCoupon = new IssuedCoupon(USER_ID, COUPON_ID);
+            when(issuedCouponRepository.findByUserIdAndCouponId(USER_ID, COUPON_ID)).thenReturn(Optional.of(issuedCoupon));
+
+            Exception exception = assertThrows(Exception.class,
+                    () -> couponService.save(new CouponCommand.Save(USER_ID, COUPON_ID, 1000L)));
+
+            verify(issuedCouponRepository, times(1)).findByUserIdAndCouponId(USER_ID, COUPON_ID);
+            verify(issuedCouponRepository, never()).save(any(IssuedCoupon.class));
+            assertThat(exception.getMessage()).isEqualTo(ErrorCode.BAD_REQUEST.getMessage());
+        }
+    }
+}

@@ -5,6 +5,7 @@ import kr.hhplus.ecommerce.domain.point.dto.PointCommand;
 import kr.hhplus.ecommerce.domain.point.entity.Point;
 import kr.hhplus.ecommerce.domain.user.entity.User;
 import kr.hhplus.ecommerce.support.MockTestSupport;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,7 +25,15 @@ class PointServiceTest extends MockTestSupport {
     private PointService pointService;
 
     @Mock
+    private PointHistoryRepository pointHistoryRepository;
+
+    @Mock
     private PointRepository pointRepository;
+
+    @BeforeEach
+    void setUp() {
+        pointService = new PointService(pointRepository, pointHistoryRepository); // 💥 주입
+    }
 
     @DisplayName("잔액 충전 시, 잔액이 이미 있다면 기존 잔액에 충전한다.")
     @Test

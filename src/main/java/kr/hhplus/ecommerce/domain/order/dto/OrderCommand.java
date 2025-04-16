@@ -1,49 +1,57 @@
 package kr.hhplus.ecommerce.domain.order.dto;
 
-import lombok.*;
+import kr.hhplus.ecommerce.domain.order.entity.OrderStatus;
+import lombok.Builder;
 
 import java.util.List;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class OrderCommand {
+public record OrderCommand() {
 
-    @Getter
     @Builder
-    @RequiredArgsConstructor(staticName = "of")
-    public static class Create {
+    public record Create(
+            Long userId,
+            Long issuedCouponId,
+            List<OrderItem> orderItems
+    ) {}
 
-        private final Long userId;
-        private final Long userCouponId;
-        private final double discountRate;
-        private final List<OrderProduct> products;
-
-
-    }
-
-    @Getter
     @Builder
-    @RequiredArgsConstructor(staticName = "of")
-    public static class OrderProduct {
+    public record OrderItem (
+            Long productOptionId,
+            Long unitPrice,
+            Integer quantity
+    ) {}
 
-        private final Long productId;
-        private final String productName;
-        private final Long productPrice;
-        private final int quantity;
-    }
+    public record HoldOrder(
+            Long productOptionId
+    ) {}
 
-    @Getter
-    public static class TopOrders {
-
-        private final List<Long> orderIds;
-        private final int limit;
-
-        private TopOrders(List<Long> orderIds, int limit) {
-            this.orderIds = orderIds;
-            this.limit = limit;
-        }
-
-        public static TopOrders of(List<Long> orderIds, int limit) {
-            return new TopOrders(orderIds, limit);
+    @Builder
+    public record UseCoupon(
+            Long orderId,
+            Long couponId,
+            Long discountPrice
+    ) {
+        public static UseCoupon toCommand(Long orderId, Long couponId, Long discountPrice) {
+            return UseCoupon.builder()
+                    .orderId(orderId)
+                    .couponId(couponId)
+                    .discountPrice(discountPrice)
+                    .build();
         }
     }
+
+    public record Find(
+            Long orderId
+    ) {}
+
+    @Builder
+    public record Send(
+            Long id,
+            Long userId,
+            Long issuedCouponId,
+            OrderStatus status,
+            Long paymentAmount,
+            Long totalAmount,
+            Long discountAmount
+    ) {}
 }

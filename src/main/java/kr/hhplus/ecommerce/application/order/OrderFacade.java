@@ -1,61 +1,78 @@
-//package kr.hhplus.ecommerce.application.order;
-//
-//import kr.hhplus.be.ecommerce.domain.balance.BalanceService;
-//import kr.hhplus.be.ecommerce.domain.coupon.CouponInfo;
-//import kr.hhplus.be.ecommerce.domain.coupon.CouponService;
-//import kr.hhplus.be.ecommerce.domain.order.OrderCommand;
-//import kr.hhplus.be.ecommerce.domain.order.OrderInfo;
-//import kr.hhplus.be.ecommerce.domain.order.OrderService;
-//import kr.hhplus.be.ecommerce.domain.payment.PaymentService;
-//import kr.hhplus.be.ecommerce.domain.product.ProductInfo;
-//import kr.hhplus.be.ecommerce.domain.product.ProductService;
-//import kr.hhplus.be.ecommerce.domain.stock.StockService;
-//import kr.hhplus.be.ecommerce.domain.user.UserCouponInfo;
-//import kr.hhplus.be.ecommerce.domain.user.UserCouponService;
-//import kr.hhplus.be.ecommerce.domain.user.UserService;
-//import kr.hhplus.ecommerce.application.order.dto.OrderCriteria;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.stereotype.Service;
-//
-//import java.util.Optional;
-//
-//@Service
-//@RequiredArgsConstructor
-//public class OrderFacade {
-//
-//    private final UserService userService;
-//    private final ProductService productService;
-//    private final UserCouponService userCouponService;
-//    private final CouponService couponService;
-//    private final OrderService orderService;
-//    private final BalanceService balanceService;
-//    private final StockService stockService;
-//    private final PaymentService paymentService;
-//
-//    private static final double NOT_DISCOUNT_RATE = 0.0;
-//
-//    public void orderPayment(OrderCriteria.OrderPayment criteria) {
-//        userService.getUser(criteria.getUserId());
-//
-//        ProductInfo.OrderProducts orderProducts = productService.getOrderProducts(criteria.toProductCommand());
-//
-//        Optional<Long> optionalCouponId = Optional.ofNullable(criteria.getCouponId());
-//        Optional<UserCouponInfo.UsableCoupon> optionalUsableCoupon = optionalCouponId
-//            .map(id -> userCouponService.getUsableCoupon(criteria.toCouponCommand()));
-//        Optional<CouponInfo.Coupon> optionalCoupon = optionalCouponId
-//            .map(couponService::getCoupon);
-//
-//        OrderCommand.Create orderCommand = criteria.toOrderCommand(
-//            optionalUsableCoupon.map(UserCouponInfo.UsableCoupon::getUserCouponId).orElse(null),
-//            optionalCoupon.map(CouponInfo.Coupon::getDiscountRate).orElse(NOT_DISCOUNT_RATE),
-//            orderProducts
-//        );
-//        OrderInfo.Order order = orderService.createOrder(orderCommand);
-//
-//        balanceService.useBalance(criteria.toBalanceCommand(order.getTotalPrice()));
-//        optionalUsableCoupon.ifPresent(coupon -> userCouponService.useUserCoupon(coupon.getUserCouponId()));
-//        stockService.deductStock(criteria.toStockCommand());
-//        paymentService.pay(criteria.toPaymentCommand(order));
-//        orderService.paidOrder(order.getOrderId());
-//    }
-//}
+package kr.hhplus.ecommerce.application.order;
+
+import kr.hhplus.ecommerce.application.order.dto.OrderCriteria;
+import kr.hhplus.ecommerce.application.order.dto.OrderResult;
+import kr.hhplus.ecommerce.domain.coupon.CouponService;
+import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
+import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
+import kr.hhplus.ecommerce.domain.order.OrderService;
+import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
+import kr.hhplus.ecommerce.domain.payment.PaymentService;
+import kr.hhplus.ecommerce.domain.product.ProductService;
+import kr.hhplus.ecommerce.domain.product.dto.ProductCommand;
+import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+
+@Component
+@RequiredArgsConstructor
+public class OrderFacade {
+
+    private final ProductService productService;
+    private final CouponService couponService;
+    private final OrderService orderService;
+    private final PaymentService paymentService;
+
+    @Transactional
+    public OrderResult.Create order(OrderCriteria.Order criteria) {
+
+        // lock
+
+        // 상품 조회
+        ProductInfo.Products product = productService.findProduct(new ProductCommand.findById(criteria.userId()));
+
+        // 주문 아이템 생성
+        List<OrderCommand.OrderItem> orderItemCommand = criteria.items().stream()
+                .flatMap(item -> product.options().stream()
+                        .filter(option -> item.productOptionId().equals(option.getId()))
+                        .map(option -> OrderCommand.OrderItem.builder()
+                                .productOptionId(item.productOptionId())
+                                .unitPrice(option.getPrice())
+                                .quantity(item.quantity())
+                                .build()))
+                .toList();
+
+        // 주문 생성
+        OrderInfo.Create order = orderService.createOrder(OrderCommand.Create.builder()
+                .userId(criteria.userId())
+                .orderItems(orderItemCommand)
+                .build());
+
+        // 쿠폰 사용 시 검증, 사용 처리, 적용
+        if (criteria.couponId() != null) {
+            CouponInfo.CouponAggregate couponInfo = couponService.use(new CouponCommand.Use(criteria.userId(), criteria.couponId()));
+            order = orderService.useCoupon(OrderCommand.UseCoupon.toCommand(order.orderId(), couponInfo.couponId(), couponInfo.discountPrice()));
+        }
+
+        // 재고 차감 -> 재고 부족시 해당 옵션 상태 HOLD
+        ProductInfo.CheckedProductOrder checkProductOrder = productService.reduceStock(orderItemCommand);
+
+        // 재고 부족시 -> 생성된 주문아이템 상태 변경(보류)
+        checkProductOrder.checkStocks().forEach(stock -> {
+            criteria.items().forEach(criteriaItem -> {
+                if (!stock.isEnough() && criteriaItem.quantity().intValue() != stock.requestQuantity().intValue()) {
+                    orderService.holdOrder(new OrderCommand.HoldOrder(stock.optionId()));
+                }
+            });
+        });
+
+        // lock
+
+        //  결제 정보 저장
+        paymentService.save(new PaymentCommand.Save(order.orderId(), order.paymentAmount()));
+
+        return OrderResult.Create.from(order);
+    }
+}

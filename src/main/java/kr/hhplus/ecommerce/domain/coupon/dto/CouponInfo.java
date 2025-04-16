@@ -1,23 +1,31 @@
 package kr.hhplus.ecommerce.domain.coupon.dto;
 
-import lombok.AccessLevel;
+import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
+import kr.hhplus.ecommerce.domain.coupon.entity.CouponStatus;
+import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class CouponInfo {
+import java.time.LocalDateTime;
 
-    @Getter
-    public static class Coupon {
+public record CouponInfo() {
 
-        private final Long couponId;
-        private final double discountRate;
+    @Builder
+    public record CouponAggregate(
+            Long couponId,
+            Long discountPrice,
+            CouponStatus status,
+            LocalDateTime usedAt,
+            LocalDateTime expiredAt
 
-        @Builder
-        private Coupon(Long couponId, String name, double discountRate) {
-            this.couponId = couponId;
-            this.discountRate = discountRate;
+    ) {
+        public static CouponAggregate from(Coupon coupon, IssuedCoupon issuedCoupon) {
+            return CouponAggregate.builder()
+                    .couponId(coupon.getId())
+                    .discountPrice(coupon.getDiscountPrice())
+                    .status(issuedCoupon.getStatus())
+                    .usedAt(issuedCoupon.getUsedAt())
+                    .expiredAt(issuedCoupon.getExpiredAt())
+                    .build();
         }
     }
 }

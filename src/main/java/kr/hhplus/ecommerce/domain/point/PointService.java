@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PointService {
     
-    private final PointRepository pointRepository;;
+    private final PointRepository pointRepository;
     private final PointHistoryRepository pointHistoryRepository;
 
     public Point charge(PointCommand.Charge command) {

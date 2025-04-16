@@ -1,5 +1,6 @@
 package kr.hhplus.ecommerce.domain.product.dto;
 
+import kr.hhplus.ecommerce.domain.product.entity.Product;
 import lombok.*;
 
 import java.util.List;
@@ -10,16 +11,16 @@ public class ProductInfo {
     @Getter
     @Builder
     @RequiredArgsConstructor(staticName = "of")
-    public static class OrderProducts {
+    public static class Products {
 
-        private final List<OrderProduct> products;
+        private final List<ProductList> products;
 
     }
 
     @Getter
     @Builder
     @RequiredArgsConstructor(staticName = "of")
-    public static class OrderProduct {
+    public static class ProductList {
 
         private final Long productId;
         private final String productName;
@@ -28,31 +29,30 @@ public class ProductInfo {
 
     }
 
+//    @Getter
+//    @Builder
+//    @RequiredArgsConstructor(staticName = "of")
+//    public static class Products {
+//
+//        private final List<Product> products;
+//    }
+
     @Getter
     @Builder
     @RequiredArgsConstructor(staticName = "of")
-    public static class Products {
-
-        private final List<Product> products;
-    }
-
-    @Getter
-    @Builder
-    @RequiredArgsConstructor(staticName = "of")
-    public static class Product {
+    public static class ProductDetail {
 
         private final Long productId;
         private final String productName;
         private final Long productPrice;
 
-        public static Product from(Product product) {
-            return Product.builder()
-                    .productId(product.getProductId())
-                    .productName(product.getProductName())
-                    .productPrice(product.getProductPrice())
+        public static ProductDetail from(Product product) {
+            return ProductDetail.builder()
+                    .productId(product.getId())
+                    .productName(product.getName())
+                    .productPrice(product.getPrice())
 //                    .options(product.g)
                     .build();
         }
-
-        }
+    }
 }

@@ -34,7 +34,7 @@ public class ProductResult {
         private final Long productPrice;
 //        private final int quantity;
 
-        public static Product from(ProductInfo.Product productInfo) {
+        public static Product from(ProductInfo.ProductDetail productInfo) {
             return Product.builder()
                 .productId(productInfo.getProductId())
                 .productName(productInfo.getProductName())

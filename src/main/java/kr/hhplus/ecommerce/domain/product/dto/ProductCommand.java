@@ -4,11 +4,11 @@ import lombok.*;
 
 import java.util.List;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductCommand {
 
     @Getter
     @Builder
+    @AllArgsConstructor(access = AccessLevel.PUBLIC)
     public static class findById {
         Long productId;
     }
