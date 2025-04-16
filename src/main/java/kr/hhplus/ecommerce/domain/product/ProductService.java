@@ -20,8 +20,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductStockRepository productStockRepository;
 
-
-    @Transactional(readOnly = true)
+    @Transactional
     public ProductInfo.ProductList findAll() {
         List<Product> products = productRepository.findAll();
 
@@ -34,7 +33,7 @@ public class ProductService {
         return ProductInfo.ProductList.of(productDetails);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public ProductInfo.ProductDetail findProduct(ProductCommand.Find command) {
         Product product = productRepository.findById(command.getProductId())
                 .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));

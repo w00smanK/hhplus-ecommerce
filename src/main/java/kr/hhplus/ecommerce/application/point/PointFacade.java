@@ -17,7 +17,6 @@ public class PointFacade {
     private final UserService userService;
     private final PointService pointService;
 
-    @Transactional
     public PointResult.UserPoint charge(PointCriteria.Charge criteria) {
 
         userService.getUser(criteria.getUserId());

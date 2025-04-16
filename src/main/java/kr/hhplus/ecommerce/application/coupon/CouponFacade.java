@@ -16,7 +16,6 @@ public class CouponFacade {
 
     private final CouponService couponService;
 
-    @Transactional
     public CouponResult.Issued firstComeFirstIssue(CouponCriteria.Issue criteria) {
 
         // 잔여 쿠폰 조회 및 생성

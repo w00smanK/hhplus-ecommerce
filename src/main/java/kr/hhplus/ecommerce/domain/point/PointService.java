@@ -5,6 +5,7 @@ import kr.hhplus.ecommerce.domain.point.entity.Point;
 import kr.hhplus.ecommerce.domain.point.entity.PointHistory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -13,6 +14,7 @@ public class PointService {
     private final PointRepository pointRepository;
     private final PointHistoryRepository pointHistoryRepository;
 
+    @Transactional
     public Point charge(PointCommand.Charge command) {
         Point point = pointRepository.findBy(command.getUserId())
                 // exception if not found
@@ -26,6 +28,7 @@ public class PointService {
         return point;
     }
 
+    @Transactional
     public Point use(PointCommand.Use command) {
         Point point = pointRepository.findBy(command.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("포인트 정보가 없습니다."));

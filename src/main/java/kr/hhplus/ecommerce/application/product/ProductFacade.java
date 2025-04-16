@@ -15,12 +15,10 @@ public class ProductFacade {
 
     private final ProductService productService;
 
-    @Transactional(readOnly = true)
     public ProductResult.ProductList findAll() {
         return ProductResult.ProductList.from(productService.findAll());
     }
 
-    @Transactional(readOnly = true)
     public ProductResult.ProductDetail findProduct(ProductCriteria.Find criteria) {
         return ProductResult.ProductDetail.from(productService.findProduct(criteria.toCommand()));
     }

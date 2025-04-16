@@ -29,7 +29,6 @@ public class OrderFacade {
     private final OrderService orderService;
     private final PaymentService paymentService;
 
-    @Transactional
     public OrderResult.Create order(OrderCriteria.Order criteria) {
 
         // lock
