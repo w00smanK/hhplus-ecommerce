@@ -1,48 +1,17 @@
 package kr.hhplus.ecommerce.domain.product.dto;
 
-import lombok.*;
-
-import java.util.List;
 
 public class ProductCommand {
 
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PUBLIC)
-    public static class findById {
-        Long productId;
-    }
-
-    @Getter
-    @Builder
-    @RequiredArgsConstructor(staticName = "of")
-    public static class OrderProducts {
-
-        private final List<OrderProduct> products;
-
-    }
-
-    @Getter
-    @Builder
-    @RequiredArgsConstructor(staticName = "of")
-    public static class OrderProduct {
-
+    public static class Find {
         private final Long productId;
-        private final int quantity;
 
-    }
-
-    @Getter
-    public static class Products {
-
-        private final List<Long> productIds;
-
-        private Products(List<Long> productIds) {
-            this.productIds = productIds;
+        public Find(Long productId) {
+            this.productId = productId;
         }
 
-        public static Products of(List<Long> productIds) {
-            return new Products(productIds);
+        public Long getProductId() {
+            return productId;
         }
     }
 }

@@ -12,13 +12,15 @@ public record OrderCriteria() {
             Long productId,
             List<OrderItem> items,
             Long couponId
-    ) {}
+    ) {
+    }
 
     @Builder
     public record OrderItem(
             Long productOptionId,
             Integer quantity
-    ) {}
+    ) {
+    }
 
 
 }

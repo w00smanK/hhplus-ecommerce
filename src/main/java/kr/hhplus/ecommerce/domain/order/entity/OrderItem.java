@@ -1,5 +1,6 @@
 package kr.hhplus.ecommerce.domain.order.entity;
 
+import kr.hhplus.ecommerce.domain.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderItem extends BaseTimeEntity {
+public class OrderItem extends BaseEntity {
 
     private Long id;
     private Long orderId;
@@ -27,7 +28,7 @@ public class OrderItem extends BaseTimeEntity {
     }
 
     public OrderItem holdStatus() {
-        this.status = OrderStatus.PENDING;
+        this.status = OrderStatus.WAITING;
         return this;
     }
 }

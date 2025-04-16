@@ -4,12 +4,14 @@ public record CouponCommand() {
 
     public record Find(
             Long couponId
-    ) {}
+    ) {
+    }
 
     public record Use(
             Long userId,
             Long couponId
-    ) {}
+    ) {
+    }
 
     public record Issue(
             Long userId,
@@ -21,5 +23,6 @@ public record CouponCommand() {
             Long userId,
             Long couponId,
             Long discountPrice
-    ) {}
+    ) {
+    }
 }

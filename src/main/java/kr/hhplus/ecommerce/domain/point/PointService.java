@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class PointService {
-    
+
     private final PointRepository pointRepository;
     private final PointHistoryRepository pointHistoryRepository;
 
@@ -28,7 +28,7 @@ public class PointService {
 
     public Point use(PointCommand.Use command) {
         Point point = pointRepository.findBy(command.getUserId())
-            .orElseThrow(() -> new IllegalArgumentException("포인트 정보가 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("포인트 정보가 없습니다."));
         point.use(command.getAmount());
 
         return point;

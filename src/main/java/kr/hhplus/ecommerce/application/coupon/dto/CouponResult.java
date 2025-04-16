@@ -14,5 +14,6 @@ public record CouponResult() {
             Long couponId,
             CouponStatus status,
             LocalDateTime expiredAt
-    ) {}
+    ) {
+    }
 }

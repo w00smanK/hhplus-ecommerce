@@ -91,7 +91,7 @@ public class OrderService {
         Order order = orderRepository.findById(command.orderId())
                 .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
 
-        if (order.getStatus() != OrderStatus.PAYED){
+        if (order.getStatus() != OrderStatus.PAYED) {
             throw new Exception(ErrorCode.BAD_REQUEST);
         }
 

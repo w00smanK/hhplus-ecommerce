@@ -7,13 +7,17 @@ import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
 import kr.hhplus.ecommerce.domain.order.OrderService;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
+import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
 import kr.hhplus.ecommerce.domain.payment.PaymentService;
+import kr.hhplus.ecommerce.domain.payment.dto.PaymentCommand;
 import kr.hhplus.ecommerce.domain.product.ProductService;
 import kr.hhplus.ecommerce.domain.product.dto.ProductCommand;
 import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 
 @Component
@@ -31,11 +35,11 @@ public class OrderFacade {
         // lock
 
         // 상품 조회
-        ProductInfo.Products product = productService.findProduct(new ProductCommand.findById(criteria.userId()));
+        ProductInfo.ProductDetail product = productService.findProduct(new ProductCommand.Find(criteria.userId()));
 
         // 주문 아이템 생성
         List<OrderCommand.OrderItem> orderItemCommand = criteria.items().stream()
-                .flatMap(item -> product.options().stream()
+                .flatMap(item -> product.getStocks().stream()
                         .filter(option -> item.productOptionId().equals(option.getId()))
                         .map(option -> OrderCommand.OrderItem.builder()
                                 .productOptionId(item.productOptionId())
@@ -57,13 +61,13 @@ public class OrderFacade {
         }
 
         // 재고 차감 -> 재고 부족시 해당 옵션 상태 HOLD
-        ProductInfo.CheckedProductOrder checkProductOrder = productService.reduceStock(orderItemCommand);
+        ProductInfo.StockCheckResult checkProductOrder = productService.reduceStock(orderItemCommand);
 
         // 재고 부족시 -> 생성된 주문아이템 상태 변경(보류)
-        checkProductOrder.checkStocks().forEach(stock -> {
+        checkProductOrder.getCheckStocks().forEach(stock -> {
             criteria.items().forEach(criteriaItem -> {
-                if (!stock.isEnough() && criteriaItem.quantity().intValue() != stock.requestQuantity().intValue()) {
-                    orderService.holdOrder(new OrderCommand.HoldOrder(stock.optionId()));
+                if (!stock.isEnough() && criteriaItem.quantity().intValue() != stock.getRequestQuantity().intValue()) {
+                    orderService.holdOrder(new OrderCommand.HoldOrder(stock.getStockId()));
                 }
             });
         });

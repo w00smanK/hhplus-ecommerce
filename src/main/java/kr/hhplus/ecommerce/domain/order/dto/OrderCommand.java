@@ -12,18 +12,21 @@ public record OrderCommand() {
             Long userId,
             Long issuedCouponId,
             List<OrderItem> orderItems
-    ) {}
+    ) {
+    }
 
     @Builder
-    public record OrderItem (
+    public record OrderItem(
             Long productOptionId,
             Long unitPrice,
             Integer quantity
-    ) {}
+    ) {
+    }
 
     public record HoldOrder(
             Long productOptionId
-    ) {}
+    ) {
+    }
 
     @Builder
     public record UseCoupon(
@@ -42,7 +45,8 @@ public record OrderCommand() {
 
     public record Find(
             Long orderId
-    ) {}
+    ) {
+    }
 
     @Builder
     public record Send(
@@ -53,5 +57,6 @@ public record OrderCommand() {
             Long paymentAmount,
             Long totalAmount,
             Long discountAmount
-    ) {}
+    ) {
+    }
 }

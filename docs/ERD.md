@@ -24,7 +24,7 @@ payment ||--|| order : "1:1"
 order ||--|{ order_item : "1:N"
 order ||--o| issued_coupon: "0..1:1"
 product ||--o{ product_stock : "1:N"
-    product_stock ||--o{ order_item : "1:N"
+product_stock ||--o{ order_item : "1:N"
 
 order_item ||--o{ product_order_stat : "1:N"
 
@@ -111,9 +111,11 @@ order_item ||--o{ product_order_stat : "1:N"
     }
 
     product_stock {
-        BIGINT stock_id PK "상품 주문 ID"
+        BIGINT id PK
         BIGINT product_id FK "상품 ID"
-        INT amount "재고"
+        VARCHAR option_value "옵션"
+        BIGINT price "가격"
+        BIGINT stock "재고"
         TIMESTAMP registered_dt "등록일시"
         TIMESTAMP updated_at "수정일시"
     }

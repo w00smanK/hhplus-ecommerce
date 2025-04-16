@@ -1,14 +1,13 @@
 package kr.hhplus.ecommerce.domain.coupon;
 
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
-import kr.hhplus.ecommerce.domain.coupon.repository.CouponRepository;
-import kr.hhplus.ecommerce.domain.coupon.repository.IssuedCouponRepository;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
 import kr.hhplus.ecommerce.domain.coupon.entity.CouponStatus;
 import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
-
+import kr.hhplus.ecommerce.domain.coupon.repository.CouponRepository;
+import kr.hhplus.ecommerce.domain.coupon.repository.IssuedCouponRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

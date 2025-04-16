@@ -7,8 +7,8 @@ public record ProductCriteria() {
     public record Find(
             Long productId
     ) {
-        public ProductCommand.findById toCommand() {
-            return new ProductCommand.findById(productId);
+        public ProductCommand.Find toCommand() {
+            return new ProductCommand.Find(productId);
         }
     }
 

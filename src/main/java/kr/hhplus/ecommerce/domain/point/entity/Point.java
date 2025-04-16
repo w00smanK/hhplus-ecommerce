@@ -5,13 +5,14 @@ import kr.hhplus.ecommerce.domain.BaseEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 @Entity(name = "user_point")
 @Getter
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
-public class Point  extends BaseEntity {
+public class Point extends BaseEntity {
 
     public static final int MAX_CHARGE_AMOUNT = 1000000;
-    public static final long MAX_AMOUNT= 2000000;
+    public static final long MAX_AMOUNT = 2000000;
 
 
     @Id
@@ -35,7 +36,7 @@ public class Point  extends BaseEntity {
     }
 
     public void charge(Long account) {
-        if ( account > MAX_CHARGE_AMOUNT) {
+        if (account > MAX_CHARGE_AMOUNT) {
             throw new IllegalArgumentException("최대 금액을 초과할 수 없습니다.");
         }
 

@@ -1,17 +1,25 @@
 package kr.hhplus.ecommerce.domain.payment.dto;
 
-import lombok.*;
+import lombok.Builder;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class PaymentCommand {
+public record PaymentCommand() {
 
-    @Getter
     @Builder
-    @RequiredArgsConstructor(staticName = "of")
-    public static class Payment {
+    public record Save(
+            Long orderId,
+            Long amount
+    ) {
+    }
 
-        private final Long orderId;
-        private final Long userId;
-        private final long amount;
+    public record Find(
+            Long paymentId
+    ) {
+    }
+
+
+    public record Pay(
+            Long paymentId,
+            Long paymentAmount
+    ) {
     }
 }
