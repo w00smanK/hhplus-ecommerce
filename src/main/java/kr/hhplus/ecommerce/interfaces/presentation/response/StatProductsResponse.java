@@ -1,6 +1,5 @@
 package kr.hhplus.ecommerce.interfaces.presentation.response;
 
-import kr.hhplus.ecommerce.interfaces.product.ProductResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
