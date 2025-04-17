@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.domain.point;
 
 import kr.hhplus.ecommerce.domain.point.entity.PointHistory;
-import kr.hhplus.ecommerce.support.MockTestSupport;
+import kr.hhplus.ecommerce.MockTestSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

@@ -28,6 +28,12 @@ public class PointService {
         return point;
     }
 
+    @Transactional(readOnly = true)
+    public Point findPoint(PointCommand.Find command) {
+        return pointRepository.findBy(command.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("포인트 정보가 없습니다."));
+    }
+
     @Transactional
     public Point use(PointCommand.Use command) {
         Point point = pointRepository.findBy(command.getUserId())

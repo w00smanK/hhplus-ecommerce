@@ -4,7 +4,7 @@ package kr.hhplus.ecommerce.domain.point;
 import kr.hhplus.ecommerce.domain.point.dto.PointCommand;
 import kr.hhplus.ecommerce.domain.point.entity.Point;
 import kr.hhplus.ecommerce.domain.user.entity.User;
-import kr.hhplus.ecommerce.support.MockTestSupport;
+import kr.hhplus.ecommerce.MockTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -19,4 +19,10 @@ public class PointCommand {
         private final Long userId;
         private final long amount;
     }
+
+    @Getter
+    @RequiredArgsConstructor(staticName = "of")
+    public static class Find {
+        private final Long userId;
+    }
 }
