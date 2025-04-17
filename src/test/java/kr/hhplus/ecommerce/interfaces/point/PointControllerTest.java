@@ -2,14 +2,11 @@ package kr.hhplus.ecommerce.interfaces.point;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.hhplus.ecommerce.application.point.PointFacade;
-import kr.hhplus.ecommerce.application.point.dto.PointCriteria;
 import kr.hhplus.ecommerce.application.point.dto.PointResult;
-import kr.hhplus.ecommerce.interfaces.ControllerCommonTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,6 +27,7 @@ class PointControllerTest {
 
     @MockitoBean
     private PointFacade pointFacade;
+
     @Test
     @DisplayName("사용자 포인트 조회")
     void getUserPoint() throws Exception {
