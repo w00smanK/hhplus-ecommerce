@@ -14,7 +14,8 @@ public class AccountResponse {
         this.userId = userId;
         this.account = amount;
     }
-    public static AccountResponse of(Long userId , Long amount) {
-        return new AccountResponse(userId , amount);
+
+    public static AccountResponse of(Long userId, Long amount) {
+        return new AccountResponse(userId, amount);
     }
 }

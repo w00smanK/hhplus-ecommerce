@@ -10,6 +10,7 @@ import java.util.List;
 public class CouponsResponse {
 
     private List<CouponResponse> coupons;
+
     private CouponsResponse(List<CouponResponse> coupons) {
         this.coupons = coupons;
     }
