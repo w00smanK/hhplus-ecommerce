@@ -50,6 +50,7 @@ class PointFacadeIntegrationTest {
         pointRepository.save(point);
         this.userId = user.getId();
     }
+
     @Test
     @DisplayName("포인트 충전이 성공적으로 이루어지는지 확인")
     void charge_success() {
