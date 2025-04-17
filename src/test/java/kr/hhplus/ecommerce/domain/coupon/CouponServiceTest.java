@@ -6,8 +6,6 @@ import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
 import kr.hhplus.ecommerce.domain.coupon.entity.CouponStatus;
 import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
-import kr.hhplus.ecommerce.domain.coupon.repository.CouponRepository;
-import kr.hhplus.ecommerce.domain.coupon.repository.IssuedCouponRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CouponService")
+@DisplayName("쿠폰")
 class CouponServiceTest {
 
     @Mock

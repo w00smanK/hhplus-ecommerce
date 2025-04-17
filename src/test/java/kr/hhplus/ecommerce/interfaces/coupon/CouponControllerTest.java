@@ -1,69 +1,60 @@
 package kr.hhplus.ecommerce.interfaces.coupon;
 
-import kr.hhplus.ecommerce.interfaces.ControllerCommonTest;
-import kr.hhplus.ecommerce.interfaces.user.CouponIssuedRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import kr.hhplus.ecommerce.application.coupon.CouponFacade;
+import kr.hhplus.ecommerce.application.coupon.dto.CouponResult;
+import kr.hhplus.ecommerce.domain.coupon.entity.CouponStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import java.time.LocalDateTime;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class CouponControllerTest extends ControllerCommonTest {
+@WebMvcTest(controllers = CouponController.class)
+class CouponControllerTest {
 
-    @DisplayName("보유한 쿠폰 목록을 가져온다.")
-    @Test
-    void getCoupons() throws Exception {
-        // when & then
-        mockMvc.perform(
-            get("/api/users/{userId}/coupons", 1L)
-        )
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.code").value(200))
-            .andExpect(jsonPath("$.message").value("OK"))
-            .andExpect(jsonPath("$.data.coupons[*].id").value(1))
-            .andExpect(jsonPath("$.data.coupons[*].name").value("쿠폰명"))
-            .andExpect(jsonPath("$.data.coupons[*].discountRate").value(0.1))
-            .andExpect(jsonPath("$.data.coupons[*].expiredAt").value("2025-04-30"));
-    }
+    @Autowired
+    private MockMvc mockMvc;
 
-    @DisplayName("쿠폰을 발급 시, 쿠픈 ID는 필수이다.")
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private CouponFacade couponFacade;
+
     @Test
-    void publishCouponWithoutCouponId() throws Exception {
+    @DisplayName("쿠폰 발급 성공")
+    void createUserCoupon() throws Exception {
         // given
-        CouponIssuedRequest request = new CouponIssuedRequest();
+        CouponRequest.Issue request = new CouponRequest.Issue(1L, 100L);
+        String json = objectMapper.writeValueAsString(request);
+
+        CouponResult.Issued mockResult = CouponResult.Issued.builder()
+                .id(1L)
+                .userId(1L)
+                .couponId(100L)
+                .status(CouponStatus.ISSUED)
+                .expiredAt(LocalDateTime.now().plusDays(7))
+                .build();
+
+        when(couponFacade.couponFirstIssue(any())).thenReturn(mockResult);
 
         // when & then
-        mockMvc.perform(
-            post("/api/users/{userId}/coupons", 1L)
-                .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON)
-        )
-            .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value(400))
-            .andExpect(jsonPath("$.message").value("쿠폰 ID는 필수입니다."));
-    }
-
-    @DisplayName("쿠폰을 발급한다.")
-    @Test
-    void publishCoupon() throws Exception {
-        // given
-        CouponIssuedRequest request = CouponIssuedRequest.of(1L);
-
-        // when & then
-        mockMvc.perform(
-                post("/api/users/{userId}/coupons", 1L)
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.code").value(200))
-            .andExpect(jsonPath("$.message").value("OK"));
+        mockMvc.perform(post("/api/v1/coupons")
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.userId").value(1))
+                .andExpect(jsonPath("$.data.couponId").value(100))
+                .andExpect(jsonPath("$.data.status").value("ISSUED"));
     }
 }
