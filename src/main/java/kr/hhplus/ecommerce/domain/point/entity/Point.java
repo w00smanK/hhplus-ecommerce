@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 @Entity(name = "user_point")
 @Getter
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@Table(name = "point", indexes = {
+        @Index(name = "idx_user_id", columnList = "user_id")
+})
 public class Point extends BaseEntity {
 
     public static final int MAX_CHARGE_AMOUNT = 1000000;
