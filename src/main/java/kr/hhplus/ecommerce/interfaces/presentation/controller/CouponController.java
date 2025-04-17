@@ -1,4 +1,4 @@
-package kr.hhplus.ecommerce.interfaces.user;
+package kr.hhplus.ecommerce.interfaces.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -7,6 +7,7 @@ import kr.hhplus.ecommerce.interfaces.presentation.response.CouponResponse;
 import kr.hhplus.ecommerce.interfaces.presentation.response.CouponsResponse;
 import kr.hhplus.ecommerce.interfaces.presentation.response.SimpleResponse;
 import kr.hhplus.ecommerce.interfaces.presentation.response.StatusResponse;
+import kr.hhplus.ecommerce.interfaces.presentation.request.CouponIssuedRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

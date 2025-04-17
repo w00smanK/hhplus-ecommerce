@@ -1,4 +1,4 @@
-package kr.hhplus.ecommerce.interfaces.product;
+package kr.hhplus.ecommerce.interfaces.presentation.response;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

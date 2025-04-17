@@ -1,4 +1,4 @@
-package kr.hhplus.ecommerce.interfaces.order;
+package kr.hhplus.ecommerce.interfaces.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

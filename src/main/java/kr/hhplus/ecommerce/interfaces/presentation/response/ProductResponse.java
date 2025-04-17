@@ -1,4 +1,4 @@
-package kr.hhplus.ecommerce.interfaces.product;
+package kr.hhplus.ecommerce.interfaces.presentation.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
