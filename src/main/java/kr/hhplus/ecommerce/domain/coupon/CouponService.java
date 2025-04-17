@@ -6,8 +6,6 @@ import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
 import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
-import kr.hhplus.ecommerce.domain.coupon.repository.CouponRepository;
-import kr.hhplus.ecommerce.domain.coupon.repository.IssuedCouponRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

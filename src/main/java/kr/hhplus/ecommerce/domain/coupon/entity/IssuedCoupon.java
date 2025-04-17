@@ -1,5 +1,9 @@
 package kr.hhplus.ecommerce.domain.coupon.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
 import kr.hhplus.ecommerce.config.exception.Exception;
 import kr.hhplus.ecommerce.domain.BaseEntity;
@@ -14,8 +18,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
 public class IssuedCoupon extends BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long userId;
     private Long couponId;
