@@ -45,22 +45,28 @@ public class ProductService {
 
     @Transactional
     public ProductInfo.StockCheckResult reduceStock(List<OrderCommand.OrderItem> commands) {
-        List<ProductInfo.StockStatus> stockStatuses = commands.stream()
-                .map(item -> {
-                    ProductStock stock = productStockRepository.findById(item.productOptionId())
-                            .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+        return new ProductInfo.StockCheckResult(commands.stream().map(i -> {
+            ProductStock productStock = productStockRepository.findById(i.productOptionId())
+                    .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
 
-                    int remaining = stock.reduceStock(item.quantity());
+            if (productStock.canPurchase(i.quantity())) {
+                Long remainingStock = productStock.reduceStock(i.quantity());
 
-                    return ProductInfo.StockStatus.builder()
-                            .stockId(stock.getId())
-                            .isEnough(remaining > 0)
-                            .requestQuantity(item.quantity())
-                            .remainingQuantity(remaining)
-                            .build();
-                }).toList();
-
-        return new ProductInfo.StockCheckResult(stockStatuses);
+                return new ProductInfo.StockStatus(
+                        productStock.getId(),
+                        true,
+                        i.quantity(),
+                        remainingStock
+                );
+            } else {
+                return new ProductInfo.StockStatus(
+                        productStock.getId(),
+                        false,
+                        i.quantity(),
+                        productStock.getStock()
+                );
+            }
+        }).toList());
     }
 
 }

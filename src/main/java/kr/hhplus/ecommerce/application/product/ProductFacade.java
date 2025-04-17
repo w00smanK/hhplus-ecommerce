@@ -6,7 +6,6 @@ import kr.hhplus.ecommerce.application.product.dto.ProductResult;
 import kr.hhplus.ecommerce.domain.product.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -20,7 +19,7 @@ public class ProductFacade {
     }
 
     public ProductResult.ProductDetail findProduct(ProductCriteria.Find criteria) {
-        return ProductResult.ProductDetail.from(productService.findProduct(criteria.toCommand()));
+        return ProductResult.ProductDetail.from(productService.findProduct(criteria.toCommand(criteria.productId())));
     }
 
 }
