@@ -59,6 +59,16 @@ public class Point extends BaseEntity {
         this.account -= account;
     }
 
+    public Point reduce(Long amount) throws Exception {
+        if (this.account < amount) {
+            throw new Exception("잔액이 부족합니다.");
+        }
+
+        this.account -= amount;
+
+        return this;
+    }
+
     public boolean isNew() {
         return this.id == null;
     }

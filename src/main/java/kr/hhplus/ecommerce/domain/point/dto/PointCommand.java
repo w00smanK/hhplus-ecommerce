@@ -1,5 +1,6 @@
 package kr.hhplus.ecommerce.domain.point.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +21,29 @@ public class PointCommand {
         private final long amount;
     }
 
+    public record Reduce(
+            Long userId,
+            Long paymentAmount,
+            Long issuedCouponId
+    ) {
+    }
+
+
     @Getter
-    @RequiredArgsConstructor(staticName = "of")
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Find {
-        private final Long userId;
+        private Long userId;
+
+        public static Find of(Long userId) {
+            return new Find(userId);
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Create {
+        private Long userId;
     }
 }

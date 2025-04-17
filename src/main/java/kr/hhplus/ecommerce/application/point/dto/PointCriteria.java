@@ -21,11 +21,13 @@ public class PointCriteria {
             return PointCommand.Charge.of(userId, amount);
         }
     }
+
     @Getter
     @RequiredArgsConstructor(staticName = "of")
     public static class Find {
 
         private final Long userId;
+
         public PointCommand.Find toCommand() {
             return PointCommand.Find.of(userId);
         }
