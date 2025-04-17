@@ -1,90 +1,69 @@
 package kr.hhplus.ecommerce.interfaces.order;
 
-
-import kr.hhplus.ecommerce.interfaces.ControllerCommonTest;
-import kr.hhplus.ecommerce.interfaces.presentation.request.OrderProductRequest;
-import kr.hhplus.ecommerce.interfaces.presentation.request.OrderRequest;
+import kr.hhplus.ecommerce.application.order.OrderFacade;
+import kr.hhplus.ecommerce.application.order.dto.OrderCriteria;
+import kr.hhplus.ecommerce.application.order.dto.OrderResult;
+import kr.hhplus.ecommerce.domain.order.entity.OrderStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class OrderControllerTest extends ControllerCommonTest {
+@WebMvcTest(OrderController.class)
+class OrderControllerTest {
 
-    @DisplayName("주문 시, 사용자 ID는 필수다.")
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    private OrderFacade orderFacade;
+
     @Test
-    void createOrderWithoutUserId() throws Exception {
-        // given
-        OrderRequest request = OrderRequest.of(
-            null,
-            1L,
-            List.of(OrderProductRequest.of(1L, 1))
-        );
+    @DisplayName("주문 생성 성공")
+    void create() throws Exception {
+        // Arrange
+        String requestBody = """
+                {
+                    "userId": 2,
+                    "productId": 3,
+                    "items": [
+                        {
+                            "optionId": 301,
+                            "quantity": 2
+                        }
+                    ],
+                    "couponId": 5
+                }
+                """;
 
-        // when & then
-        mockMvc.perform(
-                post("/api/ orders")
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-            .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value(400))
-            .andExpect(jsonPath("$.message").value("사용자 ID는 필수 입니다."));
-    }
+        String responseBody = """
+                {
+                    "orderId": 99,
+                    "userId": 2,
+                    "status": "CREATED",
+                    "totalAmount": 30000,
+                    "discountAmount": 5000,
+                    "paymentAmount": 25000
+                }
+                """;
 
-    @DisplayName("주문 시, 상품목록의 상품 ID는 필수이다.")
-    @Test
-    void createOrderWithoutProductId() throws Exception {
-        // given
-        OrderRequest request = OrderRequest.of(
-            1L,
-            1L,
-            List.of(
-                OrderProductRequest.of(null, 1)
-            )
-        );
+        when(orderFacade.order(any(OrderCriteria.Create.class)))
+                .thenReturn(new OrderResult.Create(99L, 2L, OrderStatus.CREATED, 30_000L, 5_000L, 25_000L));
 
-        // when & then
-        mockMvc.perform(
-                post("/api/orders")
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-            .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value(400))
-            .andExpect(jsonPath("$.message").value("상품 ID는 필수입니다."));
-    }
-
-
-    @DisplayName("주문/결제를 한다.")
-    @Test
-    void createOrder() throws Exception {
-        // given
-        OrderRequest request = OrderRequest.of(
-            1L,
-            1L,
-            List.of(
-                OrderProductRequest.of(1L, 2)
-            )
-        );
-
-        // when & then
-        mockMvc.perform(
-                post("/api/orders")
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.code").value(200))
-            .andExpect(jsonPath("$.message").value("OK"));
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/order")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(content().json(responseBody));
     }
 }
