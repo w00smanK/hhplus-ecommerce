@@ -13,4 +13,6 @@ public interface ProductStockRepository {
 
     List<ProductStock> findByProductId(Long productId);
 
+    ProductStock save(ProductStock productStock);
+
 }

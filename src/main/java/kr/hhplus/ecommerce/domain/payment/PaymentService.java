@@ -6,11 +6,13 @@ import kr.hhplus.ecommerce.domain.order.OrderRepository;
 import kr.hhplus.ecommerce.domain.payment.dto.PaymentCommand;
 import kr.hhplus.ecommerce.domain.payment.entity.Payment;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;

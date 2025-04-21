@@ -38,7 +38,7 @@ class CouponServiceIntegrationTest {
     @BeforeEach
     void setUp() {
         USER_ID = 1L;
-        COUPON = couponRepository.save(new Coupon(1000L, 100L));
+        COUPON = couponRepository.save(new Coupon(1000L,500L, 1));
         COUPON_ID = COUPON.getId();
         ISSUED_COUPON = issuedCouponRepository.save(new IssuedCoupon(USER_ID, COUPON_ID));
     }
@@ -65,7 +65,7 @@ class CouponServiceIntegrationTest {
     void issue_ok() {
 
         // Arrange
-        Coupon newCoupon = couponRepository.save(new Coupon(1000L, 100L));
+        Coupon newCoupon = couponRepository.save(new Coupon(1000L, 500L,1));
 
         // Act
         IssuedCoupon issuedCoupon = couponService.issue(new CouponCommand.Issue(USER_ID, newCoupon.getId()));

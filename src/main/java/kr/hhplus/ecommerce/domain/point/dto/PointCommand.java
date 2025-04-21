@@ -11,14 +11,14 @@ public class PointCommand {
     @RequiredArgsConstructor(staticName = "of")
     public static class Charge {
         private final Long userId;
-        private final long amount;
+        private final Long amount;
     }
 
     @Getter
     @RequiredArgsConstructor(staticName = "of")
     public static class Use {
         private final Long userId;
-        private final long amount;
+        private final Long amount;
     }
 
     public record Reduce(

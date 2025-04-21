@@ -63,7 +63,8 @@ class OrderServiceIntegrationTest {
     void createOrder() {
         var command = new OrderCommand.Create(userId, items);
         var result = orderService.createOrder(command);
-        var order = orderRepository.findById(result.orderId()).get();
+        var order = orderRepository.findById(result.orderId())
+                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
 
         assertThat(order.getUserId()).isEqualTo(userId);
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CREATED);
@@ -80,7 +81,7 @@ class OrderServiceIntegrationTest {
         var command = new OrderCommand.HoldOrder(result.orderId(), 1L);
         orderService.holdOrder(command);
 
-        var orderItem = orderItemRepository.findByOrderIdAndProductStockId(result.orderId(), 1L).get();
+        var orderItem = orderItemRepository.findByOrderAndOption(result.orderId(), 1L).get();
         assertThat(orderItem.getStatus()).isEqualTo(OrderStatus.PENDING);
     }
 

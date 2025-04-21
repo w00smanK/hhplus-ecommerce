@@ -71,7 +71,7 @@ class PointServiceIntegrationTest {
         @Test
         @DisplayName("성공")
         void charge() {
-            PointCommand.Charge command = new PointCommand.Charge(user.getId(), 1000L);
+            PointCommand.Charge command = PointCommand.Charge.of(user.getId(), 1000L);
             Point result = pointService.charge(command);
 
             assertThat(result.getAccount()).isEqualTo(2000L);
@@ -82,7 +82,7 @@ class PointServiceIntegrationTest {
         @Test
         @DisplayName("실패 - 사용자 없음")
         void notFound() {
-            PointCommand.Charge command = new PointCommand.Charge(9999L, 1000L);
+            PointCommand.Charge command = PointCommand.Charge.of(9999L, 1000L);
             Exception ex = assertThrows(Exception.class, () -> pointService.charge(command));
             assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
         }
@@ -90,7 +90,7 @@ class PointServiceIntegrationTest {
         @Test
         @DisplayName("실패 - 금액 유효하지 않음")
         void invalidAmount() {
-            PointCommand.Charge command = new PointCommand.Charge(user.getId(), -1000L);
+            PointCommand.Charge command = PointCommand.Charge.of(user.getId(), -1000L);
             Exception ex = assertThrows(Exception.class, () -> pointService.charge(command));
             assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
         }
@@ -102,7 +102,7 @@ class PointServiceIntegrationTest {
 
         @Test
         @DisplayName("성공")
-        void reduce() {
+        void reduce() throws java.lang.Exception {
             PointCommand.Reduce command = new PointCommand.Reduce(user.getId(), 1000L, null);
             Point result = pointService.reduce(command);
 

@@ -35,11 +35,12 @@ class PaymentServiceIntegrationTest {
 
     @Test
     @DisplayName("결제 조회")
-    void findPayment() {
+    void findPayment() throws Exception {
         PaymentCommand.FindOrder command = new PaymentCommand.FindOrder(orderId);
         Payment result = paymentService.findPayment(command);
 
-        Payment actual = paymentRepository.findById(result.getId()).get();
+        Payment actual = paymentRepository.findById(result.getId())
+                .orElseThrow(() -> new Exception("결제 정보를 찾을 수 없습니다."));
         assertThat(actual.getOrderId()).isEqualTo(100L);
         assertThat(actual.getAmount()).isEqualTo(100000L);
         assertThat(actual.getStatus()).isEqualTo(PaymentStatus.WAITING);
@@ -52,11 +53,12 @@ class PaymentServiceIntegrationTest {
 
         @Test
         @DisplayName("전체 금액 결제")
-        void payAllAmount() {
+        void payAllAmount() throws Exception {
             PaymentCommand.Pay command = new PaymentCommand.Pay(payment.getId(), 100000L);
             Payment result = paymentService.pay(command);
 
-            Payment actual = paymentRepository.findById(result.getId()).get();
+            Payment actual = paymentRepository.findById(result.getId())
+                    .orElseThrow(() -> new Exception("결제 정보를 찾을 수 없습니다."));
             assertThat(actual.getStatus()).isEqualTo(PaymentStatus.PAYED);
             assertThat(actual.getAmount()).isEqualTo(0L);
             assertThat(actual.getPaidAt()).isNotNull();
@@ -64,11 +66,12 @@ class PaymentServiceIntegrationTest {
 
         @Test
         @DisplayName("일부 금액 결제")
-        void payPartialAmount() {
+        void payPartialAmount() throws Exception {
             PaymentCommand.Pay command = new PaymentCommand.Pay(payment.getId(), 50000L);
             Payment result = paymentService.pay(command);
 
-            Payment actual = paymentRepository.findById(result.getId()).get();
+            Payment actual = paymentRepository.findById(result.getId())
+                    .orElseThrow(() -> new Exception("결제 정보를 찾을 수 없습니다."));
             assertThat(actual.getStatus()).isEqualTo(PaymentStatus.WAITING);
             assertThat(actual.getAmount()).isEqualTo(50000L);
             assertThat(actual.getPaidAt()).isNotNull();

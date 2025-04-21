@@ -93,13 +93,13 @@ class OrderServiceTest {
 
         OrderItem orderItem = new OrderItem(1L, 1L, 1000L, 100L);
 
-        when(orderItemRepository.findByOrderIdAndProductOptionId(1L, productOptionId)).thenReturn(Optional.of(orderItem));
+        when(orderItemRepository.findByOrderAndOption(1L, productOptionId)).thenReturn(Optional.of(orderItem));
 
         // Act
         orderService.holdOrder(command);
 
         // Assert
-        verify(orderItemRepository, times(1)).findByOrderIdAndProductOptionId(1L, productOptionId);
+        verify(orderItemRepository, times(1)).findByOrderAndOption(1L, productOptionId);
         assertEquals(OrderStatus.PENDING, orderItem.getStatus());
     }
 

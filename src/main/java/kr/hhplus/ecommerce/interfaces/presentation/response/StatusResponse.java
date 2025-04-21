@@ -10,7 +10,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @AllArgsConstructor(staticName = "of")
 public class StatusResponse<T> {
     @JsonInclude(NON_NULL)
-    private final T data;
     private int code;
     private String message;
+    private final T data;
 }
