@@ -46,7 +46,7 @@ public class OrderFacade {
         OrderInfo.Create order = orderService.createOrder(new OrderCommand.Create(criteria.userId(), orderItemCommand));
 
         // 쿠폰 조회, 사용 처리
-        CouponInfo.CouponAggregate couponInfo = couponService.use(new CouponCommand.Use(criteria.userId(), criteria.couponId()));
+        CouponInfo.CouponStock couponInfo = couponService.use(new CouponCommand.Use(criteria.userId(), criteria.couponId()));
 
         // 쿠폰 적용
         orderService.useCoupon(OrderCommand.UseCoupon.toCommand(order.orderId(), couponInfo.couponId(), couponInfo.discountPrice()));

@@ -17,9 +17,9 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Entity
-public class IssuedCoupon extends BaseEntity {
+@Builder
+public class IssuedCoupon {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

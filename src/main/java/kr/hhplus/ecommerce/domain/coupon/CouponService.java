@@ -20,7 +20,7 @@ public class CouponService {
 
 
     @Transactional
-    public CouponInfo.CouponAggregate use(CouponCommand.Use command) {
+    public CouponInfo.CouponStock use(CouponCommand.Use command) {
 
         Coupon coupon = couponRepository.findById(command.couponId())
                 .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
@@ -30,11 +30,11 @@ public class CouponService {
 
         issuedCoupon.use();
 
-        return CouponInfo.CouponAggregate.from(coupon, issuedCoupon);
+        return CouponInfo.CouponStock.from(coupon, issuedCoupon);
     }
 
     @Transactional
-    public Coupon issue(CouponCommand.Issue command) {
+    public IssuedCoupon issue(CouponCommand.Issue command) {
 
         Coupon coupon = couponRepository.findById(command.couponId())
                 .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
@@ -45,7 +45,7 @@ public class CouponService {
 
         coupon.issue();
 
-        return coupon;
+        return issuedCouponRepository.save(new IssuedCoupon(command.userId(), command.couponId()));
     }
 
     @Transactional

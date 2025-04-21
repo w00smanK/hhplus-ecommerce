@@ -134,7 +134,7 @@ class OrderServiceIntegrationTest {
         @DisplayName("null")
         void useCoupon_null() {
             var result = orderService.createOrder(new OrderCommand.Create(userId, items));
-            var coupon = new CouponInfo.CouponAggregate(null, null, null, null, null);
+            var coupon = new CouponInfo.CouponStock(null, null, null, null, null);
             var command = new OrderCommand.UseCoupon(result.orderId(), coupon.couponId(), coupon.discountPrice());
             var actual = orderService.useCoupon(command);
 

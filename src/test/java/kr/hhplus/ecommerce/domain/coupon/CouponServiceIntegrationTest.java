@@ -51,7 +51,7 @@ class CouponServiceIntegrationTest {
         CouponCommand.Use command = new CouponCommand.Use(USER_ID, COUPON_ID);
 
         // Act
-        CouponInfo.CouponAggregate couponInfo = couponService.use(command);
+        CouponInfo.CouponStock couponInfo = couponService.use(command);
 
         // Assert
         IssuedCoupon actual = issuedCouponRepository.findByUserIdAndCouponId(USER_ID, COUPON_ID).get();
@@ -63,6 +63,7 @@ class CouponServiceIntegrationTest {
     @Test
     @DisplayName("[성공] 쿠폰 발급")
     void issue_ok() {
+
 
         // Arrange
         Coupon newCoupon = couponRepository.save(new Coupon(1000L, 500L,1));

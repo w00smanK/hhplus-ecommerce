@@ -179,7 +179,7 @@ class OrderServiceTest {
         void useCoupon_couponIsNull() {
 
             // Arrange
-            CouponInfo.CouponAggregate couponInfo = new CouponInfo.CouponAggregate(null, null, null, null, null);
+            CouponInfo.CouponStock couponInfo = new CouponInfo.CouponStock(null, null, null, null, null);
             OrderCommand.UseCoupon command = new OrderCommand.UseCoupon(ORDER_ID, couponInfo.couponId(), couponInfo.discountPrice());
 
             // Act

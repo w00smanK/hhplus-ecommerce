@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public record CouponInfo() {
 
     @Builder
-    public record CouponAggregate(
+    public record CouponStock(
             Long couponId,
             Long discountPrice,
             CouponStatus status,
@@ -18,8 +18,8 @@ public record CouponInfo() {
             LocalDateTime expiredAt
 
     ) {
-        public static CouponAggregate from(Coupon coupon, IssuedCoupon issuedCoupon) {
-            return CouponAggregate.builder()
+        public static CouponStock from(Coupon coupon, IssuedCoupon issuedCoupon) {
+            return CouponStock.builder()
                     .couponId(coupon.getId())
                     .discountPrice(coupon.getDiscountPrice())
                     .status(issuedCoupon.getStatus())
