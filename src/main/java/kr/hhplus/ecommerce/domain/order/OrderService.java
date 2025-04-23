@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.domain.order;
 
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
-import kr.hhplus.ecommerce.config.exception.Exception;
+import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
 import kr.hhplus.ecommerce.domain.order.entity.Order;
@@ -62,7 +62,7 @@ public class OrderService {
     public void holdOrder(OrderCommand.HoldOrder command) {
 
         OrderItem orderItem = orderItemRepository.findByOrderAndOption(command.orderId(), command.productOptionId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         orderItem.holdStatus();
     }
@@ -75,7 +75,7 @@ public class OrderService {
         }
 
         Order order = orderRepository.findById(command.orderId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         order.useCoupon(command.couponId(), command.discountPrice());
 
@@ -94,10 +94,10 @@ public class OrderService {
     public Order findById(OrderCommand.Find command) {
 
         Order order = orderRepository.findById(command.orderId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         if (order.getStatus() != OrderStatus.PAYED) {
-            throw new Exception(ErrorCode.BAD_REQUEST);
+            throw new CustomException(ErrorCode.BAD_REQUEST);
         }
 
         return order;
@@ -107,7 +107,7 @@ public class OrderService {
     public Order pay(OrderCommand.Find command) {
 
         Order order = orderRepository.findById(command.orderId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         return order.pay();
     }

@@ -3,10 +3,10 @@ package kr.hhplus.ecommerce.config.exception;
 import lombok.Getter;
 
 @Getter
-public class Exception extends RuntimeException {
+public class CustomException extends RuntimeException {
     private final ErrorCode errorCode;
 
-    public Exception(ErrorCode errorCode) {
+    public CustomException(ErrorCode errorCode) {
         super(errorCode.getMessage());
         this.errorCode = errorCode;
     }

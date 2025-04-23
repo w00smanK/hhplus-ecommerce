@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.domain.order;
 
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
-import kr.hhplus.ecommerce.config.exception.Exception;
+import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
@@ -138,12 +138,12 @@ class OrderServiceTest {
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.empty());
 
         // Act
-        Exception exception = assertThrows(Exception.class,
+        CustomException customException = assertThrows(CustomException.class,
                 () -> orderService.pay(new OrderCommand.Find(ORDER_ID)));
 
         // Assert
         verify(orderRepository).findById(ORDER_ID);
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+        assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
     }
 
     @Test
@@ -287,12 +287,12 @@ class OrderServiceTest {
             when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.empty());
 
             // Act
-            Exception exception = assertThrows(Exception.class,
+            CustomException customException = assertThrows(CustomException.class,
                     () -> orderService.findById(new OrderCommand.Find(ORDER_ID)));
 
             // Assert
             verify(orderRepository).findById(ORDER_ID);
-            assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+            assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
         }
     }
 }

@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.domain.coupon;
 
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
-import kr.hhplus.ecommerce.config.exception.Exception;
+import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
@@ -23,10 +23,10 @@ public class CouponService {
     public CouponInfo.CouponStock use(CouponCommand.Use command) {
 
         Coupon coupon = couponRepository.findById(command.couponId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         IssuedCoupon issuedCoupon = issuedCouponRepository.findByUserIdAndCouponId(command.userId(), command.couponId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         issuedCoupon.use();
 
@@ -37,10 +37,10 @@ public class CouponService {
     public IssuedCoupon issue(CouponCommand.Issue command) {
 
         Coupon coupon = couponRepository.findById(command.couponId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         if (coupon.getQuantity() <= 0) {
-            throw new Exception(ErrorCode.BAD_REQUEST);
+            throw new CustomException(ErrorCode.BAD_REQUEST);
         }
 
         coupon.issue();
@@ -53,7 +53,7 @@ public class CouponService {
 
         issuedCouponRepository.findByUserIdAndCouponId(command.userId(), command.couponId())
                 .ifPresent(coupon -> {
-                    throw new Exception(ErrorCode.BAD_REQUEST);
+                    throw new CustomException(ErrorCode.BAD_REQUEST);
                 });
 
         return issuedCouponRepository.save(new IssuedCoupon(command.userId(), command.couponId()));

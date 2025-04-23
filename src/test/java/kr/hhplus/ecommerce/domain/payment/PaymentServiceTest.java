@@ -1,8 +1,8 @@
 package kr.hhplus.ecommerce.domain.payment;
 
 
+import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
-import kr.hhplus.ecommerce.config.exception.Exception;
 import kr.hhplus.ecommerce.domain.payment.dto.PaymentCommand;
 import kr.hhplus.ecommerce.domain.payment.entity.Payment;
 import kr.hhplus.ecommerce.domain.payment.entity.PaymentStatus;
@@ -61,7 +61,7 @@ class PaymentServiceTest {
         void fail_notFound() {
             when(paymentRepository.findByOrderId(anyLong())).thenReturn(Optional.empty());
 
-            Exception ex = assertThrows(Exception.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> paymentService.findPayment(new PaymentCommand.FindOrder(anyLong())));
 
             verify(paymentRepository).findByOrderId(anyLong());
@@ -104,7 +104,7 @@ class PaymentServiceTest {
         void fail_notFound() {
             when(paymentRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-            Exception ex = assertThrows(Exception.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> paymentService.pay(new PaymentCommand.Pay(anyLong(), 10_000L)));
 
             verify(paymentRepository).findById(anyLong());

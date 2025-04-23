@@ -71,7 +71,7 @@ class PointFacadeIntegrationTest {
     void getPoint_success() {
         // given
         Long userId = this.userId;
-        Point point = pointRepository.findBy(userId).orElseThrow();
+        Point point = pointRepository.findByUserId(userId).orElseThrow();
         PointCriteria.Find criteria = PointCriteria.Find.of(userId);
 
         // when

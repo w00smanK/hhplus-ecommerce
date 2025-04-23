@@ -1,13 +1,14 @@
 package kr.hhplus.ecommerce.domain.product;
 
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
-import kr.hhplus.ecommerce.config.exception.Exception;
+import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.product.dto.ProductCommand;
 import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
 import kr.hhplus.ecommerce.domain.product.entity.Product;
 import kr.hhplus.ecommerce.domain.product.entity.ProductStock;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductService {
 
     private final ProductRepository productRepository;
@@ -26,6 +28,7 @@ public class ProductService {
 
         List<ProductInfo.ProductDetail> productDetails = products.stream()
                 .map(product -> {
+                    log.info("product: {}", product);
                     List<ProductStock> productStocks = productStockRepository.findByProductId(product.getId());
                     return ProductInfo.ProductDetail.from(product, productStocks);
                 }).toList();
@@ -36,7 +39,7 @@ public class ProductService {
     @Transactional
     public ProductInfo.ProductDetail findProduct(ProductCommand.Find command) {
         Product product = productRepository.findById(command.getProductId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         List<ProductStock> productStocks = productStockRepository.findByProductId(command.getProductId());
 
@@ -47,7 +50,7 @@ public class ProductService {
     public ProductInfo.StockCheckResult reduceStock(List<OrderCommand.OrderItem> commands) {
         return new ProductInfo.StockCheckResult(commands.stream().map(i -> {
             ProductStock productStock = productStockRepository.findById(i.productOptionId())
-                    .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
             if (productStock.canPurchase(i.quantity())) {
                 Long remainingStock = productStock.reduceStock(i.quantity());

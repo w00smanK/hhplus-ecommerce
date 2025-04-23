@@ -1,6 +1,7 @@
 package kr.hhplus.ecommerce.domain.payment;
 
 
+import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
 import kr.hhplus.ecommerce.domain.order.OrderRepository;
 import kr.hhplus.ecommerce.domain.payment.dto.PaymentCommand;
@@ -28,7 +29,7 @@ public class PaymentService {
     public Payment findPayment(PaymentCommand.FindOrder command) throws Exception {
 
         Payment payment = paymentRepository.findByOrderId(command.orderId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND.getMessage()));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         return payment;
     }
@@ -37,7 +38,7 @@ public class PaymentService {
     public Payment pay(PaymentCommand.Pay command) throws Exception {
 
         Payment payment = paymentRepository.findById(command.paymentId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND.getMessage()));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         return payment.pay(command.paymentAmount());
     }

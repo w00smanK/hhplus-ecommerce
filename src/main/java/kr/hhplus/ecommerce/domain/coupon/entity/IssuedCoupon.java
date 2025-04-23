@@ -5,8 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
-import kr.hhplus.ecommerce.config.exception.Exception;
-import kr.hhplus.ecommerce.domain.BaseEntity;
+import kr.hhplus.ecommerce.config.exception.CustomException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,7 +38,7 @@ public class IssuedCoupon {
 
     public void use() {
         if (this.status != CouponStatus.ISSUED) {
-            throw new Exception(ErrorCode.BAD_REQUEST);
+            throw new CustomException(ErrorCode.BAD_REQUEST);
         }
         this.status = CouponStatus.USED;
         this.usedAt = LocalDateTime.now();

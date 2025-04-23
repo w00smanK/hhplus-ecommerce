@@ -12,34 +12,32 @@ public class PointHistory extends BaseEntity {
 
     public static Object TransactionType;
     @Id
-    @Column(name = "point_id")
+    @Column(name = "point_history_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column
-    private long userId;
+    private long pointId;
     @Column
     private Long issuedCouponId;
     @Column
     private long amount;
 
-    @Enumerated(EnumType.STRING)
-    private TransactionType type;
-
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 
-    public PointHistory(Long userId, Long amount, TransactionType type) {
-        this.userId = userId;
+    public PointHistory(Long pointId, Long amount, TransactionType type) {
+        this.pointId = pointId;
         this.amount = amount;
-        this.type = type;
+        this.transactionType = type;
     }
 
-    public PointHistory(Long userId, Long issuedCouponId, Long amount, TransactionType transactionType) {
-        this.userId = userId;
+    public PointHistory(Long pointId, Long issuedCouponId, Long amount, TransactionType type) {
+        this.pointId = pointId;
         this.issuedCouponId = issuedCouponId;
         this.amount = amount;
-        this.transactionType = transactionType;
+        this.transactionType = type;
     }
 
 }

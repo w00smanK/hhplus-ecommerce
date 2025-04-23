@@ -1,5 +1,6 @@
 package kr.hhplus.ecommerce.domain.point;
 
+import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
 import kr.hhplus.ecommerce.domain.point.dto.PointCommand;
 import kr.hhplus.ecommerce.domain.point.entity.Point;
@@ -18,7 +19,7 @@ public class PointService {
 
     @Transactional
     public Point charge(PointCommand.Charge command) {
-        Point point = pointRepository.findBy(command.getUserId())
+        Point point = pointRepository.findByUserId(command.getUserId())
                 // exception if not found
                 .orElse(Point.empty(command.getUserId()));
 
@@ -32,14 +33,14 @@ public class PointService {
 
     @Transactional(readOnly = true)
     public Point findPoint(PointCommand.Find command) {
-        return pointRepository.findBy(command.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("포인트 정보가 없습니다."));
+        return pointRepository.findByUserId(command.getUserId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
     }
 
     @Transactional
     public Point use(PointCommand.Use command) {
-        Point point = pointRepository.findBy(command.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("포인트 정보가 없습니다."));
+        Point point = pointRepository.findByUserId(command.getUserId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         point.use(command.getAmount());
 
         return point;
@@ -48,8 +49,8 @@ public class PointService {
     @Transactional
     public Point reduce(PointCommand.Reduce command) throws Exception {
 
-        Point point = pointRepository.findBy(command.userId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND.getMessage()));
+        Point point = pointRepository.findByUserId(command.userId())
+                .orElseThrow(() -> new Exception("잔액이 부족합니다."));
 
 
         pointHistoryRepository.save(new PointHistory(point.getUserId(), command.issuedCouponId(), command.paymentAmount(), TransactionType.USE));

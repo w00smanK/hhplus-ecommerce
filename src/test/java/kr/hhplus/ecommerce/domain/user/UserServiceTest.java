@@ -1,6 +1,8 @@
 package kr.hhplus.ecommerce.domain.user;
 
 import kr.hhplus.ecommerce.MockTestSupport;
+import kr.hhplus.ecommerce.config.exception.CustomException;
+import kr.hhplus.ecommerce.config.exception.ErrorCode;
 import kr.hhplus.ecommerce.domain.user.dto.UserCommand;
 import kr.hhplus.ecommerce.domain.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
@@ -12,6 +14,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
@@ -30,10 +33,10 @@ class UserServiceTest extends MockTestSupport {
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.empty());
 
-        // when & then
-        assertThatThrownBy(() -> userService.findByUserId(UserCommand.Find.from(1L)))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("사용자가 존재하지 않습니다.");
+        CustomException ex = assertThrows(CustomException.class, () ->
+                userService.findByUserId(new UserCommand.Find(999L)));
+
+        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
     }
 
     @DisplayName("사용자 ID로 사용자를 조회한다.")
@@ -41,7 +44,6 @@ class UserServiceTest extends MockTestSupport {
     void getUser() {
         // given
         User user = User.builder()
-                .id(1L)
                 .name("김우경")
                 .build();
 

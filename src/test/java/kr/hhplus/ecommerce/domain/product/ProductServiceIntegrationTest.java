@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.domain.product;
 
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
-import kr.hhplus.ecommerce.config.exception.Exception;
+import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.product.dto.ProductCommand;
 import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
@@ -67,6 +67,16 @@ class ProductServiceIntegrationTest {
         @DisplayName("상품 목록 조회 성공")
         void findAll() {
             ProductInfo.ProductList result = productService.findAll();
+            // 👉 여기서 출력!
+            System.out.println("조회된 상품 수: " + result.getProducts().size());
+            result.getProducts().forEach(product -> {
+                System.out.println("상품 이름: " + product.getName());
+                System.out.println("브랜드: " + product.getBrand());
+                System.out.println("옵션 수: " + product.getStocks().size());
+                product.getStocks().forEach(stock -> {
+                    System.out.println("- 옵션명: " + stock.getOptionValue() + ", 가격: " + stock.getPrice() + ", 재고: " + stock.getStock());
+                });
+            });
             assertThat(result.getProducts()).hasSize(2);
 
             ProductInfo.ProductDetail soccer = result.getProducts().get(0);
@@ -91,7 +101,7 @@ class ProductServiceIntegrationTest {
         @DisplayName("상품 조회 실패 - 존재하지 않는 상품")
         void notFound() {
             ProductCommand.Find command = new ProductCommand.Find(999L);
-            Exception ex = assertThrows(Exception.class, () -> productService.findProduct(command));
+            CustomException ex = assertThrows(CustomException.class, () -> productService.findProduct(command));
             assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
         }
     }

@@ -4,6 +4,7 @@ package kr.hhplus.ecommerce.infra.order;
 import kr.hhplus.ecommerce.domain.order.entity.OrderItem;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
@@ -14,12 +15,12 @@ public interface OrderItemJpaRepository extends JpaRepository<OrderItem, Long> {
 
     Optional<OrderItem> findByOrderIdAndProductOptionId(Long orderId, Long productOptionId);
 
-    //    @Query("SELECT oi.productOptionId as productOptionId, SUM(oi.quantity) as totalSaleQuantity " +
-//            "FROM OrderItem oi " +
-//            "WHERE oi.createdAt >= :startDate " + // 인덱스
-//            "GROUP BY oi.productOptionId " +
-//            "ORDER BY SUM(oi.quantity) DESC")
-    List<BestSellingProjection> findBestSelling(@Param("startDate") LocalDateTime startDate, Pageable pageable);
+        @Query("SELECT oi.productOptionId as productOptionId, SUM(oi.quantity) as totalSaleQuantity " +
+            "FROM OrderItem oi " +
+            "WHERE oi.registeredAt >= :startAt " + // 인덱스
+            "GROUP BY oi.productOptionId " +
+            "ORDER BY SUM(oi.quantity) DESC")
+    List<BestSellingProjection> findBestSelling(@Param("startAt") LocalDateTime startAt, Pageable page);
 
     List<OrderItem> findByOrderId(Long orderId);
 

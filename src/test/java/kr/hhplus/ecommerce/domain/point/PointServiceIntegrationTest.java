@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.domain.point;
 
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
-import kr.hhplus.ecommerce.config.exception.Exception;
+import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.domain.point.dto.PointCommand;
 import kr.hhplus.ecommerce.domain.point.entity.Point;
 import kr.hhplus.ecommerce.domain.user.UserRepository;
@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -25,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class PointServiceIntegrationTest {
 
     User user;
-    Point balance;
+    Point account;
     @Autowired
     private PointRepository pointRepository;
     @Autowired
@@ -37,8 +38,8 @@ class PointServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        user = userRepository.save(new User(1L, "김우경"));
-        balance = pointRepository.save(new Point(user.getId(), 1L, 0L));
+        user = userRepository.save(new User( "김우경"));
+        account = pointRepository.save(new Point(user.getId(), 1000L));
     }
 
     @Nested
@@ -52,7 +53,7 @@ class PointServiceIntegrationTest {
             Point result = pointService.findPoint(command);
 
             assertThat(result.getAccount()).isEqualTo(1000L);
-            assertThat(pointRepository.findBy(user.getId()).get().getAccount()).isEqualTo(1000L);
+            assertThat(pointRepository.findByUserId(user.getId()).get().getAccount()).isEqualTo(1000L);
         }
 
         @Test
@@ -60,7 +61,7 @@ class PointServiceIntegrationTest {
         void notFound() {
             PointCommand.Find command = new PointCommand.Find(999L);
             Exception ex = assertThrows(Exception.class, () -> pointService.findPoint(command));
-            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+            assertThat(ex.getMessage()).isEqualTo("찾을 수 없습니다.");
         }
     }
 
@@ -75,8 +76,8 @@ class PointServiceIntegrationTest {
             Point result = pointService.charge(command);
 
             assertThat(result.getAccount()).isEqualTo(2000L);
-            assertThat(pointRepository.findBy(user.getId()).get().getAccount()).isEqualTo(2000L);
-            assertThat(pointHistoryRepository.findByUserId(balance.getId())).hasSize(2);
+            assertThat(pointRepository.findByUserId(user.getId()).get().getAccount()).isEqualTo(2000L);
+            assertThat(pointHistoryRepository.findByUserId(account.getId())).hasSize(1);
         }
 
         @Test
@@ -84,7 +85,7 @@ class PointServiceIntegrationTest {
         void notFound() {
             PointCommand.Charge command = PointCommand.Charge.of(9999L, 1000L);
             Exception ex = assertThrows(Exception.class, () -> pointService.charge(command));
-            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+            assertThat(ex.getMessage()).isEqualTo("잔액이 부족합니다.");
         }
 
         @Test
@@ -92,7 +93,7 @@ class PointServiceIntegrationTest {
         void invalidAmount() {
             PointCommand.Charge command = PointCommand.Charge.of(user.getId(), -1000L);
             Exception ex = assertThrows(Exception.class, () -> pointService.charge(command));
-            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+                assertThat(ex.getMessage()).isEqualTo("충전 금액은 0보다 커야 합니다.");
         }
     }
 
@@ -107,8 +108,8 @@ class PointServiceIntegrationTest {
             Point result = pointService.reduce(command);
 
             assertThat(result.getAccount()).isEqualTo(0L);
-            assertThat(pointRepository.findBy(user.getId()).get().getAccount()).isEqualTo(0L);
-            assertThat(pointHistoryRepository.findByUserId(balance.getId())).hasSize(2);
+            assertThat(pointRepository.findByUserId(user.getId()).get().getAccount()).isEqualTo(0L);
+            assertThat(pointHistoryRepository.findByUserId(account.getId())).hasSize(1);
         }
 
         @Test
@@ -116,15 +117,14 @@ class PointServiceIntegrationTest {
         void insufficient() {
             PointCommand.Reduce command = new PointCommand.Reduce(user.getId(), 2000L, null);
             Exception ex = assertThrows(Exception.class, () -> pointService.reduce(command));
-            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+            assertThat(ex.getMessage()).isEqualTo("잔액이 부족합니다.");
         }
-
         @Test
         @DisplayName("실패 - 사용자 없음")
         void userNotFound() {
             PointCommand.Reduce command = new PointCommand.Reduce(999L, 1000L, null);
             Exception ex = assertThrows(Exception.class, () -> pointService.reduce(command));
-            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+            assertThat(ex.getMessage()).isEqualTo("잔액이 부족합니다.");
         }
     }
 }
