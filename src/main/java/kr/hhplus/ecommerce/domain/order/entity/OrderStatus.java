@@ -2,7 +2,7 @@ package kr.hhplus.ecommerce.domain.order.entity;
 
 public enum OrderStatus {
     CREATED,
-    WAITING,
+    PENDING,
     PAYED,
     CANCELED,
     COMPLETED

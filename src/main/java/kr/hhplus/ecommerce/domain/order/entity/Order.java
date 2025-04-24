@@ -1,31 +1,62 @@
 package kr.hhplus.ecommerce.domain.order.entity;
 
+import jakarta.persistence.*;
 import kr.hhplus.ecommerce.domain.BaseEntity;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "`order`",
+        indexes = {
+                @Index(name = "idx_user_id", columnList = "userId"),
+                @Index(name = "idx_coupon_id", columnList = "issuedCouponId")
+        })
 public class Order extends BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private Long userId;
+
+    @Column
     private Long issuedCouponId;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
+
+    @Column(nullable = false)
     private Long totalAmount;
+
+    @Column(nullable = false)
     private Long discountAmount;
+
+    @Column(nullable = false)
     private Long paymentAmount;
 
-    @Builder
-    public Order(Long userId, Long issuedCouponId, Long totalAmount) {
+
+    public Order(Long userId, Long totalAmount) {
         this.userId = userId;
-        this.issuedCouponId = issuedCouponId;
         this.status = OrderStatus.CREATED;
         this.totalAmount = totalAmount;
         this.discountAmount = 0L;
+        this.paymentAmount = totalAmount;
+    }
+
+    public Order(Long userId, Long issuedCouponId, Long totalAmount) {
+        this.userId = userId;
+        this.status = OrderStatus.CREATED;
+        this.totalAmount = totalAmount;
+        this.discountAmount = 0L;
+        this.issuedCouponId = issuedCouponId;
         this.paymentAmount = totalAmount;
     }
 
@@ -40,6 +71,8 @@ public class Order extends BaseEntity {
             this.discountAmount = discountAmount;
             paymentAmount = totalAmount - discountAmount;
         }
+
+        log.info("totalAmount");
     }
 
     public Order pay() {

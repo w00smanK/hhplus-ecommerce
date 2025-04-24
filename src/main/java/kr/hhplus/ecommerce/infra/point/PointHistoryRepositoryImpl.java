@@ -1,16 +1,27 @@
-//package kr.hhplus.ecommerce.infra.point;
-//
-//import kr.hhplus.ecommerce.domain.point.PointHistoryRepository;
-//import kr.hhplus.ecommerce.domain.point.entity.PointHistory;
-//import org.springframework.stereotype.Component;
-//
-//import java.util.Optional;
-//
-//@Component
-//public class PointHistoryRepositoryImpl implements PointHistoryRepository {
-//
-//    @Override
-//    public PointHistory save(PointHistory pointHistory) {
-//        return null;
-//    }
-//}
+package kr.hhplus.ecommerce.infra.point;
+
+import kr.hhplus.ecommerce.domain.point.PointHistoryRepository;
+import kr.hhplus.ecommerce.domain.point.entity.PointHistory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Component
+@RequiredArgsConstructor
+public class PointHistoryRepositoryImpl implements PointHistoryRepository {
+
+    private final PointHistoryJpaRepository pointHistoryRepository;
+
+    @Override
+    public PointHistory save(PointHistory history) {
+        pointHistoryRepository.save(history);
+        return history;
+    }
+
+    @Override
+    public List<PointHistory> findByUserId(Long userId) {
+        return pointHistoryRepository.findByPointId(userId);
+    }
+
+}

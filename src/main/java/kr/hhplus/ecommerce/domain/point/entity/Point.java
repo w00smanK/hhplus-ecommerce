@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 @Entity(name = "user_point")
 @Getter
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@Table(name = "point", indexes = {
+        @Index(name = "idx_user_id", columnList = "user_id")
+})
 public class Point extends BaseEntity {
 
     public static final int MAX_CHARGE_AMOUNT = 1000000;
@@ -54,6 +57,16 @@ public class Point extends BaseEntity {
         }
 
         this.account -= account;
+    }
+
+    public Point reduce(Long amount) throws Exception {
+        if (this.account < amount) {
+            throw new Exception("잔액이 부족합니다.");
+        }
+
+        this.account -= amount;
+
+        return this;
     }
 
     public boolean isNew() {

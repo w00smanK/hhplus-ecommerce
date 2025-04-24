@@ -1,46 +1,52 @@
 package kr.hhplus.ecommerce.interfaces.product;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
+import kr.hhplus.ecommerce.application.product.dto.ProductResult;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-@Getter
-@RequiredArgsConstructor
 public class ProductResponse {
 
-    private Long productId;
-    private String name;
-    private String brand;
-    private int price;
-    private int stock;
-    private List<StockQuantity> stockQuantities;
+    public record ProductList(List<ProductDetail> products) {
+        public static ProductList from(ProductResult.ProductList productList) {
+            List<ProductDetail> mapped = productList.products().stream()
+                    .map(ProductDetail::from)
+                    .toList();
+            return new ProductList(mapped);
+        }
+    }
 
-    @Getter
-    @AllArgsConstructor
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    public static class StockQuantity {
-        private String size;
-        private int quantity;
-    }
-    public ProductResponse toSummary() {
-        return ProductResponse.builder()
-                .id(this.productId)
-                .name(this.name)
-                .build();
-    }
     @Builder
-    private ProductResponse(Long id, String name, String brand,int price, int stock, List<StockQuantity> stockQuantities) {
-        this.productId = id;
-        this.name = name;
-        this.brand=brand;
-        this.price = price;
-        this.stock = stock;
-        this.stockQuantities = stockQuantities;
+    public record ProductDetail(
+            Long productId,
+            String brand,
+            String name,
+            List<Option> options
+    ) {
+        public static ProductDetail from(ProductResult.ProductDetail product) {
+            return ProductDetail.builder()
+                    .productId(product.productId())
+                    .brand(product.brand())
+                    .name(product.name())
+                    .options(product.options().stream().map(Option::from).toList())
+                    .build();
+        }
     }
 
-
+    @Builder
+    public record Option(
+            Long optionId,
+            String optionValue,
+            Long price,
+            Long stock
+    ) {
+        public static Option from(ProductResult.Option option) {
+            return Option.builder()
+                    .optionId(option.optionId())
+                    .optionValue(option.optionValue())
+                    .price(option.price())
+                    .stock(option.stock())
+                    .build();
+        }
+    }
 }

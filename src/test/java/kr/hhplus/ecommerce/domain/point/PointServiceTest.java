@@ -1,10 +1,10 @@
 package kr.hhplus.ecommerce.domain.point;
 
 
+import kr.hhplus.ecommerce.MockTestSupport;
 import kr.hhplus.ecommerce.domain.point.dto.PointCommand;
 import kr.hhplus.ecommerce.domain.point.entity.Point;
 import kr.hhplus.ecommerce.domain.user.entity.User;
-import kr.hhplus.ecommerce.support.MockTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,8 @@ import org.mockito.Mock;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 

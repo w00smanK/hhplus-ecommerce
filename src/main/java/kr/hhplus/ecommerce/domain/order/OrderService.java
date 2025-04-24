@@ -1,6 +1,5 @@
 package kr.hhplus.ecommerce.domain.order;
 
-
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
 import kr.hhplus.ecommerce.config.exception.Exception;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
@@ -8,11 +7,12 @@ import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
 import kr.hhplus.ecommerce.domain.order.entity.Order;
 import kr.hhplus.ecommerce.domain.order.entity.OrderItem;
 import kr.hhplus.ecommerce.domain.order.entity.OrderStatus;
-import kr.hhplus.ecommerce.domain.order.repository.OrderItemRepository;
-import kr.hhplus.ecommerce.domain.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,39 +28,36 @@ public class OrderService {
                 .mapToLong(item -> item.unitPrice() * item.quantity())
                 .sum();
 
-        Order order = Order.builder()
-                .userId(command.userId())
-                .issuedCouponId(command.issuedCouponId())
-                .totalAmount(totalAmount)
-                .build();
+        Order order = new Order(command.userId(), totalAmount);
 
         Order savedOrder = orderRepository.save(order);
 
         command.orderItems().forEach(item -> {
-                    OrderItem orderItem = OrderItem.builder()
-                            .orderId(savedOrder.getId())
-                            .productOptionId(item.productOptionId())
-                            .unitPrice(item.unitPrice())
-                            .quantity(item.quantity())
-                            .build();
-                    orderItemRepository.save(orderItem);
+                    orderItemRepository.save(
+                            new OrderItem(
+                                    savedOrder.getId(),
+                                    item.productOptionId(),
+                                    item.unitPrice(),
+                                    item.quantity()
+                            ));
                 }
         );
 
-        return OrderInfo.Create.builder()
-                .orderId(order.getId())
-                .userId(order.getUserId())
-                .status(order.getStatus())
-                .totalAmount(order.getTotalAmount())
-                .discountAmount(order.getDiscountAmount())
-                .paymentAmount(order.getPaymentAmount())
-                .build();
+        return new OrderInfo.Create(
+                order.getId(),
+                order.getUserId(),
+                order.getIssuedCouponId(),
+                order.getStatus(),
+                order.getTotalAmount(),
+                order.getDiscountAmount(),
+                order.getPaymentAmount()
+        );
     }
 
     @Transactional
     public void holdOrder(OrderCommand.HoldOrder command) {
 
-        OrderItem orderItem = orderItemRepository.findByProductOptionId(command.productOptionId())
+        OrderItem orderItem = orderItemRepository.findByOrderIdAndProductOptionId(command.orderId(), command.productOptionId())
                 .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
 
         orderItem.holdStatus();
@@ -69,20 +66,24 @@ public class OrderService {
     @Transactional
     public OrderInfo.Create useCoupon(OrderCommand.UseCoupon command) {
 
+        if (command.couponId() == null) {
+            return null;
+        }
+
         Order order = orderRepository.findById(command.orderId())
                 .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
 
         order.useCoupon(command.couponId(), command.discountPrice());
 
-        return OrderInfo.Create.builder()
-                .orderId(order.getId())
-                .userId(order.getUserId())
-                .issuedCouponId(order.getIssuedCouponId())
-                .status(order.getStatus())
-                .totalAmount(order.getTotalAmount())
-                .discountAmount(order.getDiscountAmount())
-                .paymentAmount(order.getPaymentAmount())
-                .build();
+        return new OrderInfo.Create(
+                order.getId(),
+                order.getUserId(),
+                order.getIssuedCouponId(),
+                order.getStatus(),
+                order.getTotalAmount(),
+                order.getDiscountAmount(),
+                order.getPaymentAmount()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -107,6 +108,12 @@ public class OrderService {
         return order.pay();
     }
 
+    @Transactional(readOnly = true)
+    public List<OrderInfo.Best> findBestSelling(OrderCommand.FindBest command) {
+        return orderItemRepository.findBestSelling(command.days(), command.limit());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendOrder(OrderCommand.Send build) {
         // 주문 정보 전송 비돟기 처리
     }

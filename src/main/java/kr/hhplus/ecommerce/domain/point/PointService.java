@@ -1,8 +1,10 @@
 package kr.hhplus.ecommerce.domain.point;
 
+import kr.hhplus.ecommerce.config.exception.ErrorCode;
 import kr.hhplus.ecommerce.domain.point.dto.PointCommand;
 import kr.hhplus.ecommerce.domain.point.entity.Point;
 import kr.hhplus.ecommerce.domain.point.entity.PointHistory;
+import kr.hhplus.ecommerce.domain.point.entity.TransactionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,11 +23,17 @@ public class PointService {
                 .orElse(Point.empty(command.getUserId()));
 
         point.charge(command.getAmount());
-        PointHistory pointHistory = PointHistory.ChargeHistory(command.getUserId(), command.getAmount());
-        pointHistoryRepository.save(pointHistory); // save point history
+
+        pointHistoryRepository.save(new PointHistory(point.getId(), command.getAmount(), TransactionType.CHARGE));
 
         // history 여부
         return point;
+    }
+
+    @Transactional(readOnly = true)
+    public Point findPoint(PointCommand.Find command) {
+        return pointRepository.findBy(command.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("포인트 정보가 없습니다."));
     }
 
     @Transactional
@@ -35,5 +43,17 @@ public class PointService {
         point.use(command.getAmount());
 
         return point;
+    }
+
+    @Transactional
+    public Point reduce(PointCommand.Reduce command) throws Exception {
+
+        Point point = pointRepository.findBy(command.userId())
+                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND.getMessage()));
+
+
+        pointHistoryRepository.save(new PointHistory(point.getUserId(), command.issuedCouponId(), command.paymentAmount(), TransactionType.USE));
+
+        return point.reduce(command.paymentAmount());
     }
 }

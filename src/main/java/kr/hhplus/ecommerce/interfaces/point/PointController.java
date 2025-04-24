@@ -1,40 +1,29 @@
 package kr.hhplus.ecommerce.interfaces.point;
 
+import kr.hhplus.ecommerce.application.point.PointFacade;
+import kr.hhplus.ecommerce.application.point.dto.PointCriteria;
+import kr.hhplus.ecommerce.application.point.dto.PointResult;
+import kr.hhplus.ecommerce.interfaces.common.StatusResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import jakarta.validation.Valid;
-import kr.hhplus.ecommerce.interfaces.presentation.request.AccountUpdateRequest;
-import kr.hhplus.ecommerce.interfaces.presentation.response.StatusResponse;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+@RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/users")
-public class PointController {
+@RequestMapping("/api/v1/points")
+public class PointController implements PointApi {
 
-    /**
-     * 1. 잔액 충전 API
-     */
-    @Operation(summary = "잔액 충전", description = "사용자의 잔액을 충전합니다.")
-    @ApiResponse(responseCode = "200", description = "충전 성공")
-    @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
-    @PostMapping("/{userId}/account")
-    public ResponseEntity<StatusResponse<AccountResponse>> updateAccount(@PathVariable("userId") Long id, @Valid @RequestBody AccountUpdateRequest req) {
-        AccountResponse data = AccountResponse.of(id, req.getAmount());
+    private final PointFacade pointFacade;
 
-        return ResponseEntity.ok(StatusResponse.of(200, "OK", data));
+    @Override
+    public StatusResponse<PointResponse.UserPoint> getUserPoint(Long userId) {
+        PointResult.UserPoint result = pointFacade.findPoint(PointCriteria.Find.of(userId));
+        return StatusResponse.of(200, "OK", PointResponse.UserPoint.from(result));
     }
 
-    /**
-     * 2. 잔액 조회 API
-     */
-    @Operation(summary = "잔액 조회", description = "사용자의 현재 잔액을 조회합니다.")
-    @ApiResponse(responseCode = "200", description = "잔액 조회 성공")
-    @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
-    @GetMapping("/{userId}/account")
-    public ResponseEntity<StatusResponse<AccountResponse>>getAccount(@PathVariable("userId") Long id) {
-        AccountResponse data = AccountResponse.of(id, 1000L);
-        return ResponseEntity.ok(StatusResponse.of(200, "OK", data));
+    @Override
+    public StatusResponse<PointResponse.UserPoint> chargePoint(PointRequest.Charge request) {
+        PointResult.UserPoint result = pointFacade.charge(PointCriteria.Charge.of(request.userId(), request.amount()));
+        return StatusResponse.of(200, "OK", PointResponse.UserPoint.from(result));
     }
 }

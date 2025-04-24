@@ -20,21 +20,19 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("ProductService 단위 테스트")
+@DisplayName("상품")
 class ProductServiceTest {
-
-    @Mock
-    private ProductRepository productRepository;
-
-    @Mock
-    private ProductStockRepository productStockRepository;
 
     @InjectMocks
     ProductService productService;
-
+    @Mock
+    private ProductRepository productRepository;
+    @Mock
+    private ProductStockRepository productStockRepository;
     private Long PRODUCT_ID1;
     private Product PRODUCT1;
     private ProductStock PRODUCT_OPTION1;
@@ -48,12 +46,12 @@ class ProductServiceTest {
     void setUp() {
         PRODUCT_ID1 = 1L;
         PRODUCT1 = new Product(PRODUCT_ID1, "NIKE", "에어포스 1");
-        PRODUCT_OPTION1 = new ProductStock(101L, "화이트/270", 129000L, 50);
-        PRODUCT_OPTION2 = new ProductStock(102L, "블랙/275", 129000L, 45);
+        PRODUCT_OPTION1 = new ProductStock(101L, "화이트/270", 129000L, 50L);
+        PRODUCT_OPTION2 = new ProductStock(102L, "블랙/275", 129000L, 45L);
 
         PRODUCT_ID2 = 2L;
         PRODUCT2 = new Product(PRODUCT_ID2, "NIKE", "에어맥스 97");
-        PRODUCT_OPTION3 = new ProductStock(201L, "실버/270", 189000L, 30);
+        PRODUCT_OPTION3 = new ProductStock(201L, "실버/270", 189000L, 30L);
     }
 
     @Test
@@ -122,8 +120,8 @@ class ProductServiceTest {
         @DisplayName("재고 충분 - 차감 성공")
         void enoughStock() {
             List<OrderCommand.OrderItem> items = List.of(
-                    new OrderCommand.OrderItem(101L, 129000L, 5),
-                    new OrderCommand.OrderItem(102L, 129000L, 3)
+                    new OrderCommand.OrderItem(101L, 129000L, 5L),
+                    new OrderCommand.OrderItem(102L, 129000L, 3L)
             );
 
             when(productStockRepository.findById(101L)).thenReturn(Optional.of(PRODUCT_OPTION1));
@@ -134,17 +132,17 @@ class ProductServiceTest {
             verify(productStockRepository).findById(101L);
             verify(productStockRepository).findById(102L);
 
-            assertThat(result.getCheckStocks()).hasSize(2);
-            assertThat(result.getCheckStocks().get(0).isEnough()).isTrue();
-            assertThat(result.getCheckStocks().get(1).isEnough()).isTrue();
+            assertThat(result.checkStocks()).hasSize(2);
+            assertThat(result.checkStocks().get(0).isEnough()).isTrue();
+            assertThat(result.checkStocks().get(1).isEnough()).isTrue();
         }
 
         @Test
         @DisplayName("재고 부족 - 일부 실패")
         void notEnoughStock() {
             List<OrderCommand.OrderItem> items = List.of(
-                    new OrderCommand.OrderItem(101L, 129000L, 49),
-                    new OrderCommand.OrderItem(102L, 129000L, 46) // 재고는 45
+                    new OrderCommand.OrderItem(101L, 129000L, 49L),
+                    new OrderCommand.OrderItem(102L, 129000L, 46L) // 재고는 45
             );
 
             when(productStockRepository.findById(101L)).thenReturn(Optional.of(PRODUCT_OPTION1));
@@ -155,9 +153,9 @@ class ProductServiceTest {
             verify(productStockRepository).findById(101L);
             verify(productStockRepository).findById(102L);
 
-            assertThat(result.getCheckStocks()).hasSize(2);
-            assertThat(result.getCheckStocks().get(0).isEnough()).isTrue();
-            assertThat(result.getCheckStocks().get(1).isEnough()).isFalse();
+            assertThat(result.checkStocks()).hasSize(2);
+            assertThat(result.checkStocks().get(0).isEnough()).isTrue();
+            assertThat(result.checkStocks().get(1).isEnough()).isFalse();
         }
     }
 }

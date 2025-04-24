@@ -1,13 +1,14 @@
 package kr.hhplus.ecommerce.domain.point;
 
 import kr.hhplus.ecommerce.domain.point.entity.Point;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-@Repository
+
+@Component
 public interface PointRepository {
-    Optional<Point> findBy(Long userId);
+    Optional<Point> findBy(Long id);
 
     Point save(Point point);
 }

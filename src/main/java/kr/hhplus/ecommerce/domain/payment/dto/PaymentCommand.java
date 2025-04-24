@@ -1,18 +1,16 @@
 package kr.hhplus.ecommerce.domain.payment.dto;
 
-import lombok.Builder;
-
 public record PaymentCommand() {
 
-    @Builder
+
     public record Save(
             Long orderId,
             Long amount
     ) {
     }
 
-    public record Find(
-            Long paymentId
+    public record FindOrder(
+            Long orderId
     ) {
     }
 

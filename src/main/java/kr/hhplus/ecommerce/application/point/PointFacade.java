@@ -8,7 +8,6 @@ import kr.hhplus.ecommerce.domain.point.entity.Point;
 import kr.hhplus.ecommerce.domain.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -19,11 +18,15 @@ public class PointFacade {
 
     public PointResult.UserPoint charge(PointCriteria.Charge criteria) {
 
-        userService.getUser(criteria.getUserId());
         PointCommand.Charge command = criteria.toCommand();
         Point point = pointService.charge(command);
 
         return PointResult.UserPoint.from(point);
+    }
+
+    public PointResult.UserPoint findPoint(PointCriteria.Find criteria) {
+
+        return PointResult.UserPoint.from(pointService.findPoint(criteria.toCommand()));
     }
 
 }

@@ -16,4 +16,6 @@ public record CouponResult() {
             LocalDateTime expiredAt
     ) {
     }
+
+
 }

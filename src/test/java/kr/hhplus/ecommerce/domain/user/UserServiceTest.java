@@ -1,8 +1,8 @@
 package kr.hhplus.ecommerce.domain.user;
 
-import kr.hhplus.ecommerce.domain.user.dto.UserInfo;
+import kr.hhplus.ecommerce.MockTestSupport;
+import kr.hhplus.ecommerce.domain.user.dto.UserCommand;
 import kr.hhplus.ecommerce.domain.user.entity.User;
-import kr.hhplus.ecommerce.support.MockTestSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -31,7 +31,7 @@ class UserServiceTest extends MockTestSupport {
                 .thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> userService.getUser(1L))
+        assertThatThrownBy(() -> userService.findByUserId(UserCommand.Find.from(1L)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("사용자가 존재하지 않습니다.");
     }
@@ -49,10 +49,10 @@ class UserServiceTest extends MockTestSupport {
                 .thenReturn(Optional.of(user));
 
         // when
-        UserInfo.User result = userService.getUser(1L);
+        User result = userService.findByUserId(UserCommand.Find.from(1L));
 
         // then
-        assertThat(result.getUserId()).isEqualTo(user.getId());
-        assertThat(result.getUsername()).isEqualTo(user.getName());
+        assertThat(result.getId()).isEqualTo(user.getId());
+        assertThat(result.getName()).isEqualTo(user.getName());
     }
 }

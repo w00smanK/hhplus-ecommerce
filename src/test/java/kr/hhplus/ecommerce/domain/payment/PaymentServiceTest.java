@@ -1,10 +1,11 @@
 package kr.hhplus.ecommerce.domain.payment;
 
+
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
+import kr.hhplus.ecommerce.config.exception.Exception;
 import kr.hhplus.ecommerce.domain.payment.dto.PaymentCommand;
 import kr.hhplus.ecommerce.domain.payment.entity.Payment;
 import kr.hhplus.ecommerce.domain.payment.entity.PaymentStatus;
-import kr.hhplus.ecommerce.domain.payment.repository.PaymentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("PaymentService 단위 테스트")
+@DisplayName("PaymentService")
 class PaymentServiceTest {
 
     @Mock
@@ -30,84 +31,84 @@ class PaymentServiceTest {
     @InjectMocks
     private PaymentService paymentService;
 
-    private Long USER_ID;
-    private Long PAYMENT_ID;
-    private Long ORDER_ID;
     private Payment PAYMENT;
 
     @BeforeEach
     void setUp() {
-        USER_ID = 1L;
-        PAYMENT_ID = 1L;
-        ORDER_ID = 100L;
-
-        PAYMENT = Payment.builder()
-                .id(PAYMENT_ID)
-                .orderId(ORDER_ID)
-                .status(PaymentStatus.PENDING)
-                .build();
+        PAYMENT = new Payment(100L, 100_000L);
     }
 
     @Nested
-    @DisplayName("결제 조회")
+    @DisplayName("조회")
     class Find {
 
         @Test
-        @DisplayName("결제 조회 성공")
-        void success() {
-            Payment payed = PAYMENT.pay(1000L);
+        @DisplayName("성공")
+        void success() throws java.lang.Exception {
+            when(paymentRepository.findByOrderId(anyLong())).thenReturn(Optional.of(PAYMENT));
 
-            when(paymentRepository.findById(PAYMENT_ID)).thenReturn(Optional.of(payed));
+            Payment result = paymentService.findPayment(new PaymentCommand.FindOrder(anyLong()));
 
-            Payment result = paymentService.findPayment(new PaymentCommand.Find(PAYMENT_ID));
-
-            verify(paymentRepository, times(1)).findById(PAYMENT_ID);
-            assertThat(result).isNotNull();
-            assertThat(result.getId()).isEqualTo(PAYMENT_ID);
-            assertThat(result.getStatus()).isEqualTo(PaymentStatus.PAYED);
+            verify(paymentRepository).findByOrderId(anyLong());
+            assertThat(result.getOrderId()).isEqualTo(100L);
+            assertThat(result.getAmount()).isEqualTo(100_000L);
+            assertThat(result.getStatus()).isEqualTo(PaymentStatus.WAITING);
+            assertThat(result.getPaidAt()).isNull();
         }
 
         @Test
-        @DisplayName("결제 조회 실패 - 존재하지 않음")
-        void notFound() {
-            when(paymentRepository.findById(PAYMENT_ID)).thenReturn(Optional.empty());
+        @DisplayName("실패 - 없음")
+        void fail_notFound() {
+            when(paymentRepository.findByOrderId(anyLong())).thenReturn(Optional.empty());
 
             Exception ex = assertThrows(Exception.class,
-                    () -> paymentService.findPayment(new PaymentCommand.Find(PAYMENT_ID)));
+                    () -> paymentService.findPayment(new PaymentCommand.FindOrder(anyLong())));
 
-            verify(paymentRepository).findById(PAYMENT_ID);
-            assertThat(ex.getMessage()).isEqualTo(ErrorCode.NOT_FOUND.getMessage());
+            verify(paymentRepository).findByOrderId(anyLong());
+            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
         }
     }
 
     @Nested
-    @DisplayName("결제 처리")
+    @DisplayName("처리")
     class Pay {
 
         @Test
-        @DisplayName("결제 성공")
-        void success() {
-            when(paymentRepository.findById(PAYMENT_ID)).thenReturn(Optional.of(PAYMENT));
+        @DisplayName("성공 - 전액")
+        void full() throws java.lang.Exception {
+            when(paymentRepository.findById(anyLong())).thenReturn(Optional.of(PAYMENT));
 
-            Payment result = paymentService.pay(new PaymentCommand.Pay(PAYMENT_ID, 10000L));
+            Payment result = paymentService.pay(new PaymentCommand.Pay(anyLong(), 100_000L));
 
-            verify(paymentRepository, times(1)).findById(PAYMENT_ID);
-            assertThat(result.getId()).isEqualTo(PAYMENT_ID);
+            verify(paymentRepository).findById(anyLong());
             assertThat(result.getStatus()).isEqualTo(PaymentStatus.PAYED);
-            assertThat(result.getAmount()).isEqualTo(10000L);
+            assertThat(result.getAmount()).isZero();
             assertThat(result.getPaidAt()).isNotNull();
         }
 
         @Test
-        @DisplayName("결제 실패 - 존재하지 않음")
-        void notFound() {
-            when(paymentRepository.findById(PAYMENT_ID)).thenReturn(Optional.empty());
+        @DisplayName("성공 - 일부")
+        void partial() throws java.lang.Exception {
+            when(paymentRepository.findById(anyLong())).thenReturn(Optional.of(PAYMENT));
+
+            Payment result = paymentService.pay(new PaymentCommand.Pay(anyLong(), 50_000L));
+
+            verify(paymentRepository).findById(anyLong());
+            assertThat(result.getStatus()).isEqualTo(PaymentStatus.WAITING);
+            assertThat(result.getAmount()).isEqualTo(50_000L);
+            assertThat(result.getPaidAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("실패 - 없음")
+        void fail_notFound() {
+            when(paymentRepository.findById(anyLong())).thenReturn(Optional.empty());
 
             Exception ex = assertThrows(Exception.class,
-                    () -> paymentService.pay(new PaymentCommand.Pay(PAYMENT_ID, 10000L)));
+                    () -> paymentService.pay(new PaymentCommand.Pay(anyLong(), 10_000L)));
 
-            verify(paymentRepository).findById(PAYMENT_ID);
-            assertThat(ex.getMessage()).isEqualTo(ErrorCode.NOT_FOUND.getMessage());
+            verify(paymentRepository).findById(anyLong());
+            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
         }
     }
 }

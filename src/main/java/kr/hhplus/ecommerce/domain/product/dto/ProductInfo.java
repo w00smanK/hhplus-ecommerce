@@ -2,7 +2,10 @@ package kr.hhplus.ecommerce.domain.product.dto;
 
 import kr.hhplus.ecommerce.domain.product.entity.Product;
 import kr.hhplus.ecommerce.domain.product.entity.ProductStock;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,21 +48,15 @@ public class ProductInfo {
         }
     }
 
-    @Getter
-    @Builder
-    public static class StockStatus {
-        private final Long stockId;
-        private final boolean isEnough;
-        private final Integer requestQuantity;
-        private final Integer remainingQuantity;
+
+    public record StockStatus(
+            Long stockId,
+            boolean isEnough,
+            Long requestQuantity,
+            Long remainingQuantity
+    ) {
     }
 
-    @Getter
-    public static class StockCheckResult {
-        private final List<StockStatus> checkStocks;
-
-        public StockCheckResult(List<StockStatus> checkStocks) {
-            this.checkStocks = checkStocks;
-        }
+    public record StockCheckResult(List<StockStatus> checkStocks) {
     }
 }

@@ -10,33 +10,36 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class PointHistory extends BaseEntity {
 
+    public static Object TransactionType;
     @Id
     @Column(name = "point_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @Column
     private long userId;
+    @Column
+    private Long issuedCouponId;
+    @Column
     private long amount;
 
     @Enumerated(EnumType.STRING)
-    private Type type;
+    private TransactionType type;
 
-    public PointHistory(long userId, long amount, Type type) {
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TransactionType transactionType;
+
+    public PointHistory(Long userId, Long amount, TransactionType type) {
         this.userId = userId;
         this.amount = amount;
         this.type = type;
     }
 
-    public static PointHistory ChargeHistory(long userId, long amount) {
-        return new PointHistory(userId, amount, Type.CHARGE);
-    }
-
-    public static PointHistory UseHistory(long userId, long amount) {
-        return new PointHistory(userId, amount, Type.USE);
-    }
-
-    public enum Type {
-        CHARGE, USE
+    public PointHistory(Long userId, Long issuedCouponId, Long amount, TransactionType transactionType) {
+        this.userId = userId;
+        this.issuedCouponId = issuedCouponId;
+        this.amount = amount;
+        this.transactionType = transactionType;
     }
 
 }
