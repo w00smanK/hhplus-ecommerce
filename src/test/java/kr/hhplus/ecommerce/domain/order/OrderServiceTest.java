@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.domain.order;
 
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
-import kr.hhplus.ecommerce.config.exception.Exception;
+import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
@@ -93,13 +93,13 @@ class OrderServiceTest {
 
         OrderItem orderItem = new OrderItem(1L, 1L, 1000L, 100L);
 
-        when(orderItemRepository.findByOrderIdAndProductOptionId(1L, productOptionId)).thenReturn(Optional.of(orderItem));
+        when(orderItemRepository.findByOrderAndOption(1L, productOptionId)).thenReturn(Optional.of(orderItem));
 
         // Act
         orderService.holdOrder(command);
 
         // Assert
-        verify(orderItemRepository, times(1)).findByOrderIdAndProductOptionId(1L, productOptionId);
+        verify(orderItemRepository, times(1)).findByOrderAndOption(1L, productOptionId);
         assertEquals(OrderStatus.PENDING, orderItem.getStatus());
     }
 
@@ -138,12 +138,12 @@ class OrderServiceTest {
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.empty());
 
         // Act
-        Exception exception = assertThrows(Exception.class,
+        CustomException customException = assertThrows(CustomException.class,
                 () -> orderService.pay(new OrderCommand.Find(ORDER_ID)));
 
         // Assert
         verify(orderRepository).findById(ORDER_ID);
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+        assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
     }
 
     @Test
@@ -179,7 +179,7 @@ class OrderServiceTest {
         void useCoupon_couponIsNull() {
 
             // Arrange
-            CouponInfo.CouponAggregate couponInfo = new CouponInfo.CouponAggregate(null, null, null, null, null);
+            CouponInfo.CouponStock couponInfo = new CouponInfo.CouponStock(null, null, null, null, null);
             OrderCommand.UseCoupon command = new OrderCommand.UseCoupon(ORDER_ID, couponInfo.couponId(), couponInfo.discountPrice());
 
             // Act
@@ -287,12 +287,12 @@ class OrderServiceTest {
             when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.empty());
 
             // Act
-            Exception exception = assertThrows(Exception.class,
+            CustomException customException = assertThrows(CustomException.class,
                     () -> orderService.findById(new OrderCommand.Find(ORDER_ID)));
 
             // Assert
             verify(orderRepository).findById(ORDER_ID);
-            assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+            assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
         }
     }
 }

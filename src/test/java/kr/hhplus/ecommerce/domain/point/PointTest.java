@@ -53,7 +53,7 @@ class PointTest {
     @Test
     void chargeExceedsMaxBalance() {
         // given
-        Point point = new Point(1L, USER_ID, Point.MAX_AMOUNT);
+        Point point = new Point( USER_ID, Point.MAX_AMOUNT);
         long extraCharge = 1L;
 
         // expect
@@ -66,7 +66,7 @@ class PointTest {
     @Test
     void usePoint() {
         // given
-        Point point = new Point(1L, USER_ID, 10000L);
+        Point point = new Point(USER_ID, 10000L);
         long useAmount = 3000L;
 
         // when
@@ -80,7 +80,7 @@ class PointTest {
     @Test
     void useMoreThanBalanceThrows() {
         // given
-        Point point = new Point(1L, USER_ID, 1_000L);
+        Point point = new Point(USER_ID, 1_000L);
         long useAmount = 2_000L;
 
         // expect
@@ -93,7 +93,7 @@ class PointTest {
     @Test
     void hasId_isNotNew() {
         // given
-        Point point = new Point(1L, USER_ID, 0L);
+        Point point = new Point(USER_ID, 0L);
 
         // then
         assertThat(point.isNew()).isFalse();

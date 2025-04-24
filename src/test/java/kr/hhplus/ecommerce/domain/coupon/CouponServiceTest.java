@@ -76,14 +76,14 @@ class CouponServiceTest {
             when(couponRepository.findById(COUPON_ID)).thenReturn(Optional.of(COUPON));
             when(issuedCouponRepository.findByUserIdAndCouponId(USER_ID, COUPON_ID)).thenReturn(Optional.of(ISSUED_COUPON));
 
-            CouponInfo.CouponAggregate actualInfo = couponService.use(COMMAND);
+            CouponInfo.CouponStock use = couponService.use(COMMAND);
 
             verify(couponRepository, times(1)).findById(COUPON_ID);
             verify(issuedCouponRepository, times(1)).findByUserIdAndCouponId(USER_ID, COUPON_ID);
 
-            assertThat(actualInfo.status()).isEqualTo(CouponStatus.USED);
-            assertThat(actualInfo.usedAt()).isNotNull();
-            assertThat(actualInfo.couponId()).isEqualTo(COUPON_ID);
+            assertThat(use.status()).isEqualTo(CouponStatus.USED);
+            assertThat(use.usedAt()).isNotNull();
+            assertThat(use.couponId()).isEqualTo(COUPON_ID);
         }
 
         @Test
@@ -141,12 +141,12 @@ class CouponServiceTest {
         void issue_ok() {
             when(couponRepository.findById(COUPON_ID)).thenReturn(Optional.of(COUPON));
 
-            Coupon actual = couponService.issue(new CouponCommand.Issue(USER_ID, COUPON_ID));
+            couponService.issue(new CouponCommand.Issue(USER_ID, COUPON_ID));
 
             verify(couponRepository, times(1)).findById(COUPON_ID);
-            assertThat(actual.getId()).isEqualTo(COUPON_ID);
-            assertThat(actual.getDiscountPrice()).isEqualTo(1000L);
-            assertThat(actual.getQuantity()).isEqualTo(99);
+            assertThat(COUPON.getId()).isEqualTo(COUPON_ID);
+            assertThat(COUPON.getDiscountPrice()).isEqualTo(1000L);
+            assertThat(COUPON.getQuantity()).isEqualTo(99);
         }
 
         @Test

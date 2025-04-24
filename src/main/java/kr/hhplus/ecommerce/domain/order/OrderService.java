@@ -1,13 +1,14 @@
 package kr.hhplus.ecommerce.domain.order;
 
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
-import kr.hhplus.ecommerce.config.exception.Exception;
+import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
 import kr.hhplus.ecommerce.domain.order.entity.Order;
 import kr.hhplus.ecommerce.domain.order.entity.OrderItem;
 import kr.hhplus.ecommerce.domain.order.entity.OrderStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,19 +17,22 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
 
+    // 주문 오더 생성
     @Transactional
     public OrderInfo.Create createOrder(OrderCommand.Create command) {
 
         Long totalAmount = command.orderItems().stream()
-                .mapToLong(item -> item.unitPrice() * item.quantity())
+                .mapToLong(item -> item.price() * item.quantity())
                 .sum();
-
+        // 주문 총 금액 계산
         Order order = new Order(command.userId(), totalAmount);
+
 
         Order savedOrder = orderRepository.save(order);
 
@@ -37,7 +41,7 @@ public class OrderService {
                             new OrderItem(
                                     savedOrder.getId(),
                                     item.productOptionId(),
-                                    item.unitPrice(),
+                                    item.price(),
                                     item.quantity()
                             ));
                 }
@@ -57,8 +61,8 @@ public class OrderService {
     @Transactional
     public void holdOrder(OrderCommand.HoldOrder command) {
 
-        OrderItem orderItem = orderItemRepository.findByOrderIdAndProductOptionId(command.orderId(), command.productOptionId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+        OrderItem orderItem = orderItemRepository.findByOrderAndOption(command.orderId(), command.productOptionId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         orderItem.holdStatus();
     }
@@ -71,7 +75,7 @@ public class OrderService {
         }
 
         Order order = orderRepository.findById(command.orderId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         order.useCoupon(command.couponId(), command.discountPrice());
 
@@ -90,10 +94,10 @@ public class OrderService {
     public Order findById(OrderCommand.Find command) {
 
         Order order = orderRepository.findById(command.orderId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         if (order.getStatus() != OrderStatus.PAYED) {
-            throw new Exception(ErrorCode.BAD_REQUEST);
+            throw new CustomException(ErrorCode.BAD_REQUEST);
         }
 
         return order;
@@ -103,7 +107,7 @@ public class OrderService {
     public Order pay(OrderCommand.Find command) {
 
         Order order = orderRepository.findById(command.orderId())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         return order.pay();
     }

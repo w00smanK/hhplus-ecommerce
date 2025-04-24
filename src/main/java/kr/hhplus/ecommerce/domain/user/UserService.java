@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.domain.user;
 
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
-import kr.hhplus.ecommerce.config.exception.Exception;
+import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.domain.user.dto.UserCommand;
 import kr.hhplus.ecommerce.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +17,6 @@ public class UserService {
     @Transactional(readOnly = true)
     public User findByUserId(UserCommand.Find command) {
         return userRepository.findById(command.id())
-                .orElseThrow(() -> new Exception(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
     }
 }

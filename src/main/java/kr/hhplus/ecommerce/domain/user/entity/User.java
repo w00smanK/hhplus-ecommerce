@@ -17,8 +17,7 @@ public class User extends BaseEntity {
     private String name;
 
     @Builder
-    public User(Long id, String name) {
-        this.id = id;
+    public User( String name) {
         this.name = name;
     }
 

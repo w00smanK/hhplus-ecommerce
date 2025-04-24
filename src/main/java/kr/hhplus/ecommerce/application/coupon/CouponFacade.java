@@ -17,9 +17,7 @@ public class CouponFacade {
 
     public CouponResult.Issued couponFirstIssue(CouponCriteria.Issue criteria) {
 
-        Coupon coupon = couponService.issue(criteria.toCommand());
-
-        IssuedCoupon issuedCoupon = couponService.save(new CouponCommand.Save(criteria.userId(), coupon.getId(), coupon.getDiscountPrice()));
+        IssuedCoupon issuedCoupon = couponService.issue(criteria.toCommand());
 
         return CouponResult.Issued.builder()
                 .id(issuedCoupon.getId())

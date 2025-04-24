@@ -12,12 +12,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "coupon") // 필요에 따라 생략 가능
+@Table(name = "coupon")
 public class Coupon extends BaseEntity {
 
     @Id
     @Column(name = "coupon_id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // auto increment 사용 시
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
@@ -26,6 +26,10 @@ public class Coupon extends BaseEntity {
     @Column(nullable = false)
     private Integer quantity;
 
+    public Coupon(Long discountPrice, Integer quantity) {
+        this.discountPrice = discountPrice;
+        this.quantity = quantity;
+    }
     public Integer issue() {
         return quantity--;
     }

@@ -15,7 +15,7 @@ public record OrderCommand() {
 
     public record OrderItem(
             Long productOptionId,
-            Long unitPrice,
+            Long price,
             Long quantity
     ) {
     }

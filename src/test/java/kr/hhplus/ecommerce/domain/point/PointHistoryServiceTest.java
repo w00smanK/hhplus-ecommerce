@@ -24,7 +24,7 @@ class PointHistoryServiceTest extends MockTestSupport {
 
         // then
         assertNotNull(result);
-        assertEquals(userId, result.getUserId());
+        assertEquals(userId, result.getPointId());
         assertEquals(amount, result.getAmount());
         assertEquals(TransactionType.CHARGE, result.getTransactionType());
     }
@@ -41,7 +41,7 @@ class PointHistoryServiceTest extends MockTestSupport {
 
         // then
         assertNotNull(result);
-        assertEquals(userId, result.getUserId());
+        assertEquals(userId, result.getPointId());
         assertEquals(amount, result.getAmount());
         assertEquals(TransactionType.USE, result.getTransactionType());
     }

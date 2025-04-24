@@ -38,7 +38,12 @@ class CouponServiceIntegrationTest {
     @BeforeEach
     void setUp() {
         USER_ID = 1L;
-        COUPON = couponRepository.save(new Coupon(1000L, 100L));
+        //new Coupon(null, 500L, 10) → 왜 이게 중요할까?
+        //JPA에서는 save(entity) 동작이 이렇게 달라:
+        //ID 값	동작 방식
+        //null	persist → 새로운 row 삽입 (INSERT)
+        //있음 (ex. 1000L)	merge → 기존 row 덮어쓰기 (SELECT + UPDATE)
+        COUPON = couponRepository.save(new Coupon(500L, 10));
         COUPON_ID = COUPON.getId();
         ISSUED_COUPON = issuedCouponRepository.save(new IssuedCoupon(USER_ID, COUPON_ID));
     }
@@ -47,13 +52,10 @@ class CouponServiceIntegrationTest {
     @DisplayName("[성공] 쿠폰 적용시 상태 변경 (ISSUED -> USED)")
     void useCoupon_ok() {
 
-        // Arrange
         CouponCommand.Use command = new CouponCommand.Use(USER_ID, COUPON_ID);
 
-        // Act
-        CouponInfo.CouponAggregate couponInfo = couponService.use(command);
+        couponService.use(command);
 
-        // Assert
         IssuedCoupon actual = issuedCouponRepository.findByUserIdAndCouponId(USER_ID, COUPON_ID).get();
 
         assertThat(actual.getStatus()).isEqualTo(CouponStatus.USED);
@@ -64,15 +66,13 @@ class CouponServiceIntegrationTest {
     @DisplayName("[성공] 쿠폰 발급")
     void issue_ok() {
 
-        // Arrange
-        Coupon newCoupon = couponRepository.save(new Coupon(1000L, 100L));
 
-        // Act
+        Coupon newCoupon = couponRepository.save(new Coupon(500L,10));
+
         IssuedCoupon issuedCoupon = couponService.issue(new CouponCommand.Issue(USER_ID, newCoupon.getId()));
 
-        // Assert
         Coupon coupon = couponRepository.findById(issuedCoupon.getCouponId()).get();
-        assertThat(coupon.getQuantity()).isEqualTo(99L);
+        assertThat(coupon.getQuantity()).isEqualTo(9L);
 
         IssuedCoupon actual = issuedCouponRepository.findByUserIdAndCouponId(USER_ID, issuedCoupon.getCouponId()).get();
         assertThat(actual.getCouponId()).isEqualTo(issuedCoupon.getCouponId());

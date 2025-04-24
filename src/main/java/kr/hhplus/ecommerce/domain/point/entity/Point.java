@@ -28,6 +28,11 @@ public class Point extends BaseEntity {
     private Long account;
 
     @Builder
+    public Point( Long userId, Long account) {
+        this.userId = userId;
+        this.account = account;
+    }
+
     public Point(Long id, Long userId, Long account) {
         this.id = id;
         this.userId = userId;
@@ -35,10 +40,13 @@ public class Point extends BaseEntity {
     }
 
     public static Point empty(Long userId) {
-        return new Point(null, userId, 0L);
+        return new Point(userId, 0L);
     }
 
     public void charge(Long account) {
+        if (account < 0) {
+            throw new IllegalArgumentException("충전 금액은 0보다 커야 합니다.");
+        }
         if (account > MAX_CHARGE_AMOUNT) {
             throw new IllegalArgumentException("최대 금액을 초과할 수 없습니다.");
         }

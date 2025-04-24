@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.domain.order;
 
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
-import kr.hhplus.ecommerce.config.exception.Exception;
+import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.entity.Order;
@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
-@ActiveProfiles("test")
 @DisplayName("OrderService")
 @Transactional(propagation = Propagation.NEVER)
 class OrderServiceIntegrationTest {
@@ -63,7 +61,8 @@ class OrderServiceIntegrationTest {
     void createOrder() {
         var command = new OrderCommand.Create(userId, items);
         var result = orderService.createOrder(command);
-        var order = orderRepository.findById(result.orderId()).get();
+        var order = orderRepository.findById(result.orderId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         assertThat(order.getUserId()).isEqualTo(userId);
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CREATED);
@@ -80,7 +79,7 @@ class OrderServiceIntegrationTest {
         var command = new OrderCommand.HoldOrder(result.orderId(), 1L);
         orderService.holdOrder(command);
 
-        var orderItem = orderItemRepository.findByOrderIdAndProductStockId(result.orderId(), 1L).get();
+        var orderItem = orderItemRepository.findByOrderAndOption(result.orderId(), 1L).get();
         assertThat(orderItem.getStatus()).isEqualTo(OrderStatus.PENDING);
     }
 
@@ -98,7 +97,7 @@ class OrderServiceIntegrationTest {
     @DisplayName("pay fail")
     void pay_fail() {
         var command = new OrderCommand.Find(9999L);
-        var ex = assertThrows(Exception.class, () -> orderService.pay(command));
+        var ex = assertThrows(CustomException.class, () -> orderService.pay(command));
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
     }
 
@@ -121,8 +120,8 @@ class OrderServiceIntegrationTest {
         orderItemRepository.save(new OrderItem(order2.getId(), beerA.getId(), 4000L, 40L));
         orderItemRepository.save(new OrderItem(order2.getId(), beerB.getId(), 4500L, 35L));
 
-        var result = orderService.findBestSelling(new OrderCommand.FindBest(2, 5));
-        assertThat(result.size()).isEqualTo(5);
+        var result = orderService.findBestSelling(new OrderCommand.FindBest(2, 2));
+        assertThat(result.size()).isEqualTo(2);
     }
 
     @Nested
@@ -133,7 +132,7 @@ class OrderServiceIntegrationTest {
         @DisplayName("null")
         void useCoupon_null() {
             var result = orderService.createOrder(new OrderCommand.Create(userId, items));
-            var coupon = new CouponInfo.CouponAggregate(null, null, null, null, null);
+            var coupon = new CouponInfo.CouponStock(null, null, null, null, null);
             var command = new OrderCommand.UseCoupon(result.orderId(), coupon.couponId(), coupon.discountPrice());
             var actual = orderService.useCoupon(command);
 
@@ -185,8 +184,8 @@ class OrderServiceIntegrationTest {
         @DisplayName("fail")
         void findById_fail() {
             var command = new OrderCommand.Find(999L);
-            var ex = assertThrows(Exception.class, () -> orderService.findById(command));
-            assertThat(ex.getMessage()).isEqualTo(ErrorCode.NOT_FOUND);
+            var ex = assertThrows(CustomException.class, () -> orderService.findById(command));
+            assertThat(ex.getMessage()).isEqualTo(ErrorCode.NOT_FOUND.getMessage());
         }
     }
 }

@@ -20,7 +20,7 @@ public class OrderItemRepositoryImpl implements OrderItemRepository {
     private final OrderItemJpaRepository jpaRepository;
 
     @Override
-    public Optional<OrderItem> findByOrderIdAndProductOptionId(Long orderId, Long productOptionId) {
+    public Optional<OrderItem> findByOrderAndOption(Long orderId, Long productOptionId) {
         return jpaRepository.findByOrderIdAndProductOptionId(orderId, productOptionId);
     }
 

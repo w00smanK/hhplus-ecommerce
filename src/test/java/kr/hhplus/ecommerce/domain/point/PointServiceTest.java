@@ -41,19 +41,14 @@ class PointServiceTest extends MockTestSupport {
     void charge() {
         // given
         User user = User.builder()
-                .id(1L)
                 .name("김우경")
                 .build();
 
         long remainAmount = 10_000L;
 
-        Point existPoint = Point.builder()
-                .id(1L)
-                .userId(user.getId())
-                .account(remainAmount)
-                .build();
+        Point existPoint = new Point(100L, user.getId(), 10_000L);
 
-        when(pointRepository.findBy(anyLong())).thenReturn(Optional.ofNullable(existPoint));
+        when(pointRepository.findByUserId(user.getId())).thenReturn(Optional.ofNullable(existPoint));
 
         long chargeAmount = 10_000L;
         PointCommand.Charge command = PointCommand.Charge.of(user.getId(), chargeAmount);
@@ -73,19 +68,17 @@ class PointServiceTest extends MockTestSupport {
     void chargeExceedingMaxAmount(long invalidAmount) {
         // given
         User user = User.builder()
-                .id(1L)
                 .name("김우경")
                 .build();
 
         long remainAmount = 1_000_000L;
 
         Point existPoint = Point.builder()
-                .id(1L)
                 .userId(user.getId())
                 .account(remainAmount)
                 .build();
 
-        when(pointRepository.findBy(anyLong())).thenReturn(Optional.ofNullable(existPoint));
+        when(pointRepository.findByUserId(user.getId())).thenReturn(Optional.ofNullable(existPoint));
 
         PointCommand.Charge command = PointCommand.Charge.of(user.getId(), invalidAmount);
 
@@ -101,19 +94,17 @@ class PointServiceTest extends MockTestSupport {
     void usePoint(long useAmount) {
         // given
         User user = User.builder()
-                .id(1L)
                 .name("김우경")
                 .build();
 
         long remainAmount = 10_000L;
 
         Point existPoint = Point.builder()
-                .id(1L)
                 .userId(user.getId())
                 .account(remainAmount)
                 .build();
 
-        when(pointRepository.findBy(anyLong())).thenReturn(Optional.ofNullable(existPoint));
+        when(pointRepository.findByUserId(user.getId())).thenReturn(Optional.ofNullable(existPoint));
 
         PointCommand.Use command = PointCommand.Use.of(user.getId(), useAmount);
 

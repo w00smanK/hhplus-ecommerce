@@ -1,6 +1,8 @@
 package kr.hhplus.ecommerce.domain.product.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import kr.hhplus.ecommerce.domain.BaseEntity;
 import lombok.AllArgsConstructor;
@@ -15,15 +17,15 @@ import lombok.NoArgsConstructor;
 @Entity
 public class ProductStock extends BaseEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long productId;
     private String optionValue;
     private Long price;
     private Long stock;
 
-    @Builder
-    public ProductStock(Long id, String optionValue, Long price, Long stock) {
-        this.id = id;
+    public ProductStock(Long productId, String optionValue, Long price, Long stock) {
+        this.productId = productId;
         this.optionValue = optionValue;
         this.price = price;
         this.stock = stock;
