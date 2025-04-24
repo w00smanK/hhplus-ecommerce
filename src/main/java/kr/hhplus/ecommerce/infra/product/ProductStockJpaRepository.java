@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductStockJpaRepository extends JpaRepository<ProductStock, Long> {
-    List<ProductStock> findAllByProductId(Long productId);
+    List<ProductStock> findByProductId(Long productId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT ps FROM ProductStock ps WHERE ps.id = :id")
-    Optional<ProductStock> findByIdForUpdate(@Param("id") Long id);
+    Optional<ProductStock> findByIdWithPessimisticLock(@Param("id") Long id);
 }

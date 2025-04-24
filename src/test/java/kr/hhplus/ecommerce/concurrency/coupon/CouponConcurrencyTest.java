@@ -57,7 +57,7 @@ public class CouponConcurrencyTest {
     }
 
     @Test
-    @DisplayName("[쿠폰 발급] 동시성 테스트 - 비관적 락")
+    @DisplayName("[쿠폰 발급] 동시성 테스트 - 낙관적 락")
     void issueCoupon_concurrently() throws InterruptedException {
         int threadCount = 100;
         int threadPoolSize = 10;

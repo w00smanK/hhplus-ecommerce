@@ -41,7 +41,7 @@ class PointConcurrencyTest {
         pointRepository.save(point);
 
         int threadCount = 2;
-        int threadPoolSize = 5;
+        int threadPoolSize = 2;
 
         PointCommand.Charge chargeCmd = PointCommand.Charge.of(userId, 500L);
         PointCommand.Use useCmd = PointCommand.Use.of(userId, 300L);
@@ -70,7 +70,7 @@ class PointConcurrencyTest {
 
     private void tryCharge(PointCommand.Charge command, AtomicInteger successCount, AtomicInteger failCount) {
         try {
-            pointService.charge(command);
+            pointService.chargeWithLock(command);
             successCount.incrementAndGet();
         } catch (Exception e) {
             failCount.incrementAndGet();
@@ -80,7 +80,7 @@ class PointConcurrencyTest {
 
     private void tryUse(PointCommand.Use command, AtomicInteger successCount, AtomicInteger failCount) {
         try {
-            pointService.use(command);
+            pointService.useWithLock(command);
             successCount.incrementAndGet();
         } catch (Exception e) {
             failCount.incrementAndGet();

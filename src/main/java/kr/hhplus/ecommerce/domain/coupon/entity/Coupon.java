@@ -26,6 +26,8 @@ public class Coupon extends BaseEntity {
     @Column(nullable = false)
     private Integer quantity;
 
+    @Version
+    Long version;
     public Coupon(Long discountPrice, Integer quantity) {
         this.discountPrice = discountPrice;
         this.quantity = quantity;

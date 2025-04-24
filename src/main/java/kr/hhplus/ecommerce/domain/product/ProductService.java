@@ -49,7 +49,7 @@ public class ProductService {
     @Transactional
     public ProductInfo.StockCheckResult reduceStock(List<OrderCommand.OrderItem> commands) {
         return new ProductInfo.StockCheckResult(commands.stream().map(i -> {
-            ProductStock productStock = productStockRepository.findByIdForUpdate(i.productOptionId())
+            ProductStock productStock = productStockRepository.findByIdWithPessimisticLock(i.productOptionId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
             if (productStock.canPurchase(i.quantity())) {

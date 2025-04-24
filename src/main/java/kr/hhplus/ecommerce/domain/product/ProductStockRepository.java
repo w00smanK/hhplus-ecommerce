@@ -11,7 +11,7 @@ public interface ProductStockRepository {
 
     Optional<ProductStock> findById(Long optionId);
 
-    Optional<ProductStock> findByIdForUpdate(Long optionId);
+    Optional<ProductStock> findByIdWithPessimisticLock(Long optionId);
 
     List<ProductStock> findByProductId(Long productId);
 
