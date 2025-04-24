@@ -21,6 +21,11 @@ public class ProductStockRepositoryImpl implements ProductStockRepository {
     }
 
     @Override
+    public Optional<ProductStock> findByIdForUpdate(Long optionId) {
+        return productStockJpaRepository.findByIdForUpdate(optionId);
+    }
+
+    @Override
     public List<ProductStock> findByProductId(Long productId) {
         return productStockJpaRepository.findAllByProductId(productId);
     }
