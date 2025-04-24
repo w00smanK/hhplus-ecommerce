@@ -8,8 +8,11 @@ import java.util.Optional;
 
 @Component
 public interface CouponRepository {
+    Optional<Coupon> findByIdWithLock(Long id);
+
     Optional<Coupon> findById(Long couponId);
 
     Coupon save(Coupon coupon);
+
 
 }

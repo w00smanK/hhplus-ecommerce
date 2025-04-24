@@ -5,6 +5,7 @@ import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -26,5 +27,10 @@ public class IssuedCouponRepositoryImpl implements IssuedCouponRepository {
     @Override
     public IssuedCoupon save(IssuedCoupon issuedCoupon) {
         return issuedCouponJpaRepository.save(issuedCoupon);
+    }
+
+    @Override
+    public List<IssuedCoupon> findAll() {
+        return issuedCouponJpaRepository.findAll();
     }
 }
