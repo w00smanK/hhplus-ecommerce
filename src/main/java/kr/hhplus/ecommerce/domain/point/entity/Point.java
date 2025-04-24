@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "user_point")
+@Entity
 @Getter
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Table(name = "point", indexes = {
@@ -17,15 +17,16 @@ public class Point extends BaseEntity {
     public static final int MAX_CHARGE_AMOUNT = 1000000;
     public static final long MAX_AMOUNT = 2000000;
 
-
     @Id
-    @Column(name = "point_id")
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
     private Long id;
 
     private Long userId;
 
     private Long account;
+
+    @Version
+    private Integer version;
 
     @Builder
     public Point( Long userId, Long account) {
@@ -37,6 +38,13 @@ public class Point extends BaseEntity {
         this.id = id;
         this.userId = userId;
         this.account = account;
+    }
+
+    public static Point create(Long userId) {
+        return Point.builder()
+                .userId(userId)
+                .account(0L)
+                .build();
     }
 
     public static Point empty(Long userId) {

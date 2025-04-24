@@ -11,9 +11,11 @@ import kr.hhplus.ecommerce.infra.coupon.InMemoryCouponIssueQueue;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.ArrayList;
@@ -23,8 +25,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 @SpringBootTest
-@Testcontainers
+@ActiveProfiles("test")
 @Slf4j
+@Testcontainers
+@DisplayName("선착순 쿠폰 발급 동시성 테스트")
 public class CouponConcurrencyTest {
 
 
@@ -53,6 +57,7 @@ public class CouponConcurrencyTest {
     }
 
     @Test
+    @DisplayName("[쿠폰 발급] 동시성 테스트 - 비관적 락")
     void issueCoupon_concurrently() throws InterruptedException {
         int threadCount = 100;
         int threadPoolSize = 10;

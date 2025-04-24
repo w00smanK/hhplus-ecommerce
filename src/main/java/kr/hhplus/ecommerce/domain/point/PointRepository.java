@@ -8,7 +8,9 @@ import java.util.Optional;
 
 @Component
 public interface PointRepository {
-    Optional<Point> findByUserId(Long id);
+    Optional<Point> findByUserId(Long userId);
 
+    Optional<Point> findByUserIdWithOptimisticLock(Long userId);
     Point save(Point point);
+
 }

@@ -21,7 +21,7 @@ public class PointService {
     public Point charge(PointCommand.Charge command) {
         Point point = pointRepository.findByUserId(command.getUserId())
                 // exception if not found
-                .orElse(Point.empty(command.getUserId()));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         point.charge(command.getAmount());
 

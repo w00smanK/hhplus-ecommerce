@@ -33,7 +33,7 @@ class PointServiceTest extends MockTestSupport {
 
     @BeforeEach
     void setUp() {
-        pointService = new PointService(pointRepository, pointHistoryRepository); // 💥 주입
+        pointService = new PointService(pointRepository, pointHistoryRepository);
     }
 
     @DisplayName("잔액 충전 시, 잔액이 이미 있다면 기존 잔액에 충전한다.")
