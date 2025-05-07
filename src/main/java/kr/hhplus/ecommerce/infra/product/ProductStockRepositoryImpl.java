@@ -16,13 +16,13 @@ public class ProductStockRepositoryImpl implements ProductStockRepository {
     private final ProductStockJpaRepository productStockJpaRepository;
 
     @Override
-    public Optional<ProductStock> findById(Long optionId) {
-        return productStockJpaRepository.findById(optionId);
+    public Optional<ProductStock> findById(Long id) {
+        return productStockJpaRepository.findById(id);
     }
 
     @Override
-    public Optional<ProductStock> findByIdWithPessimisticLock(Long optionId) {
-        return productStockJpaRepository.findByIdWithPessimisticLock(optionId);
+    public Optional<ProductStock> findByIdWithPessimisticLock(Long id) {
+        return productStockJpaRepository.findByIdWithPessimisticLock(id);
     }
 
     @Override

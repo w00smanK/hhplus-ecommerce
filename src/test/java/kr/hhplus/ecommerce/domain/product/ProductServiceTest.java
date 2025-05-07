@@ -124,13 +124,13 @@ class ProductServiceTest {
                     new OrderCommand.OrderItem(102L, 129000L, 3L)
             );
 
-            when(productStockRepository.findById(101L)).thenReturn(Optional.of(PRODUCT_OPTION1));
-            when(productStockRepository.findById(102L)).thenReturn(Optional.of(PRODUCT_OPTION2));
+            when(productStockRepository.findByIdWithPessimisticLock(101L)).thenReturn(Optional.of(PRODUCT_OPTION1));
+            when(productStockRepository.findByIdWithPessimisticLock(102L)).thenReturn(Optional.of(PRODUCT_OPTION2));
 
             ProductInfo.StockCheckResult result = productService.reduceStock(items);
 
-            verify(productStockRepository).findById(101L);
-            verify(productStockRepository).findById(102L);
+            verify(productStockRepository).findByIdWithPessimisticLock(101L);
+            verify(productStockRepository).findByIdWithPessimisticLock(102L);
 
             assertThat(result.checkStocks()).hasSize(2);
             assertThat(result.checkStocks().get(0).isEnough()).isTrue();
@@ -145,13 +145,13 @@ class ProductServiceTest {
                     new OrderCommand.OrderItem(102L, 129000L, 46L) // 재고는 45
             );
 
-            when(productStockRepository.findById(101L)).thenReturn(Optional.of(PRODUCT_OPTION1));
-            when(productStockRepository.findById(102L)).thenReturn(Optional.of(PRODUCT_OPTION2));
+            when(productStockRepository.findByIdWithPessimisticLock(101L)).thenReturn(Optional.of(PRODUCT_OPTION1));
+            when(productStockRepository.findByIdWithPessimisticLock(102L)).thenReturn(Optional.of(PRODUCT_OPTION2));
 
             ProductInfo.StockCheckResult result = productService.reduceStock(items);
 
-            verify(productStockRepository).findById(101L);
-            verify(productStockRepository).findById(102L);
+            verify(productStockRepository).findByIdWithPessimisticLock(101L);
+            verify(productStockRepository).findByIdWithPessimisticLock(102L);
 
             assertThat(result.checkStocks()).hasSize(2);
             assertThat(result.checkStocks().get(0).isEnough()).isTrue();
