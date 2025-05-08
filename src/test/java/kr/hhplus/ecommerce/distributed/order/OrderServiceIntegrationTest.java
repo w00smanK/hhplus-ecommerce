@@ -101,7 +101,7 @@ class OrderServiceIntegrationTest {
     void pay_fail() {
         var command = new OrderCommand.Find(9999L);
         var ex = assertThrows(CustomException.class, () -> orderService.pay(command));
-        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.ORDER_NOT_FOUND);
     }
 
     @Test
@@ -188,7 +188,7 @@ class OrderServiceIntegrationTest {
         void findById_fail() {
             var command = new OrderCommand.Find(999L);
             var ex = assertThrows(CustomException.class, () -> orderService.findById(command));
-            assertThat(ex.getMessage()).isEqualTo(ErrorCode.NOT_FOUND.getMessage());
+            assertThat(ex.getMessage()).isEqualTo(ErrorCode.ORDER_NOT_FOUND.getMessage());
         }
     }
 }

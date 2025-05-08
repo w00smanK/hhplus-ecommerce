@@ -1,4 +1,4 @@
-package kr.hhplus.ecommerce;
+package kr.hhplus.ecommerce.support;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;

@@ -36,7 +36,13 @@ public class ProductInfo {
 
         public static ProductDetail from(Product product, List<ProductStock> stocks) {
             List<ProductStock> copied = stocks.stream()
-                    .map(s -> new ProductStock(s.getId(), s.getOptionValue(), s.getPrice(), s.getStock()))
+                    .map(s -> ProductStock.builder()
+                            .id(s.getId())
+                            .productId(s.getProductId())
+                            .optionValue(s.getOptionValue())
+                            .price(s.getPrice())
+                            .stock(s.getStock())
+                            .build())
                     .collect(Collectors.toList());
 
             return ProductDetail.builder()

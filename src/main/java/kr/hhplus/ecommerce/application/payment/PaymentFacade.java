@@ -31,7 +31,7 @@ public class PaymentFacade {
         Order order = orderService.findById(new OrderCommand.Find(payment.getOrderId()));
 
         // 결제금액 차감
-        Point balance = pointService.reduce(new PointCommand.Reduce(order.getUserId(), criteria.amount(), order.getIssuedCouponId()));
+        Point point = pointService.reduce(new PointCommand.Reduce(order.getUserId(), criteria.amount(), order.getIssuedCouponId()));
 
         // 결제 완료
         Payment pay = paymentService.pay(new PaymentCommand.Pay(payment.getId(), order.getPaymentAmount()));
@@ -55,7 +55,7 @@ public class PaymentFacade {
         return new PaymentResult.Pay(
                 pay.getId(),
                 pay.getOrderId(),
-                balance.getAccount(),
+                point.getAccount(),
                 order.getStatus(),
                 pay.getStatus(),
                 pay.getAmount(),
