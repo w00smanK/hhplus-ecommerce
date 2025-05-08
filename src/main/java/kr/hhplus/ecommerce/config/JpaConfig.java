@@ -1,4 +1,4 @@
-package kr.hhplus.ecommerce.config.jpa;
+package kr.hhplus.ecommerce.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

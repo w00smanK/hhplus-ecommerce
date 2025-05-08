@@ -38,6 +38,12 @@ dependencies {
 	implementation("org.springdoc:springdoc-openapi-starter-common:2.0.2")
 
 
+	// redis
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+	// redisson
+	implementation("org.redisson:redisson-spring-boot-starter:3.37.0")
+
 	// lombok
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
