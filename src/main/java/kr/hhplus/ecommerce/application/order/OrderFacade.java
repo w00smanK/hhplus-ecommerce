@@ -31,7 +31,12 @@ public class OrderFacade {
     private final OrderService orderService;
     private final PaymentService paymentService;
 
-    @DistributedLock(prefix = "order:stock:#{#criteria.items[*].productOptionId}", waitTime = 30, leaseTime = 10)
+    @DistributedLock(
+            prefix = "order:stock",
+            key = "#criteria.items[0].productOptionId",
+            waitTime = 30,
+            leaseTime = 10
+    )
     public OrderResult.Create order(OrderCriteria.Create criteria) {
 
         // 상품 조회
