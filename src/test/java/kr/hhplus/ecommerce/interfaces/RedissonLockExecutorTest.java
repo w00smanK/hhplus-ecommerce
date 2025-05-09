@@ -47,6 +47,7 @@ class RedissonLockExecutorTest {
 
             String result = executor.execute("test:lock", 1, 3, () -> "success");
 
+            System.out.println("✅ 반환값: " + result);
             assertEquals("success", result);
             then(rLock).should().unlock();
         }
@@ -57,7 +58,10 @@ class RedissonLockExecutorTest {
             given(rLock.tryLock(anyLong(), anyLong(), eq(TimeUnit.SECONDS))).willReturn(false);
 
             assertThrows(RuntimeException.class, () ->
-                    executor.execute("test:lock", 1, 3, () -> "fail")
+                    executor.execute("test:lock", 1, 3, () -> {
+                        System.out.println("❌ 이 로직은 실행되면 안 됨");
+                        return "fail";
+                    })
             );
         }
 
@@ -67,6 +71,7 @@ class RedissonLockExecutorTest {
             given(rLock.tryLock(anyLong(), anyLong(), eq(TimeUnit.SECONDS)))
                     .willThrow(new InterruptedException());
 
+            System.out.println("💥 tryLock 예외 발생 예상");
             assertThrows(RuntimeException.class, () ->
                     executor.execute("test:lock", 1, 3, () -> "fail")
             );
@@ -78,7 +83,10 @@ class RedissonLockExecutorTest {
             given(rLock.tryLock(anyLong(), anyLong(), eq(TimeUnit.SECONDS))).willReturn(true);
             given(rLock.isHeldByCurrentThread()).willReturn(false);
 
-            executor.execute("test:lock", 1, 3, () -> "no-unlock");
+            executor.execute("test:lock", 1, 3, () -> {
+                System.out.println("🧪 락 획득 성공하지만 unlock 생략 예정");
+                return "no-unlock";
+            });
 
             then(rLock).should(never()).unlock();
         }

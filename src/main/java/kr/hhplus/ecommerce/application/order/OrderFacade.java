@@ -2,6 +2,7 @@ package kr.hhplus.ecommerce.application.order;
 
 import kr.hhplus.ecommerce.application.order.dto.OrderCriteria;
 import kr.hhplus.ecommerce.application.order.dto.OrderResult;
+import kr.hhplus.ecommerce.common.aop.annotation.DistributedLock;
 import kr.hhplus.ecommerce.domain.coupon.CouponService;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
@@ -30,6 +31,7 @@ public class OrderFacade {
     private final OrderService orderService;
     private final PaymentService paymentService;
 
+    @DistributedLock(prefix = "order:stock:#{#criteria.items[*].productOptionId}", waitTime = 30, leaseTime = 10)
     public OrderResult.Create order(OrderCriteria.Create criteria) {
 
         // 상품 조회
@@ -52,7 +54,7 @@ public class OrderFacade {
         orderService.useCoupon(OrderCommand.UseCoupon.toCommand(order.orderId(), couponInfo.couponId(), couponInfo.discountPrice()));
 
         // 재고 차감 -> 재고 부족시 해당 옵션 상태
-        ProductInfo.StockCheckResult checkProductOrder = productService.reduceStock(orderItemCommand);
+        ProductInfo.StockCheckResult checkProductOrder = productService.reduceStock(new OrderCommand.OrderItemList(orderItemCommand));
 
         // 재고 부족시 -> 생성된 주문아이템 상태 변경(보류)
         OrderInfo.Create finalOrder = order;

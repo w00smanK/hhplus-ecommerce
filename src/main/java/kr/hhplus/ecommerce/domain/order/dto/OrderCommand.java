@@ -19,6 +19,13 @@ public record OrderCommand() {
             Long quantity
     ) {
     }
+    public record OrderItemList (
+            List<OrderItem> orderItems
+    ) {
+        public static OrderItemList toCommand(List<OrderItem> orderItems) {
+            return new OrderItemList(orderItems);
+        }
+    }
 
     public record HoldOrder(
             Long orderId,

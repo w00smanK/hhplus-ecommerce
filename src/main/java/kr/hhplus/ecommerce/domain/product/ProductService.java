@@ -47,8 +47,9 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductInfo.StockCheckResult reduceStock(List<OrderCommand.OrderItem> commands) {
-        return new ProductInfo.StockCheckResult(commands.stream().map(i -> {
+//    public ProductInfo.StockCheckResult reduceStock(List<OrderCommand.OrderItem> commands) {
+        public ProductInfo.StockCheckResult reduceStock(OrderCommand.OrderItemList commands) {
+        return new ProductInfo.StockCheckResult(commands.orderItems().stream().map(i -> {
             ProductStock productStock = productStockRepository.findByIdWithPessimisticLock(i.productOptionId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
