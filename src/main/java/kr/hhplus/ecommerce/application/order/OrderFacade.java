@@ -17,6 +17,7 @@ import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -33,10 +34,11 @@ public class OrderFacade {
 
     @DistributedLock(
             prefix = "order:stock",
-            key = "#criteria.items[0].productOptionId",
+            key = "#criteria.items[*].productOptionId",
             waitTime = 30,
             leaseTime = 10
     )
+    @Transactional
     public OrderResult.Create order(OrderCriteria.Create criteria) {
 
         // 상품 조회

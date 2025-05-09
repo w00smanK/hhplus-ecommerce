@@ -1,6 +1,5 @@
 package kr.hhplus.ecommerce.common.aop.aspect;
 
-
 import kr.hhplus.ecommerce.common.aop.annotation.DistributedLock;
 import kr.hhplus.ecommerce.common.aop.executor.LockExecutor;
 import kr.hhplus.ecommerce.common.aop.executor.LockExecutorType;
@@ -25,7 +24,6 @@ public class DistributedLockAspect {
     private final LockKeyGenerator keyGenerator;
     private final Map<LockExecutorType, LockExecutor> executorMap;
 
-
     public DistributedLockAspect(
             LockKeyGenerator keyGenerator,
             List<LockExecutor> executors) {
@@ -39,19 +37,35 @@ public class DistributedLockAspect {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
 
-        String key = keyGenerator.generateKey(method, joinPoint.getArgs(), distributedLock.prefix(), distributedLock.key());
+        // 키 표현식에 와일드카드가 있는지 확인하여 단일 또는 다중 키 생성
+        List<String> keys = keyGenerator.generateKeys(method, joinPoint.getArgs(), distributedLock.prefix(), distributedLock.key());
         LockExecutor executor = executorMap.get(distributedLock.executor());
 
         if (executor == null) {
             throw new IllegalStateException("No LockExecutor found for: " + distributedLock.executor());
         }
-        return executor.execute(key, distributedLock.waitTime(), distributedLock.leaseTime(), () -> {
-            try {
-                return joinPoint.proceed();
-            } catch (Throwable e) {
-                throw new RuntimeException(e); // wrap
-            }
-        });
 
+        // 키가 여러 개인 경우 다중 락 실행
+        if (keys.size() > 1) {
+            log.debug("다중 락 실행: {}", keys);
+            return executor.executeWithMultiLock(keys, distributedLock.waitTime(), distributedLock.leaseTime(), () -> {
+                try {
+                    return joinPoint.proceed();
+                } catch (Throwable e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } else {
+            // 키가 하나인 경우 단일 락 실행
+            String key = keys.isEmpty() ? distributedLock.prefix() : keys.get(0);
+            log.debug("단일 락 실행: {}", key);
+            return executor.execute(key, distributedLock.waitTime(), distributedLock.leaseTime(), () -> {
+                try {
+                    return joinPoint.proceed();
+                } catch (Throwable e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
     }
 }
