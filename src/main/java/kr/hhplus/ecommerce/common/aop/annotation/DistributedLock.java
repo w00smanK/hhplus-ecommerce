@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DistributedLock {
     String prefix() default "";  // e.g. "'user:' + #userId"
-//    String key(); // SpEL expression
+    String key(); // SpEL expression
     long waitTime() default 5L; // 락 대기 시간 (초)
     long leaseTime() default 3L; // 락 보유 시간 (초)
     TimeUnit timeUnit() default TimeUnit.SECONDS; // 시간 단위
