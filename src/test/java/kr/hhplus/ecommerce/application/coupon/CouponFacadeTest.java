@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 @DisplayName("[통합테스트] CouponFacade")
 @Description("선착순 쿠폰 발급 테스트")
-class CouponFacadeIntegrationTest {
+class CouponFacadeTest {
 
     @Autowired
     private CouponFacade couponFacade;
