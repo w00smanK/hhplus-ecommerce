@@ -24,13 +24,12 @@ public class DistributedLockAspect {
     private final LockKeyGenerator keyGenerator;
     private final Map<LockExecutorType, LockExecutor> executorMap;
 
-    public DistributedLockAspect(
-            LockKeyGenerator keyGenerator,
-            List<LockExecutor> executors) {
+    public DistributedLockAspect(LockKeyGenerator keyGenerator, List<LockExecutor> lockExecutors) {
         this.keyGenerator = keyGenerator;
-        this.executorMap = executors.stream()
+        this.executorMap = lockExecutors.stream()
                 .collect(Collectors.toMap(LockExecutor::getType, Function.identity()));
     }
+
 
     @Around("@annotation(distributedLock)")
     public Object applyLock(ProceedingJoinPoint joinPoint, DistributedLock distributedLock) throws Throwable {

@@ -50,7 +50,7 @@ class OrderFacadeTest {
     void setUp() {
         // 사용자 데이터 설정 - 김우경, 이림
         user = userRepository.findById(1L)
-                .orElseGet(() -> userRepository.save(new User("김우경이림")));
+                .orElseGet(() -> userRepository.save(new User("김우경")));
 
         // 상품 옵션 데이터 조회
         iphone15_128GB = productStockRepository.findById(101L).orElseThrow();
@@ -89,7 +89,7 @@ class OrderFacadeTest {
         int threadPoolSize = 5;
         Long productId = 1L; // iPhone 15
         Long optionId = 101L; // 128GB
-        Long quantity = 2L; // 각 주문당 2개씩 주문
+        long quantity = 2L; // 각 주문당 2개씩 주문
 
         AtomicInteger successCount = new AtomicInteger(0);
         AtomicInteger failureCount = new AtomicInteger(0);

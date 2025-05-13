@@ -1,5 +1,6 @@
 package kr.hhplus.ecommerce.common.aop.generator;
 
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
@@ -16,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
+@Slf4j
 public class SpELLockKeyGenerator implements LockKeyGenerator {
     private final ExpressionParser parser = new SpelExpressionParser();
     private static final Pattern WILDCARD_PATTERN = Pattern.compile("\\[(\\*)]");
@@ -82,21 +84,21 @@ public class SpELLockKeyGenerator implements LockKeyGenerator {
         return Collections.emptyList();
     }
 
-    /**
-     * 테스트용 메서드
-     */
-    public List<String> generateMultipleKeysForTest(Object criteria, String prefix, String keyExpression) {
-        StandardEvaluationContext context = new StandardEvaluationContext();
-        context.setVariable("criteria", criteria);
-
-        // Check if the expression contains a wildcard
-        Matcher matcher = WILDCARD_PATTERN.matcher(keyExpression);
-        if (matcher.find()) {
-            return generateMultipleKeys(context, prefix, keyExpression);
-        } else {
-            // No wildcard, generate a single key
-            String parsedKey = parser.parseExpression(keyExpression).getValue(context, String.class);
-            return Collections.singletonList(prefix + ":" + parsedKey);
-        }
-    }
+//    /**
+//     * 테스트용 메서드
+//     */
+//    public List<String> generateMultipleKeysForTest(Object criteria, String prefix, String keyExpression) {
+//        StandardEvaluationContext context = new StandardEvaluationContext();
+//        context.setVariable("criteria", criteria);
+//
+//        // Check if the expression contains a wildcard
+//        Matcher matcher = WILDCARD_PATTERN.matcher(keyExpression);
+//        if (matcher.find()) {
+//            return generateMultipleKeys(context, prefix, keyExpression);
+//        } else {
+//            // No wildcard, generate a single key
+//            String parsedKey = parser.parseExpression(keyExpression).getValue(context, String.class);
+//            return Collections.singletonList(prefix + ":" + parsedKey);
+//        }
+//    }
 }
