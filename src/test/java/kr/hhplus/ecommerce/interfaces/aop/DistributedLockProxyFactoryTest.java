@@ -47,7 +47,7 @@ class DistributedLockProxyFactoryTest extends MockTestSupport {
     @DisplayName("프록시 객체가 분산락을 사용하여 메서드를 실행한다")
     void proxyExecutesMethodWithLock() {
         // given
-        given(keyGenerator.generateKeys(any(), any(), anyString(), anyString()))
+        given(keyGenerator.generateKeys(any(), anyString(), anyString()))
                 .willReturn(Collections.singletonList("test:testArg"));
 
         given(lockExecutor.execute(anyString(), anyLong(), anyLong(), any(Callable.class)))
@@ -67,7 +67,7 @@ class DistributedLockProxyFactoryTest extends MockTestSupport {
         // then
         log.info("최종 결과: {}", result);
         assertEquals("test:testArg", result);
-        verify(keyGenerator).generateKeys(any(), any(), eq("test:"), eq("#arg"));
+        verify(keyGenerator).generateKeys(any(), eq("test:"), eq("#arg"));
         verify(lockExecutor).execute(eq("test:testArg"), eq(5L), eq(3L), any(Callable.class));
     }
 
@@ -75,7 +75,7 @@ class DistributedLockProxyFactoryTest extends MockTestSupport {
     @DisplayName("프록시 객체가 예외를 정상적으로 처리한다")
     void proxyHandlesExceptions() {
         // given
-        given(keyGenerator.generateKeys(any(), any(), anyString(), anyString()))
+        given(keyGenerator.generateKeys(any(), anyString(), anyString()))
                 .willReturn(Collections.singletonList("test:testArg"));
 
         given(lockExecutor.execute(anyString(), anyLong(), anyLong(), any(Callable.class)))
@@ -101,7 +101,7 @@ class DistributedLockProxyFactoryTest extends MockTestSupport {
     void proxyExecutesMethodWithMultiLock() {
         // given
         List<String> keys = List.of("test:1", "test:2", "test:3");
-        given(keyGenerator.generateKeys(any(), any(), anyString(), anyString()))
+        given(keyGenerator.generateKeys(any(), anyString(), anyString()))
                 .willReturn(keys);
 
         given(lockExecutor.executeWithMultiLock(anyList(), anyLong(), anyLong(), any(Callable.class)))
