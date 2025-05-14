@@ -63,15 +63,7 @@ public class OrderFacade {
         // 재고 차감 -> 재고 부족시 해당 옵션 상태
         ProductInfo.StockCheckResult checkProductOrder = productService.reduceStock(new OrderCommand.OrderItemList(orderItemCommand));
 
-        // 재고 부족시 -> 생성된 주문아이템 상태 변경(보류)
-        OrderInfo.Create finalOrder = order;
-        checkProductOrder.checkStocks().forEach(stock -> {
-            criteria.items().forEach(criteriaItem -> {
-                if (!stock.isEnough() && criteriaItem.quantity().intValue() != stock.requestQuantity().intValue()) {
-                    orderService.holdOrder(new OrderCommand.HoldOrder(finalOrder.orderId(), stock.stockId()));
-                }
-            });
-        });
+        orderService.holdOrder(new OrderCommand.HoldOrder(order.orderId(), checkProductOrder.checkStocks()));
 
         //  결제 정보 저장
         paymentService.save(new PaymentCommand.Save(order.orderId(), order.paymentAmount()));

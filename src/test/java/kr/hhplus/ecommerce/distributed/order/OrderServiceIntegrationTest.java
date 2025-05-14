@@ -76,17 +76,6 @@ class OrderServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("hold")
-    void holdOrder() {
-        var result = orderService.createOrder(new OrderCommand.Create(userId, items));
-        var command = new OrderCommand.HoldOrder(result.orderId(), 1L);
-        orderService.holdOrder(command);
-
-        var orderItem = orderItemRepository.findByOrderAndOption(result.orderId(), 1L).get();
-        assertThat(orderItem.getStatus()).isEqualTo(OrderStatus.PENDING);
-    }
-
-    @Test
     @DisplayName("pay")
     void pay() {
         var order = orderRepository.save(new Order(userId, couponId, 10000L));

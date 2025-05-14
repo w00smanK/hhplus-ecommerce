@@ -60,11 +60,12 @@ public class OrderService {
 
     @Transactional
     public void holdOrder(OrderCommand.HoldOrder command) {
-
-        OrderItem orderItem = orderItemRepository.findByOrderAndOption(command.orderId(), command.productOptionId())
-                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
-
-        orderItem.holdStatus();
+        command.stockDetails().forEach(stock -> {
+            if (!stock.isEnough()) {
+                OrderItem orderItem = orderItemRepository.findByOrderAndOption(command.orderId(), stock.stockId());
+                orderItem.holdStatus();
+            }
+        });
     }
 
     @Transactional
