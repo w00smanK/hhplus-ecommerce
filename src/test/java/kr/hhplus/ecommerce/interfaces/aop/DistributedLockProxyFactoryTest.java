@@ -39,28 +39,7 @@ class DistributedLockProxyFactoryTest extends MockTestSupport {
 
     @BeforeEach
     void setUp() {
-        // LockExecutor 설정
         given(lockExecutor.getType()).willReturn(LockExecutorType.REDISSON);
-
-        // 단일 락 executor
-        given(lockExecutor.execute(anyString(), anyLong(), anyLong(), any(Callable.class)))
-                .willAnswer(invocation -> {
-                    String key = invocation.getArgument(0);
-                    log.info("단일 락 실행됨: {}", key);
-                    Callable<Object> task = invocation.getArgument(3);
-                    return task.call();
-                });
-
-        // 다중 락 executor
-        given(lockExecutor.executeWithMultiLock(anyList(), anyLong(), anyLong(), any(Callable.class)))
-                .willAnswer(invocation -> {
-                    List<String> keys = invocation.getArgument(0);
-                    log.info("다중 락 실행됨: {}", keys);
-                    Callable<Object> task = invocation.getArgument(3);
-                    return task.call();
-                });
-
-        // 프록시 팩토리 생성
         proxyFactory = new DistributedLockProxyFactory(keyGenerator, List.of(lockExecutor));
     }
 
@@ -70,6 +49,14 @@ class DistributedLockProxyFactoryTest extends MockTestSupport {
         // given
         given(keyGenerator.generateKeys(any(), any(), anyString(), anyString()))
                 .willReturn(Collections.singletonList("test:testArg"));
+
+        given(lockExecutor.execute(anyString(), anyLong(), anyLong(), any(Callable.class)))
+                .willAnswer(invocation -> {
+                    String key = invocation.getArgument(0);
+                    log.info("단일 락 실행됨: {}", key);
+                    Callable<Object> task = invocation.getArgument(3);
+                    return task.call();
+                });
 
         TestService testService = new TestService();
         TestService proxy = proxyFactory.createProxy(testService);
@@ -88,6 +75,17 @@ class DistributedLockProxyFactoryTest extends MockTestSupport {
     @DisplayName("프록시 객체가 예외를 정상적으로 처리한다")
     void proxyHandlesExceptions() {
         // given
+        given(keyGenerator.generateKeys(any(), any(), anyString(), anyString()))
+                .willReturn(Collections.singletonList("test:testArg"));
+
+        given(lockExecutor.execute(anyString(), anyLong(), anyLong(), any(Callable.class)))
+                .willAnswer(invocation -> {
+                    String key = invocation.getArgument(0);
+                    log.info("단일 락 실행됨: {}", key);
+                    Callable<Object> task = invocation.getArgument(3);
+                    return task.call();
+                });
+
         ExceptionTestService testService = new ExceptionTestService();
         ExceptionTestService proxy = proxyFactory.createProxy(testService);
 
@@ -105,6 +103,14 @@ class DistributedLockProxyFactoryTest extends MockTestSupport {
         List<String> keys = List.of("test:1", "test:2", "test:3");
         given(keyGenerator.generateKeys(any(), any(), anyString(), anyString()))
                 .willReturn(keys);
+
+        given(lockExecutor.executeWithMultiLock(anyList(), anyLong(), anyLong(), any(Callable.class)))
+                .willAnswer(invocation -> {
+                    List<String> k = invocation.getArgument(0);
+                    log.info("다중 락 실행됨: {}", k);
+                    Callable<Object> task = invocation.getArgument(3);
+                    return task.call();
+                });
 
         MultiLockTestService service = new MultiLockTestService();
         MultiLockTestService proxy = proxyFactory.createProxy(service);
