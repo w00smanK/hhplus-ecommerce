@@ -31,9 +31,12 @@ public class RedissonLockExecutor implements LockExecutor {
 
         try {
             isLocked = lock.tryLock(waitTime, leaseTime, TimeUnit.SECONDS);
+            log.info("🔐 락 시도 - key: {}, waitTime: {}s, leaseTime: {}s", key, waitTime, leaseTime);
             if (!isLocked) {
+                log.warn("❌ 락 획득 실패 - key: {}", key);
                 throw new IllegalStateException("락 획득 실패: " + key);
             }
+            log.info("✅ 락 획득 성공 - key: {}, threadId: {}", key, Thread.currentThread().getId());
             return task.call();
         } catch (Exception e) {
             throw new RuntimeException("락 처리 중 오류", e);
@@ -55,32 +58,36 @@ public class RedissonLockExecutor implements LockExecutor {
             return execute(keys.get(0), waitTime, leaseTime, task);
         }
 
-        // 여러 키에 대한 락 생성
         List<RLock> locks = new ArrayList<>(keys.size());
         for (String key : keys) {
             locks.add(redissonClient.getLock(key));
         }
 
-        // RedissonMultiLock 생성
         RedissonMultiLock multiLock = new RedissonMultiLock(locks.toArray(new RLock[0]));
         boolean isLocked = false;
 
         try {
-            log.debug("다중 락 획득 시도: {}", keys);
+            log.info("🔐 다중 락 시도 - keys: {}, waitTime: {}s, leaseTime: {}s, threadId: {}",
+                    keys, waitTime, leaseTime, Thread.currentThread().getId());
+
             isLocked = multiLock.tryLock(waitTime, leaseTime, TimeUnit.SECONDS);
 
             if (!isLocked) {
+                log.warn("❌ 다중 락 획득 실패 - keys: {}, threadId: {}", keys, Thread.currentThread().getId());
                 throw new IllegalStateException("다중 락 획득 실패: " + keys);
             }
 
-            log.debug("다중 락 획득 성공: {}", keys);
+            log.info("✅ 다중 락 획득 성공 - keys: {}, threadId: {}", keys, Thread.currentThread().getId());
+
             return task.call();
+
         } catch (Exception e) {
+            log.error("💥 다중 락 처리 중 예외 - keys: {}, error: {}, threadId: {}", keys, e.getMessage(), Thread.currentThread().getId(), e);
             throw new RuntimeException("다중 락 처리 중 오류", e);
         } finally {
             if (isLocked && multiLock.isHeldByCurrentThread()) {
                 multiLock.unlock();
-                log.debug("다중 락 해제: {}", keys);
+                log.info("🔓 다중 락 해제 완료 - keys: {}, threadId: {}", keys, Thread.currentThread().getId());
             }
         }
     }
