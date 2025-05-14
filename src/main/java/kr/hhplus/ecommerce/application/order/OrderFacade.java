@@ -35,8 +35,8 @@ public class OrderFacade {
     @DistributedLock(
             prefix = "order:stock",
             key = "#criteria.items[*].productOptionId",
-            waitTime = 30,
-            leaseTime = 10
+            waitTime = 15,
+            leaseTime = 5
     )
     @Transactional
     public OrderResult.Create order(OrderCriteria.Create criteria) {
