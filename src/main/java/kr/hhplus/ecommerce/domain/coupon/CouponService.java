@@ -22,6 +22,9 @@ public class CouponService {
     @Transactional
     public CouponInfo.CouponStock use(CouponCommand.Use command) {
 
+        if (command.couponId() == null) {
+            return CouponInfo.CouponStock.from();
+        }
         Coupon coupon = couponRepository.findById(command.couponId())
 //        Coupon coupon = couponRepository.findByIdWithLock(command.couponId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
