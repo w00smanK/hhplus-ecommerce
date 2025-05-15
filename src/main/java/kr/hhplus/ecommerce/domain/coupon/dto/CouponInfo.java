@@ -18,6 +18,9 @@ public record CouponInfo() {
             LocalDateTime expiredAt
 
     ) {
+        public static CouponStock from() {
+            return new CouponStock(null, null, null, null, null);
+        }
         public static CouponStock from(Coupon coupon, IssuedCoupon issuedCoupon) {
             return CouponStock.builder()
                     .couponId(coupon.getId())

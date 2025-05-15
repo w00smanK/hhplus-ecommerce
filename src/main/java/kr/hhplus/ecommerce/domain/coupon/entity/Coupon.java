@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 public class Coupon extends BaseEntity {
 
     @Id
-    @Column(name = "coupon_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -28,11 +27,13 @@ public class Coupon extends BaseEntity {
 
     @Version
     Long version;
+
     public Coupon(Long discountPrice, Integer quantity) {
         this.discountPrice = discountPrice;
         this.quantity = quantity;
     }
-    public Integer issue() {
-        return quantity--;
+    public void issue() {
+        if (quantity <= 0) throw new IllegalStateException("재고 부족");
+        this.quantity = this.quantity - 1;
     }
 }

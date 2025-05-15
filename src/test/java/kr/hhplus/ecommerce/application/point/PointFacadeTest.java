@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 @DisplayName("[통합테스트] PointFacade")
 @Description("로그인되어있다는 가정 / 음수충전못함")
-class PointFacadeIntegrationTest {
+class PointFacadeTest {
 
     @Autowired
     private PointFacade pointFacade;

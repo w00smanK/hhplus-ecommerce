@@ -23,10 +23,15 @@ public class IssuedCoupon {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Long userId;
+
     private Long couponId;
+
     private CouponStatus status;
+
     private LocalDateTime usedAt;
+
     private LocalDateTime expiredAt;
 
     public IssuedCoupon(Long userId, Long couponId) {

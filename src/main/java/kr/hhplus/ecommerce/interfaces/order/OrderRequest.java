@@ -2,6 +2,7 @@ package kr.hhplus.ecommerce.interfaces.order;
 
 import kr.hhplus.ecommerce.application.order.dto.OrderCriteria;
 
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -17,7 +18,10 @@ public record OrderRequest() {
             return new OrderCriteria.Create(
                     userId,
                     productId,
-                    items.stream().map(item -> new OrderCriteria.OrderItem(item.id, item.quantity)).toList(),
+                    items.stream()
+                            .map(item -> new OrderCriteria.OrderItem(item.id, item.quantity))
+                            .sorted(Comparator.comparing(OrderCriteria.OrderItem::productOptionId))
+                            .toList(),
                     couponId
 
             );

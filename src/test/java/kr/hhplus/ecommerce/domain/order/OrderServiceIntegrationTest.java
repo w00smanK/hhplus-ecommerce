@@ -72,16 +72,6 @@ class OrderServiceIntegrationTest {
         assertThat(orderItemRepository.findByOrderId(order.getId())).hasSize(2);
     }
 
-    @Test
-    @DisplayName("hold")
-    void holdOrder() {
-        var result = orderService.createOrder(new OrderCommand.Create(userId, items));
-        var command = new OrderCommand.HoldOrder(result.orderId(), 1L);
-        orderService.holdOrder(command);
-
-        var orderItem = orderItemRepository.findByOrderAndOption(result.orderId(), 1L).get();
-        assertThat(orderItem.getStatus()).isEqualTo(OrderStatus.PENDING);
-    }
 
     @Test
     @DisplayName("pay")

@@ -3,12 +3,12 @@ package kr.hhplus.ecommerce.infra.coupon;
 import kr.hhplus.ecommerce.domain.coupon.IssuedCouponRepository;
 import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-@Component
+@Repository
 @RequiredArgsConstructor
 public class IssuedCouponRepositoryImpl implements IssuedCouponRepository {
 

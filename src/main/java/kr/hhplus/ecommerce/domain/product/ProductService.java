@@ -36,19 +36,22 @@ public class ProductService {
         return ProductInfo.ProductList.of(productDetails);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public ProductInfo.ProductDetail findProduct(ProductCommand.Find command) {
+        log.info("command.getProductId(): {}", command.getProductId());
         Product product = productRepository.findById(command.getProductId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         List<ProductStock> productStocks = productStockRepository.findByProductId(command.getProductId());
-
+        log.info("[DEBUG_LOG] productStocks (size={}): {}", productStocks.size(),
+                productStocks.stream().map(ProductStock::getId).toList());
         return ProductInfo.ProductDetail.from(product, productStocks);
     }
 
     @Transactional
-    public ProductInfo.StockCheckResult reduceStock(List<OrderCommand.OrderItem> commands) {
-        return new ProductInfo.StockCheckResult(commands.stream().map(i -> {
+//    public ProductInfo.StockCheckResult reduceStock(List<OrderCommand.OrderItem> commands) {
+        public ProductInfo.StockCheckResult reduceStock(OrderCommand.OrderItemList commands) {
+        return new ProductInfo.StockCheckResult(commands.orderItems().stream().map(i -> {
             ProductStock productStock = productStockRepository.findByIdWithPessimisticLock(i.productOptionId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 

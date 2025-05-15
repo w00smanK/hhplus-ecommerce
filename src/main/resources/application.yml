@@ -3,6 +3,13 @@ spring:
     name: hhplus
   profiles:
     active: local
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local, test
+
   datasource:
     name: HangHaePlusDataSource
     type: com.zaxxer.hikari.HikariDataSource
@@ -11,28 +18,25 @@ spring:
       connection-timeout: 10000
       max-lifetime: 60000
     driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
+#  sql:
+#    init:
+#      mode: always
+#      data-locations: classpath:data.sql
   jpa:
     open-in-view: false
-    generate-ddl: false
+    defer-datasource-initialization: true
+    generate-ddl: true
     show-sql: false
-    hibernate:
-      ddl-auto: none
-    properties:
-      hibernate.timezone.default_storage: NORMALIZE_UTC
-      hibernate.jdbc.time_zone: UTC
-
----
-spring.config.activate.on-profile: local, test
-
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
-    username: application
-    password: application
-  jpa:
-    show-sql: true
     hibernate:
       ddl-auto: create
     properties:
       hibernate:
+        timezone.default_storage: NORMALIZE_UTC
+        jdbc.time_zone: UTC
         format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  data:
+    redis:
+      host: localhost
+      port: 6379

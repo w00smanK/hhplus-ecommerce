@@ -2,6 +2,7 @@ package kr.hhplus.ecommerce.domain.order.dto;
 
 
 import kr.hhplus.ecommerce.domain.order.entity.OrderStatus;
+import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
 
 import java.util.List;
 
@@ -19,10 +20,17 @@ public record OrderCommand() {
             Long quantity
     ) {
     }
+    public record OrderItemList (
+            List<OrderItem> orderItems
+    ) {
+        public static OrderItemList toCommand(List<OrderItem> orderItems) {
+            return new OrderItemList(orderItems);
+        }
+    }
 
     public record HoldOrder(
             Long orderId,
-            Long productOptionId
+            List<ProductInfo.StockStatus> stockDetails
     ) {
     }
 

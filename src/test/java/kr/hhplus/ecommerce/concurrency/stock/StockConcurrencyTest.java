@@ -80,7 +80,7 @@ public class StockConcurrencyTest {
             tasks.add(() -> {
                 try {
                     List<OrderCommand.OrderItem> command = List.of(new OrderCommand.OrderItem(homeJersey.getId(), 1000L, 1L));
-                    ProductInfo.StockCheckResult result = productService.reduceStock(command);
+                    ProductInfo.StockCheckResult result = productService.reduceStock(new OrderCommand.OrderItemList(command));
                     if (result.checkStocks().get(0).isEnough()) {
                         successCount.incrementAndGet(); // 재고 차감 성공
                     } else {
