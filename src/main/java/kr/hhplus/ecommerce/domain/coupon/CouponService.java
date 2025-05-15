@@ -6,6 +6,7 @@ import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
 import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
+import kr.hhplus.ecommerce.infra.coupon.RedisCouponRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,13 @@ public class CouponService {
 
     private final CouponRepository couponRepository;
     private final IssuedCouponRepository issuedCouponRepository;
+    private final RedisCouponRepository redisCouponRepository;
+
+
+    // 선착순 쿠폰 단일쿠폰
+    private static final Long FIRST_COME_COUPON_ID = 1L;
+    // 선착순 쿠폰 수량
+    private static final Integer FIRST_COME_COUPON_QUANTITY = 100;
 
 
     @Transactional
@@ -70,6 +78,38 @@ public class CouponService {
         return issuedCouponRepository.save(new IssuedCoupon(command.userId(), command.couponId()));
     }
 
+    /**
+     * Redis Sorted Set을 이용한 선착순 쿠폰 발급
+     */
+    @Transactional
+    public IssuedCoupon issueWithRedis(CouponCommand.Issue command) {
+        try {
+            Coupon coupon = couponRepository.findById(command.couponId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+            // 이미 발급받은 쿠폰인지 확인
+            if (redisCouponRepository.hasIssuedCoupon(command.userId(), command.couponId())) {
+                throw new CustomException(ErrorCode.DUPLICATE_COUPON);
+            }
+
+            // Redis를 통한 쿠폰 발급 시도
+            boolean issued = redisCouponRepository.issueCoupon(command.userId(), command.couponId());
+            if (!issued) {
+                throw new CustomException(ErrorCode.BAD_REQUEST);
+            }
+
+            // DB에 발급 정보 저장
+            IssuedCoupon issuedCoupon = issuedCouponRepository.save(new IssuedCoupon(command.userId(), command.couponId()));
+
+            return issuedCoupon;
+        } catch (Exception e) {
+            // 발급 실패 시 Redis에서도 롤백
+            redisCouponRepository.rollbackIssuance(command.userId(), command.couponId());
+            throw e;
+        }
+    }
+
+
     @Transactional
     public IssuedCoupon save(CouponCommand.Save command) {
 
@@ -80,4 +120,5 @@ public class CouponService {
 
         return issuedCouponRepository.save(new IssuedCoupon(command.userId(), command.couponId()));
     }
+
 }

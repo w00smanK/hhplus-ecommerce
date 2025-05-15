@@ -32,8 +32,17 @@ public class Coupon extends BaseEntity {
         this.discountPrice = discountPrice;
         this.quantity = quantity;
     }
+
     public void issue() {
         if (quantity <= 0) throw new IllegalStateException("재고 부족");
         this.quantity = this.quantity - 1;
+    }
+
+    /**
+     * 쿠폰 수량을 특정 값으로 설정
+     * @param newQuantity 새로운 수량
+     */
+    public void updateQuantity(Integer newQuantity) {
+        this.quantity = newQuantity;
     }
 }
