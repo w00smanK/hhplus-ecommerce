@@ -7,12 +7,14 @@ import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
 import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CouponService {
 
     private final CouponRepository couponRepository;
@@ -42,6 +44,7 @@ public class CouponService {
 
         Coupon coupon = couponRepository.findById(command.couponId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+        log.info("쿠폰 발급Service : {}", coupon.getId());
 
         if (coupon.getQuantity() <= 0) {
             throw new CustomException(ErrorCode.BAD_REQUEST);

@@ -39,6 +39,7 @@ public class RedissonLockExecutor implements LockExecutor {
             log.info("✅ 락 획득 성공 - key: {}, threadId: {}", key, Thread.currentThread().getId());
             return task.call();
         } catch (Exception e) {
+//            log.error("🔥 락 내부 실행 중 예외 발생 - key: {}, message: {}", key, e.getMessage(), e);
             throw new RuntimeException("락 처리 중 오류", e);
         } finally {
             if (isLocked && lock.isHeldByCurrentThread()) {
