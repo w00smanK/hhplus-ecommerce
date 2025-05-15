@@ -21,7 +21,21 @@ public class PointService {
     public Point charge(PointCommand.Charge command) {
         Point point = pointRepository.findByUserId(command.getUserId())
                 // exception if not found
-                .orElse(Point.empty(command.getUserId()));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        point.charge(command.getAmount());
+
+        pointHistoryRepository.save(new PointHistory(point.getId(), command.getAmount(), TransactionType.CHARGE));
+
+        // history 여부
+        return point;
+    }
+
+    @Transactional
+    public Point chargeWithLock(PointCommand.Charge command) {
+        Point point = pointRepository.findByUserIdWithOptimisticLock(command.getUserId())
+                // exception if not found
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         point.charge(command.getAmount());
 
@@ -35,6 +49,15 @@ public class PointService {
     public Point findPoint(PointCommand.Find command) {
         return pointRepository.findByUserId(command.getUserId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+    }
+
+    @Transactional
+    public Point useWithLock(PointCommand.Use command) {
+        Point point = pointRepository.findByUserIdWithOptimisticLock(command.getUserId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+        point.use(command.getAmount());
+
+        return point;
     }
 
     @Transactional

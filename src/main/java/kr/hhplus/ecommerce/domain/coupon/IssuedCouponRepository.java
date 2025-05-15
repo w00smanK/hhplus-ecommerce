@@ -3,6 +3,7 @@ package kr.hhplus.ecommerce.domain.coupon;
 import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -13,4 +14,6 @@ public interface IssuedCouponRepository {
     Optional<IssuedCoupon> findById(Long issuedCouponId);
 
     IssuedCoupon save(IssuedCoupon issuedCoupon);
+
+    List<IssuedCoupon> findAll();
 }
