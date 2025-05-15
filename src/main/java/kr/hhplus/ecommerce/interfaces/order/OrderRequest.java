@@ -17,7 +17,7 @@ public record OrderRequest() {
             return new OrderCriteria.Create(
                     userId,
                     productId,
-                    items.stream().map(item -> new OrderCriteria.OrderItem(item.optionId, item.quantity)).toList(),
+                    items.stream().map(item -> new OrderCriteria.OrderItem(item.id, item.quantity)).toList(),
                     couponId
 
             );
@@ -26,7 +26,7 @@ public record OrderRequest() {
     }
 
     public record Item(
-            Long optionId,
+            Long id,
             Long quantity
     ) {
     }

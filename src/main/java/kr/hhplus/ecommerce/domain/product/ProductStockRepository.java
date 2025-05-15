@@ -9,9 +9,9 @@ import java.util.Optional;
 @Component
 public interface ProductStockRepository {
 
-    Optional<ProductStock> findById(Long optionId);
+    Optional<ProductStock> findById(Long id);
 
-    Optional<ProductStock> findByIdWithPessimisticLock(Long optionId);
+    Optional<ProductStock> findByIdWithPessimisticLock(Long id);
 
     List<ProductStock> findByProductId(Long productId);
 

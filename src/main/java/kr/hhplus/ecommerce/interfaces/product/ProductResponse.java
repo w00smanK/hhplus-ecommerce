@@ -35,14 +35,14 @@ public class ProductResponse {
 
     @Builder
     public record Option(
-            Long optionId,
+            Long id,
             String optionValue,
             Long price,
             Long stock
     ) {
         public static Option from(ProductResult.Option option) {
             return Option.builder()
-                    .optionId(option.optionId())
+                    .id(option.id())
                     .optionValue(option.optionValue())
                     .price(option.price())
                     .stock(option.stock())

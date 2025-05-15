@@ -10,10 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
-@Tag(name = "Create API", description = "주문 관련 API")
+@Tag(name = "Order", description = "주문 관련 API")
 public interface OrderApi {
 
-    @Operation(summary = "Create API", description = "주문 관련 API")
+    @Operation(summary = "상품 주문", description = "사용자의 주문을 요청")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "주문을 요청합니다.", content = @Content(
                     mediaType = "application/json",

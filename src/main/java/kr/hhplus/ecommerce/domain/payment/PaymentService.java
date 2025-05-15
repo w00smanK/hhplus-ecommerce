@@ -29,7 +29,7 @@ public class PaymentService {
     public Payment findPayment(PaymentCommand.FindOrder command) throws Exception {
 
         Payment payment = paymentRepository.findByOrderId(command.orderId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
         return payment;
     }

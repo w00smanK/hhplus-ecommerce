@@ -29,9 +29,6 @@
 ### 3️⃣ 재고 차감
 
 + 재고 차감 요청이 동시에 발생하면, 여러 트랜잭션이 동일한 재고 수량을 기준으로 차감을 시도하게 된다.
-+ 동일 상품에 대한 동시 주문이 반복되면, 재고가 비정상적으로 차감되지 않는 문제가 발생할 수 있다.
-  
---- 
 
 ## ✅ 분석
 ### 비관적 락(Pessimistic Lock) vs 낙관적 락(Optimistic Lock) 비교
@@ -68,6 +65,7 @@
 
 - 대부분의 RDBMS는 트랜잭션 격리 수준 및 사용된 SQL에 따라 내부적으로 S-Lock 또는 X-Lock을 설정함.
 - JPA 등 ORM에서 비관적 락을 걸면 보통 X-Lock이 걸림.
+
 ---
 ## ✅ 해결 방법
 ### 1. 잔액 충전 및 차감
@@ -121,10 +119,6 @@ public interface PointJpaRepository extends JpaRepository<Point, Long> {
 @Version
 Long version; --> (@Version 및 컬럼 추가) 적용
 
-@Lock(LockModeType.OPTIMISTIC)
-@Query("SELECT p From Point p WHERE p.userId = :userId")
-Optional<Point> findByUserIdWithOptimisticLock(@Param("userId")Long userId);
-
 Hibernate:
 update
         point
@@ -172,11 +166,6 @@ public interface CouponJpaRepository extends JpaRepository<Coupon, Long> {
 
 @Version
 Long version; --> (@Version 및 컬럼 추가) 적용
-
-
-@Lock(LockModeType.OPTIMISTIC)
-@Query("SELECT c FROM Coupon c WHERE c.id = :id")
-Optional<Coupon> findByIdWithLock(@Param("id") Long id);
 
 
 ```

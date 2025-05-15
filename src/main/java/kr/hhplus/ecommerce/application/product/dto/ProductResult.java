@@ -28,7 +28,7 @@ public record ProductResult() {
                     .brand(product.getBrand())
                     .name(product.getName())
                     .options(product.getStocks().stream().map(o -> Option.builder()
-                                    .optionId(o.getId())
+                                    .id(o.getId())
                                     .optionValue(o.getOptionValue())
                                     .price(o.getPrice())
                                     .stock(o.getStock())
@@ -40,14 +40,14 @@ public record ProductResult() {
 
     @Builder
     public record Option(
-            Long optionId,
+            Long id,
             String optionValue,
             Long price,
             Long stock
     ) {
         public static Option from(Option option) {
             return Option.builder()
-                    .optionId(option.optionId())
+                    .id(option.id())
                     .optionValue(option.optionValue())
                     .price(option.price())
                     .stock(option.stock())

@@ -9,10 +9,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@Tag(name = "Create API", description = "주문 관련 API")
+@Tag(name = "Order", description = "주문 관련 API")
 public interface PaymentApi {
 
-    @Operation(summary = "주문 API", description = "사용자의 주문을 요청")
+    @Operation(summary = "결제", description = "주문 결제")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "", content = @Content(
                     mediaType = "application/json",

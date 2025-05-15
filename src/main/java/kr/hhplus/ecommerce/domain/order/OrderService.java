@@ -62,7 +62,7 @@ public class OrderService {
     public void holdOrder(OrderCommand.HoldOrder command) {
 
         OrderItem orderItem = orderItemRepository.findByOrderAndOption(command.orderId(), command.productOptionId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
 
         orderItem.holdStatus();
     }
@@ -75,7 +75,7 @@ public class OrderService {
         }
 
         Order order = orderRepository.findById(command.orderId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
         order.useCoupon(command.couponId(), command.discountPrice());
 
@@ -94,11 +94,7 @@ public class OrderService {
     public Order findById(OrderCommand.Find command) {
 
         Order order = orderRepository.findById(command.orderId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-
-        if (order.getStatus() != OrderStatus.PAYED) {
-            throw new CustomException(ErrorCode.BAD_REQUEST);
-        }
+                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
         return order;
     }
@@ -107,7 +103,7 @@ public class OrderService {
     public Order pay(OrderCommand.Find command) {
 
         Order order = orderRepository.findById(command.orderId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
         return order.pay();
     }

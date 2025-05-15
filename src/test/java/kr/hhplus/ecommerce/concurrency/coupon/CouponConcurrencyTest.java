@@ -7,7 +7,6 @@ import kr.hhplus.ecommerce.domain.coupon.IssuedCouponRepository;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
 import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
-import kr.hhplus.ecommerce.infra.coupon.InMemoryCouponIssueQueue;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,9 +36,6 @@ public class CouponConcurrencyTest {
 
     @Autowired
     CouponRepository couponRepository;
-
-    @Autowired
-    InMemoryCouponIssueQueue inMemoryCouponIssueQueue;
 
     private Long couponId;
 

@@ -37,9 +37,12 @@ dependencies {
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 	implementation("org.springdoc:springdoc-openapi-starter-common:2.0.2")
 
+
 	// lombok
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
+	testCompileOnly("org.projectlombok:lombok")
+	testAnnotationProcessor("org.projectlombok:lombok")
 
     // DB
 	runtimeOnly("com.mysql:mysql-connector-j")
@@ -50,6 +53,10 @@ dependencies {
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:mysql")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	//redis
+	testImplementation ("org.testcontainers:testcontainers:1.19.1")
+	testImplementation ("org.testcontainers:junit-jupiter:1.19.1")
+	testImplementation ("org.testcontainers:redis:1.19.1")
 }
 
 tasks.withType<Test> {

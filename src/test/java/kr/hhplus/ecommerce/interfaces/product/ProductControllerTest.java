@@ -40,7 +40,7 @@ class ProductControllerTest {
                 .name("나이키 에어포스 1")
                 .options(List.of(
                         ProductResult.Option.builder()
-                                .optionId(1L)
+                                .id(1L)
                                 .optionValue("270")
                                 .price(129000L)
                                 .stock(10L)
@@ -69,7 +69,7 @@ class ProductControllerTest {
                 .name("나이키 에어포스 1")
                 .options(List.of(
                         ProductResult.Option.builder()
-                                .optionId(1L)
+                                .id(1L)
                                 .optionValue("280")
                                 .price(129000L)
                                 .stock(5L)
