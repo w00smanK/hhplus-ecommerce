@@ -24,4 +24,10 @@ public class ProductController implements ProductApi {
         var result = productFacade.findProduct((new ProductCriteria.Find(productId)));
         return StatusResponse.of(200, "단일 상품 조회 성공", ProductResponse.ProductDetail.from(result));
     }
+
+    @Override
+    public StatusResponse<ProductResponse.ProductList> findBestSelling(String date, Integer limit) {
+        var result = productFacade.findBestSelling(new ProductCriteria.Best(date, limit));
+        return StatusResponse.of(200, "인기 상품 목록 조회 성공", ProductResponse.ProductList.from(result));
+    }
 }

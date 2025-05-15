@@ -47,6 +47,19 @@ public class ProductService {
     }
 
     @Transactional
+    public ProductInfo.ProductDetail findProductByOptionId(ProductCommand.FindByProductOptionId command) {
+        ProductStock productStock = productStockRepository.findById(command.getProductOptionId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        Product product = productRepository.findById(productStock.getProductId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        List<ProductStock> productStocks = productStockRepository.findByProductId(product.getId());
+
+        return ProductInfo.ProductDetail.from(product, productStocks);
+    }
+
+    @Transactional
 //    public ProductInfo.StockCheckResult reduceStock(List<OrderCommand.OrderItem> commands) {
         public ProductInfo.StockCheckResult reduceStock(OrderCommand.OrderItemList commands) {
         return new ProductInfo.StockCheckResult(commands.orderItems().stream().map(i -> {

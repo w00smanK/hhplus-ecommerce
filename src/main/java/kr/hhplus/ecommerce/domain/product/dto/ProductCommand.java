@@ -14,4 +14,16 @@ public class ProductCommand {
             return productId;
         }
     }
+
+    public static class FindByProductOptionId {
+        private final Long productOptionId;
+
+        public FindByProductOptionId(Long productOptionId) {
+            this.productOptionId = productOptionId;
+        }
+
+        public Long getProductOptionId() {
+            return productOptionId;
+        }
+    }
 }
