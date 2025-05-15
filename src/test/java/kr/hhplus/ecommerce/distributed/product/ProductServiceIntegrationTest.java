@@ -121,8 +121,7 @@ class ProductServiceIntegrationTest {
                     new OrderCommand.OrderItem(awayJersey.getId(), 92_000L, 600L)    // 부족
             );
 
-            ProductInfo.StockCheckResult result = productService.reduceStock(OrderCommand.OrderItemList.toCommand(command));
-
+            ProductInfo.StockCheckResult result = productService.reduceStock(new OrderCommand.OrderItemList(command));
             assertThat(result.checkStocks()).hasSize(2);
 
             assertThat(result.checkStocks().get(0).isEnough()).isTrue();

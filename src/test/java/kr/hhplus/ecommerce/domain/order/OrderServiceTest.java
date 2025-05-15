@@ -8,6 +8,7 @@ import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
 import kr.hhplus.ecommerce.domain.order.entity.Order;
 import kr.hhplus.ecommerce.domain.order.entity.OrderItem;
 import kr.hhplus.ecommerce.domain.order.entity.OrderStatus;
+import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -89,11 +90,12 @@ class OrderServiceTest {
 
         // Arrange
         Long productOptionId = 1L;
-        OrderCommand.HoldOrder command = new OrderCommand.HoldOrder(1L, productOptionId);
+        OrderItem orderItem = new OrderItem(1L, 1L, 1000L, 101L);
+        List<ProductInfo.StockStatus> optionDetails = List.of(new ProductInfo.StockStatus(1L, false, 101L, 100L));
 
-        OrderItem orderItem = new OrderItem(1L, 1L, 1000L, 100L);
+        OrderCommand.HoldOrder command = new OrderCommand.HoldOrder(1L, optionDetails);
 
-        when(orderItemRepository.findByOrderAndOption(1L, productOptionId)).thenReturn(Optional.of(orderItem));
+        when(orderItemRepository.findByOrderAndOption(1L, productOptionId)).thenReturn(orderItem);
 
         // Act
         orderService.holdOrder(command);

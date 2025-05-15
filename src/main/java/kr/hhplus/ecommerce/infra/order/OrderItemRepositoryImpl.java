@@ -1,6 +1,8 @@
 package kr.hhplus.ecommerce.infra.order;
 
 
+import kr.hhplus.ecommerce.config.exception.CustomException;
+import kr.hhplus.ecommerce.config.exception.ErrorCode;
 import kr.hhplus.ecommerce.domain.order.OrderItemRepository;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
 import kr.hhplus.ecommerce.domain.order.entity.OrderItem;
@@ -10,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 
 @Repository
@@ -20,8 +21,9 @@ public class OrderItemRepositoryImpl implements OrderItemRepository {
     private final OrderItemJpaRepository jpaRepository;
 
     @Override
-    public Optional<OrderItem> findByOrderAndOption(Long orderId, Long productOptionId) {
-        return jpaRepository.findByOrderIdAndProductOptionId(orderId, productOptionId);
+    public OrderItem findByOrderAndOption(Long orderId, Long productOptionId) {
+        return jpaRepository.findByOrderIdAndProductOptionId(orderId, productOptionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
     }
 
     @Override

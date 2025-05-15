@@ -17,6 +17,7 @@ import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -33,22 +34,23 @@ public class OrderFacade {
 
     @DistributedLock(
             prefix = "order:stock",
-            key = "#criteria.items[0].productOptionId",
-            waitTime = 30,
-            leaseTime = 10
+            key = "#criteria.items[*].productOptionId",
+            waitTime = 15,
+            leaseTime = 5
     )
+    @Transactional
     public OrderResult.Create order(OrderCriteria.Create criteria) {
 
+        log.info("✅ 요청 옵션 목록: {}", criteria.items());
         // 상품 조회
         ProductInfo.ProductDetail product = productService.findProduct(new ProductCommand.Find(criteria.productId()));
-
-        // 주문 아이템 생성
         List<OrderCommand.OrderItem> orderItemCommand = criteria.items().stream()
                 .flatMap(item -> product.getStocks().stream()
                         .filter(option -> item.productOptionId().equals(option.getId()))
                         .map(option -> new OrderCommand.OrderItem(item.productOptionId(), option.getPrice(), item.quantity())))
                 .toList();
 
+        log.info("✅ 생성된 주문 아이템: {}", orderItemCommand.stream().map(OrderCommand.OrderItem::productOptionId).toList());
         // 주문 생성
         OrderInfo.Create order = orderService.createOrder(new OrderCommand.Create(criteria.userId(), orderItemCommand));
 
@@ -61,15 +63,7 @@ public class OrderFacade {
         // 재고 차감 -> 재고 부족시 해당 옵션 상태
         ProductInfo.StockCheckResult checkProductOrder = productService.reduceStock(new OrderCommand.OrderItemList(orderItemCommand));
 
-        // 재고 부족시 -> 생성된 주문아이템 상태 변경(보류)
-        OrderInfo.Create finalOrder = order;
-        checkProductOrder.checkStocks().forEach(stock -> {
-            criteria.items().forEach(criteriaItem -> {
-                if (!stock.isEnough() && criteriaItem.quantity().intValue() != stock.requestQuantity().intValue()) {
-                    orderService.holdOrder(new OrderCommand.HoldOrder(finalOrder.orderId(), stock.stockId()));
-                }
-            });
-        });
+        orderService.holdOrder(new OrderCommand.HoldOrder(order.orderId(), checkProductOrder.checkStocks()));
 
         //  결제 정보 저장
         paymentService.save(new PaymentCommand.Save(order.orderId(), order.paymentAmount()));
