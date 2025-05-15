@@ -36,13 +36,15 @@ public class ProductService {
         return ProductInfo.ProductList.of(productDetails);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public ProductInfo.ProductDetail findProduct(ProductCommand.Find command) {
+        log.info("command.getProductId(): {}", command.getProductId());
         Product product = productRepository.findById(command.getProductId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         List<ProductStock> productStocks = productStockRepository.findByProductId(command.getProductId());
-
+        log.info("[DEBUG_LOG] productStocks (size={}): {}", productStocks.size(),
+                productStocks.stream().map(ProductStock::getId).toList());
         return ProductInfo.ProductDetail.from(product, productStocks);
     }
 

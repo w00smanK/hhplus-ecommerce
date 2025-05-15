@@ -49,6 +49,9 @@ class OrderFacadeTest {
     private ProductStock iphone15_256GB;
     private ProductStock galaxyS24_256GB;
     private ProductStock galaxyS24_512GB;
+    private ProductStock iphone15_512GB;
+    private Product iphone;
+    private Product galaxy;
 
     @BeforeEach
     void setUp() {
@@ -57,11 +60,12 @@ class OrderFacadeTest {
                 .orElseGet(() -> userRepository.save(new User("김우경")));
 
         // 상품 및 옵션 등록
-        Product iphone = productRepository.save(new Product("아이폰15", "Apple"));
-        Product galaxy = productRepository.save(new Product("갤럭시S24", "Samsung"));
+        iphone = productRepository.save(new Product("아이폰15", "Apple"));
+        galaxy = productRepository.save(new Product("갤럭시S24", "Samsung"));
 
         iphone15_128GB = productStockRepository.save(new ProductStock(iphone.getId(), "128GB", 1000000L, 50L));
         iphone15_256GB = productStockRepository.save(new ProductStock(iphone.getId(), "256GB", 1200000L, 30L));
+        iphone15_512GB = productStockRepository.save(new ProductStock(iphone.getId(), "512GB", 1600000L, 20L));
         galaxyS24_256GB = productStockRepository.save(new ProductStock(galaxy.getId(), "256GB", 1100000L, 40L));
         galaxyS24_512GB = productStockRepository.save(new ProductStock(galaxy.getId(), "512GB", 1300000L, 20L));
     }
@@ -76,23 +80,24 @@ class OrderFacadeTest {
         // 초기 재고 확인
         log.info("[DEBUG_LOG] Initial stock - iphone15_128GB: {}", iphone15_128GB.getStock());
         log.info("[DEBUG_LOG] Initial stock - iphone15_256GB: {}", iphone15_256GB.getStock());
+        log.info("[DEBUG_LOG] Initial stock - iphone15_512GB: {}", iphone15_512GB.getStock());
         log.info("[DEBUG_LOG] Initial stock - galaxyS24_256GB: {}", galaxyS24_256GB.getStock());
         log.info("[DEBUG_LOG] Initial stock - galaxyS24_512GB: {}", galaxyS24_512GB.getStock());
         // given
         List<OrderCriteria.Create> criteriaList = List.of(
-                new OrderCriteria.Create(user.getId(), iphone15_128GB.getProductId(), List.of(
+                new OrderCriteria.Create(user.getId(), iphone.getId(), List.of(
                         new OrderCriteria.OrderItem(iphone15_128GB.getId(), 1L),
                         new OrderCriteria.OrderItem(iphone15_256GB.getId(), 1L)
                 ), null),
-                new OrderCriteria.Create(user.getId(), iphone15_256GB.getProductId(), List.of(
+                new OrderCriteria.Create(user.getId(), iphone.getId(), List.of(
                         new OrderCriteria.OrderItem(iphone15_256GB.getId(), 1L),
+                        new OrderCriteria.OrderItem(iphone15_512GB.getId(), 1L)
+                ), null),
+                new OrderCriteria.Create(user.getId(), galaxy.getId(), List.of(
+                        new OrderCriteria.OrderItem(galaxyS24_512GB.getId(), 1L),
                         new OrderCriteria.OrderItem(galaxyS24_256GB.getId(), 1L)
                 ), null),
-                new OrderCriteria.Create(user.getId(), galaxyS24_256GB.getProductId(), List.of(
-                        new OrderCriteria.OrderItem(iphone15_128GB.getId(), 1L),
-                        new OrderCriteria.OrderItem(galaxyS24_256GB.getId(), 1L)
-                ), null),
-                new OrderCriteria.Create(user.getId(), galaxyS24_512GB.getProductId(), List.of(
+                new OrderCriteria.Create(user.getId(), galaxy.getId(), List.of(
                         new OrderCriteria.OrderItem(galaxyS24_512GB.getId(), 1L)
                 ), null)
         );
@@ -100,6 +105,8 @@ class OrderFacadeTest {
         // 각 상품 옵션별 성공 카운트
         AtomicInteger iphone15_128GB_count = new AtomicInteger();
         AtomicInteger iphone15_256GB_count = new AtomicInteger();
+        AtomicInteger iphone15_512GB_count = new AtomicInteger();
+
         AtomicInteger galaxyS24_256GB_count = new AtomicInteger();
         AtomicInteger galaxyS24_512GB_count = new AtomicInteger();
         AtomicInteger failureCount = new AtomicInteger();
@@ -108,7 +115,7 @@ class OrderFacadeTest {
         int threadCount = 10;
 
         for (int i = 0; i < threadCount; i++) {
-            final int idx = i % 4;
+            final int idx = i % 5;
             tasks.add(() -> {
                 try {
                     OrderCriteria.Create criteria = criteriaList.get(idx);
@@ -123,6 +130,9 @@ class OrderFacadeTest {
                         } else if (item.productOptionId().equals(iphone15_256GB.getId())) {
                             iphone15_256GB_count.incrementAndGet();
                             log.info("[DEBUG_LOG] Incremented iphone15_256GB_count: {}", iphone15_256GB_count.get());
+                        } else if (item.productOptionId().equals(iphone15_512GB.getId())) {
+                            iphone15_512GB_count.incrementAndGet();
+                            log.info("[DEBUG_LOG] Incremented iphone15_512GB_count: {}", iphone15_512GB_count.get());
                         } else if (item.productOptionId().equals(galaxyS24_256GB.getId())) {
                             galaxyS24_256GB_count.incrementAndGet();
                             log.info("[DEBUG_LOG] Incremented galaxyS24_256GB_count: {}", galaxyS24_256GB_count.get());
@@ -146,32 +156,41 @@ class OrderFacadeTest {
         // then
         ProductStock finalStock1 = productStockRepository.findById(iphone15_128GB.getId()).orElseThrow();
         ProductStock finalStock2 = productStockRepository.findById(iphone15_256GB.getId()).orElseThrow();
-        ProductStock finalStock3 = productStockRepository.findById(galaxyS24_256GB.getId()).orElseThrow();
-        ProductStock finalStock4 = productStockRepository.findById(galaxyS24_512GB.getId()).orElseThrow();
+        ProductStock finalStock3 = productStockRepository.findById(iphone15_512GB.getId()).orElseThrow();
+
+        ProductStock finalStock4 = productStockRepository.findById(galaxyS24_256GB.getId()).orElseThrow();
+        ProductStock finalStock5 = productStockRepository.findById(galaxyS24_512GB.getId()).orElseThrow();
 
         // 각 상품 옵션별 주문 수량은 1이므로, 카운트 값이 곧 차감된 수량
         long expected1 = 50 - iphone15_128GB_count.get();
         long expected2 = 30 - iphone15_256GB_count.get();
-        long expected3 = 40 - galaxyS24_256GB_count.get();
-        long expected4 = 20 - galaxyS24_512GB_count.get();
+        long expected3 = 20 - iphone15_512GB_count.get();
+
+        long expected4 = 40 - galaxyS24_256GB_count.get();
+        long expected5 = 20 - galaxyS24_512GB_count.get();
 
         log.info("🧾 재고 결과 로그:");
         log.info("📦 iphone15_128GB | 예상: {} | 실제: {}", expected1, finalStock1.getStock());
         log.info("📦 iphone15_256GB | 예상: {} | 실제: {}", expected2, finalStock2.getStock());
-        log.info("📦 galaxyS24_256GB | 예상: {} | 실제: {}", expected3, finalStock3.getStock());
-        log.info("📦 galaxyS24_512GB | 예상: {} | 실제: {}", expected4, finalStock4.getStock());
+        log.info("📦 iphone15_512GB | 예상: {} | 실제: {}", expected3, finalStock3.getStock());
+
+        log.info("📦 galaxyS24_256GB | 예상: {} | 실제: {}", expected4, finalStock4.getStock());
+        log.info("📦 galaxyS24_512GB | 예상: {} | 실제: {}", expected5, finalStock5.getStock());
 
         log.info("[DEBUG_LOG] Final counter values:");
         log.info("[DEBUG_LOG] iphone15_128GB_count: {}", iphone15_128GB_count.get());
         log.info("[DEBUG_LOG] iphone15_256GB_count: {}", iphone15_256GB_count.get());
+        log.info("[DEBUG_LOG] iphone15_512GB_count: {}", iphone15_512GB_count.get());
+
         log.info("[DEBUG_LOG] galaxyS24_256GB_count: {}", galaxyS24_256GB_count.get());
         log.info("[DEBUG_LOG] galaxyS24_512GB_count: {}", galaxyS24_512GB_count.get());
 
-        log.info("🎯 주문 결과 | 성공: {}, 실패: {}", iphone15_128GB_count.get() + iphone15_256GB_count.get() + galaxyS24_256GB_count.get() + galaxyS24_512GB_count.get(), failureCount.get());
+        log.info("🎯 주문 결과 | 성공: {}, 실패: {}", iphone15_128GB_count.get() + iphone15_256GB_count.get() + iphone15_512GB_count.get() + galaxyS24_256GB_count.get() + galaxyS24_512GB_count.get(), failureCount.get());
 
         assertThat(finalStock1.getStock()).isEqualTo(expected1);
         assertThat(finalStock2.getStock()).isEqualTo(expected2);
         assertThat(finalStock3.getStock()).isEqualTo(expected3);
         assertThat(finalStock4.getStock()).isEqualTo(expected4);
+        assertThat(finalStock5.getStock()).isEqualTo(expected5);
     }
 }
