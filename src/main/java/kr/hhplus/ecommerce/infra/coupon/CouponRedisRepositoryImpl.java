@@ -1,31 +1,25 @@
 package kr.hhplus.ecommerce.infra.coupon;
 
+import kr.hhplus.ecommerce.domain.coupon.CouponRedisRepository;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.Set;
 
-/**
- * Redis를 이용한 쿠폰 저장소
- * Sorted Set을 이용하여 선착순 쿠폰 발급 기능 구현
- */
-@Component
+@Repository
 @RequiredArgsConstructor
 @Slf4j
-public class RedisCouponRepository {
+public class CouponRedisRepositoryImpl implements CouponRedisRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
     private static final String COUPON_KEY_PREFIX = "coupon:";
     private static final String COUPON_ISSUED_KEY_PREFIX = "coupon:issued:";
 
-    /**
-     * 쿠폰 초기화 - 쿠폰 ID와 수량을 Redis에 저장
-     * @param coupon 쿠폰 정보
-     */
+    @Override
     public void initializeCoupon(Coupon coupon) {
         String couponKey = getCouponKey(coupon.getId());
 
@@ -33,16 +27,15 @@ public class RedisCouponRepository {
         if (Boolean.FALSE.equals(redisTemplate.hasKey(couponKey))) {
             ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
 
-            // 쿠폰 수량만큼 추가 (score는 0으로 동일하게 설정)
+            // 쿠폰 수량만큼 추가 (score는 현재 시간을 밀리초로 설정하여 선착순 순서 보장)
+            long baseTime = System.currentTimeMillis();
             for (int i = 0; i < coupon.getQuantity(); i++) {
-                zSetOps.add(couponKey, String.valueOf(i), 0);
+                zSetOps.add(couponKey, String.valueOf(i), baseTime + i);
             }
         }
     }
 
-    /**
-     * 쿠폰 발급 - Redis의 Sorted Set에서 멤버 하나를 제거하고 발급 처리
-     */
+    @Override
     public boolean issueCoupon(Long userId, Long couponId) {
         String couponKey = getCouponKey(couponId);
         String issuedKey = getIssuedKey(couponId, userId);
@@ -64,6 +57,7 @@ public class RedisCouponRepository {
             return false;
         }
 
+        // 가장 오래된 쿠폰(가장 낮은 스코어)부터 발급 (선착순 순서 보장)
         Set<ZSetOperations.TypedTuple<String>> poppedSet = redisTemplate.opsForZSet().popMin(couponKey, 1);
 
         if (poppedSet == null || poppedSet.isEmpty()) {
@@ -73,17 +67,18 @@ public class RedisCouponRepository {
 
         ZSetOperations.TypedTuple<String> poppedItem = poppedSet.iterator().next();
         String member = poppedItem.getValue();
+        Double score = poppedItem.getScore();
 
-        log.info("쿠폰 멤버 제거 성공 - couponId: {}, member: {}", couponId, member);
+        log.info("쿠폰 멤버 제거 성공 - couponId: {}, member: {}, 발급시각(score): {}", couponId, member, score);
 
-        // 발급 정보 저장
-        Boolean setResult = redisTemplate.opsForValue().setIfAbsent(issuedKey, "1");
+        // 발급 정보 저장 (발급 시각을 값으로 저장)
+        Boolean setResult = redisTemplate.opsForValue().setIfAbsent(issuedKey, String.valueOf(System.currentTimeMillis()));
         log.info("쿠폰 발급 정보 저장 - userId: {}, couponId: {}, result: {}", userId, couponId, setResult);
 
         // 발급 정보 저장에 실패했으면 쿠폰 복구
         if (Boolean.FALSE.equals(setResult)) {
             log.warn("쿠폰 발급 정보 저장 실패, 쿠폰 복구 - userId: {}, couponId: {}", userId, couponId);
-            redisTemplate.opsForZSet().add(couponKey, member, poppedItem.getScore());
+            redisTemplate.opsForZSet().add(couponKey, member, score);
             return false;
         }
 
@@ -91,26 +86,20 @@ public class RedisCouponRepository {
         return true;
     }
 
-    /**
-     * 쿠폰 재고 확인
-     */
+    @Override
     public long getCouponStock(Long couponId) {
         String couponKey = getCouponKey(couponId);
         Long size = redisTemplate.opsForZSet().size(couponKey);
         return size != null ? size : 0;
     }
 
-    /**
-     * 사용자의 쿠폰 발급 여부 확인
-     */
+    @Override
     public boolean hasIssuedCoupon(Long userId, Long couponId) {
         String issuedKey = getIssuedKey(couponId, userId);
         return Boolean.TRUE.equals(redisTemplate.hasKey(issuedKey));
     }
 
-    /**
-     * 쿠폰 발급 롤백 - 발급 실패 시 Redis에서 쿠폰을 다시 추가하고 발급 정보 삭제
-     */
+    @Override
     public void rollbackIssuance(Long userId, Long couponId) {
         String couponKey = getCouponKey(couponId);
         String issuedKey = getIssuedKey(couponId, userId);
@@ -119,7 +108,9 @@ public class RedisCouponRepository {
         if (Boolean.TRUE.equals(redisTemplate.hasKey(issuedKey))) {
             // 쿠폰 재고 복구 (Sorted Set에 멤버 추가)
             ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
-            zSetOps.add(couponKey, String.valueOf(System.nanoTime()), 0);
+            long currentTime = System.currentTimeMillis();
+            String memberValue = String.valueOf(System.nanoTime());
+            zSetOps.add(couponKey, memberValue, currentTime);
 
             // 발급 정보 삭제
             redisTemplate.delete(issuedKey);

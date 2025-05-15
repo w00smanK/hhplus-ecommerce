@@ -3,7 +3,7 @@ package kr.hhplus.ecommerce.scheduler;
 import kr.hhplus.ecommerce.application.coupon.CouponFacade;
 import kr.hhplus.ecommerce.domain.coupon.CouponRepository;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
-import kr.hhplus.ecommerce.infra.coupon.RedisCouponRepository;
+import kr.hhplus.ecommerce.domain.coupon.CouponRedisRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ class CouponDailySchedulerTest {
     private CouponRepository couponRepository;
 
     @Autowired
-    private RedisCouponRepository redisCouponRepository;
+    private CouponRedisRepository couponRedisRepository;
 
     @Autowired
     private CouponDailyScheduler couponDailyScheduler;
@@ -45,12 +45,12 @@ class CouponDailySchedulerTest {
 
         // 쿠폰이 생성되었는지 확인
         assertThat(coupon).isNotNull();
-        
+
         // 쿠폰 수량이 100개인지 확인
         assertThat(coupon.getQuantity()).isEqualTo(100);
 
         // Redis에 쿠폰이 초기화되었는지 확인
-        long redisStock = redisCouponRepository.getCouponStock(coupon.getId());
+        long redisStock = couponRedisRepository.getCouponStock(coupon.getId());
         assertThat(redisStock).isEqualTo(100);
     }
 }

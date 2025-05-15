@@ -1,10 +1,11 @@
 package kr.hhplus.ecommerce.application.coupon;
 
 import kr.hhplus.ecommerce.application.coupon.dto.CouponCriteria;
+import kr.hhplus.ecommerce.application.coupon.dto.CouponResult;
 import kr.hhplus.ecommerce.concurrency.support.ConcurrentExecutor;
 import kr.hhplus.ecommerce.domain.coupon.CouponRepository;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
-import kr.hhplus.ecommerce.infra.coupon.RedisCouponRepository;
+import kr.hhplus.ecommerce.domain.coupon.CouponRedisRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,10 +13,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Description;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,7 +38,10 @@ class CouponRedisFacadeTest {
     private CouponRepository couponRepository;
 
     @Autowired
-    private RedisCouponRepository redisCouponRepository;
+    private CouponRedisRepository couponRedisRepository;
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     private Coupon COUPON;
 
@@ -42,9 +49,9 @@ class CouponRedisFacadeTest {
     void setUp() {
         // 테스트용 쿠폰 생성 (10개 수량)
         COUPON = couponRepository.save(new Coupon(1000L, 10));
-        
+
         // Redis에 쿠폰 초기화
-        redisCouponRepository.initializeCoupon(COUPON);
+        couponRedisRepository.initializeCoupon(COUPON);
     }
 
     @Test
@@ -79,12 +86,15 @@ class CouponRedisFacadeTest {
         // Act
         ConcurrentExecutor.execute(threadPoolSize, threadCount, tasks);
 
+        // 모든 작업이 완료된 후 Redis와 DB 동기화
+        couponFacade.synchronizeCouponQuantity(savedCouponId);
+
         // Assert
         log.info("🎯 Redis 쿠폰 발급 최종 결과 - 성공: {}, 실패: {}", successCount.get(), failureCount.get());
         assertThat(successCount.get() + failureCount.get()).isEqualTo(threadCount);
 
         // Redis에 남은 쿠폰 수량 확인
-        long remainingStock = redisCouponRepository.getCouponStock(savedCouponId);
+        long remainingStock = couponRedisRepository.getCouponStock(savedCouponId);
         log.info("Redis에 남은 쿠폰 수량: {}", remainingStock);
 
         // DB에 저장된 쿠폰 수량 확인
@@ -96,5 +106,55 @@ class CouponRedisFacadeTest {
         assertThat(successCount.get()).isEqualTo(10);
         assertThat(remainingStock).isEqualTo(0);
         assertThat(coupon.getQuantity()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("쿠폰 발급 요청 시각을 스코어로 사용하여 선착순 순서 보장")
+    void couponFirstIssueWithRedis_timestampOrder() throws InterruptedException {
+        Coupon testCoupon = couponRepository.save(new Coupon(1000L, 10));
+        long couponId = testCoupon.getId();
+
+        // Redis에 쿠폰 초기화 (타임스탬프 기반 스코어 사용)
+        couponRedisRepository.initializeCoupon(testCoupon);
+
+        // Redis에 저장된 쿠폰 정보 확인
+        String couponKey = "coupon:" + couponId;
+        Set<ZSetOperations.TypedTuple<String>> couponSet = redisTemplate.opsForZSet().rangeWithScores(couponKey, 0, -1);
+
+        log.info("초기 쿠폰 정보 (Redis):");
+        couponSet.forEach(tuple -> {
+            log.info("멤버: {}, 스코어(타임스탬프): {}", tuple.getValue(), tuple.getScore());
+        });
+
+        List<Long> userIds = List.of(100L, 101L, 102L, 103L, 104L,105L, 106L, 107L, 108L, 109L);
+        List<CouponResult.Issued> issuedResults = new ArrayList<>();
+
+        for (Long userId : userIds) {
+            try {
+                Thread.sleep(1000);
+                CouponResult.Issued result = couponFacade.couponFirstIssueWithRedis(new CouponCriteria.Issue(userId, couponId));
+                issuedResults.add(result);
+                log.info("✅ 쿠폰 발급 성공 - userId: {}, 시간: {}", userId, System.currentTimeMillis());
+            } catch (Exception e) {
+                log.warn("❌ 쿠폰 발급 실패 - userId: {}, message: {}", userId, e.getMessage());
+            }
+        }
+
+        // 모든 쿠폰이 발급되었는지 확인
+        assertThat(issuedResults).hasSize(10);
+
+        // Redis에 남은 쿠폰 수량 확인
+        long remainingStock = couponRedisRepository.getCouponStock(couponId);
+        assertThat(remainingStock).isEqualTo(0);
+
+        // 발급된 쿠폰 정보 확인
+        for (int i = 0; i < issuedResults.size(); i++) {
+            log.info("발급된 쿠폰 #{} - userId: {}", i+1, issuedResults.get(i).userId());
+        }
+
+        // 발급된 쿠폰의 userId가 요청 순서대로인지 확인
+        for (int i = 0; i < issuedResults.size(); i++) {
+            assertThat(issuedResults.get(i).userId()).isEqualTo(userIds.get(i));
+        }
     }
 }

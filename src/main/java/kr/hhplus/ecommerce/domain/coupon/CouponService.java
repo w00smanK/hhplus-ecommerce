@@ -6,7 +6,6 @@ import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
 import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
-import kr.hhplus.ecommerce.infra.coupon.RedisCouponRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,7 @@ public class CouponService {
 
     private final CouponRepository couponRepository;
     private final IssuedCouponRepository issuedCouponRepository;
-    private final RedisCouponRepository redisCouponRepository;
+    private final CouponRedisRepository couponRedisRepository;
 
 
     // 선착순 쿠폰 단일쿠폰
@@ -88,12 +87,12 @@ public class CouponService {
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
             // 이미 발급받은 쿠폰인지 확인
-            if (redisCouponRepository.hasIssuedCoupon(command.userId(), command.couponId())) {
+            if (couponRedisRepository.hasIssuedCoupon(command.userId(), command.couponId())) {
                 throw new CustomException(ErrorCode.DUPLICATE_COUPON);
             }
 
             // Redis를 통한 쿠폰 발급 시도
-            boolean issued = redisCouponRepository.issueCoupon(command.userId(), command.couponId());
+            boolean issued = couponRedisRepository.issueCoupon(command.userId(), command.couponId());
             if (!issued) {
                 throw new CustomException(ErrorCode.BAD_REQUEST);
             }
@@ -104,7 +103,7 @@ public class CouponService {
             return issuedCoupon;
         } catch (Exception e) {
             // 발급 실패 시 Redis에서도 롤백
-            redisCouponRepository.rollbackIssuance(command.userId(), command.couponId());
+            couponRedisRepository.rollbackIssuance(command.userId(), command.couponId());
             throw e;
         }
     }
@@ -133,7 +132,7 @@ public class CouponService {
         Coupon savedCoupon = couponRepository.save(newCoupon);
 
         // Redis에 초기화
-        redisCouponRepository.initializeCoupon(savedCoupon);
+        couponRedisRepository.initializeCoupon(savedCoupon);
 
         log.info("일일 쿠폰 초기화 완료 - couponId: {}, quantity: {}", savedCoupon.getId(), savedCoupon.getQuantity());
 
@@ -145,7 +144,36 @@ public class CouponService {
      */
     public boolean isEventEnded() {
         // Redis에서 남은 쿠폰 수량 확인
-        long remainingStock = redisCouponRepository.getCouponStock(FIRST_COME_COUPON_ID);
+        long remainingStock = couponRedisRepository.getCouponStock(FIRST_COME_COUPON_ID);
         return remainingStock <= 0;
+    }
+
+    /**
+     * Redis와 DB의 쿠폰 수량 동기화
+     * Redis의 남은 쿠폰 수량을 DB에 반영
+     */
+    @Transactional
+    public void synchronizeCouponQuantity(Long couponId) {
+        // Redis에서 남은 쿠폰 수량 확인
+        long remainingStock = couponRedisRepository.getCouponStock(couponId);
+        log.info("Redis 쿠폰 수량 동기화 - couponId: {}, remainingStock: {}", couponId, remainingStock);
+
+        // DB에서 쿠폰 조회
+        Coupon coupon = couponRepository.findById(couponId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        // 발급된 쿠폰 수량 계산 (초기 수량 - 남은 수량)
+        int initialQuantity = coupon.getQuantity();
+        int issuedQuantity = initialQuantity - (int)remainingStock;
+
+        // 남은 수량이 0보다 작으면 0으로 설정
+        int newQuantity = Math.max(0, (int)remainingStock);
+
+        // DB 쿠폰 수량 업데이트
+        coupon.updateQuantity(newQuantity);
+        couponRepository.save(coupon);
+
+        log.info("쿠폰 수량 동기화 완료 - couponId: {}, 초기수량: {}, 발급수량: {}, 남은수량: {}", 
+                couponId, initialQuantity, issuedQuantity, newQuantity);
     }
 }

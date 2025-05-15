@@ -52,11 +52,9 @@ public class CouponFacade {
                 .build();
     }
 
-
     /**
      * 일일 쿠폰 초기화
      * 매일 0시 00분에 100개의 쿠폰을 생성하고 Redis에 저장
-     * @return 생성된 쿠폰 정보
      */
     public CouponResult.Info initializeFirstComeCoupon() {
         Coupon coupon = couponService.initializeFirstComeCoupon();
@@ -71,9 +69,17 @@ public class CouponFacade {
 
     /**
      * 선착순 이벤트 종료 여부 확인
-     * @return 이벤트 종료 여부
      */
     public boolean isEventEnded() {
         return couponService.isEventEnded();
+    }
+
+    /**
+     * Redis와 DB의 쿠폰 수량 동기화
+     * Redis의 남은 쿠폰 수량을 DB에 반영
+     */
+    public void synchronizeCouponQuantity(Long couponId) {
+        couponService.synchronizeCouponQuantity(couponId);
+        log.info("쿠폰 수량 동기화 요청 완료 - couponId: {}", couponId);
     }
 }
