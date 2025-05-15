@@ -109,7 +109,6 @@ public class CouponService {
         }
     }
 
-
     @Transactional
     public IssuedCoupon save(CouponCommand.Save command) {
 
@@ -121,4 +120,32 @@ public class CouponService {
         return issuedCouponRepository.save(new IssuedCoupon(command.userId(), command.couponId()));
     }
 
+    /**
+     * 일일 쿠폰 초기화
+     * 매일 0시 00분에 100개의 쿠폰을 생성하고 Redis에 저장
+     */
+    @Transactional
+    public Coupon initializeFirstComeCoupon() {
+        Coupon newCoupon = Coupon.builder()
+                .discountPrice(1000L)
+                .quantity(FIRST_COME_COUPON_QUANTITY)
+                .build();
+        Coupon savedCoupon = couponRepository.save(newCoupon);
+
+        // Redis에 초기화
+        redisCouponRepository.initializeCoupon(savedCoupon);
+
+        log.info("일일 쿠폰 초기화 완료 - couponId: {}, quantity: {}", savedCoupon.getId(), savedCoupon.getQuantity());
+
+        return savedCoupon;
+    }
+
+    /**
+     * 선착순 이벤트 종료 여부 확인
+     */
+    public boolean isEventEnded() {
+        // Redis에서 남은 쿠폰 수량 확인
+        long remainingStock = redisCouponRepository.getCouponStock(FIRST_COME_COUPON_ID);
+        return remainingStock <= 0;
+    }
 }
