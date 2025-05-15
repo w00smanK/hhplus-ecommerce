@@ -9,6 +9,7 @@ import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -40,6 +41,7 @@ public class CouponFacade {
      * Redis Sorted Set을 이용한 선착순 쿠폰 발급
      * Redis가 동시성을 처리하므로 별도의 분산 락이 필요 없음
      */
+    @Transactional
     public CouponResult.Issued couponFirstIssueWithRedis(CouponCriteria.Issue criteria) {
         IssuedCoupon issuedCoupon = couponService.issueWithRedis(criteria.toCommand());
 
@@ -58,8 +60,6 @@ public class CouponFacade {
      */
     public CouponResult.Info initializeFirstComeCoupon() {
         Coupon coupon = couponService.initializeFirstComeCoupon();
-        log.info("일일 쿠폰 초기화 - couponId: {}, quantity: {}", coupon.getId(), coupon.getQuantity());
-
         return CouponResult.Info.builder()
                 .id(coupon.getId())
                 .discountPrice(coupon.getDiscountPrice())
@@ -67,9 +67,6 @@ public class CouponFacade {
                 .build();
     }
 
-    /**
-     * 선착순 이벤트 종료 여부 확인
-     */
     public boolean isEventEnded() {
         return couponService.isEventEnded();
     }
@@ -78,8 +75,8 @@ public class CouponFacade {
      * Redis와 DB의 쿠폰 수량 동기화
      * Redis의 남은 쿠폰 수량을 DB에 반영
      */
+    @Transactional
     public void synchronizeCouponQuantity(Long couponId) {
         couponService.synchronizeCouponQuantity(couponId);
-        log.info("쿠폰 수량 동기화 요청 완료 - couponId: {}", couponId);
     }
 }
