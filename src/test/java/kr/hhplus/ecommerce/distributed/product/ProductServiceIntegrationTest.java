@@ -122,7 +122,6 @@ class ProductServiceIntegrationTest {
             );
 
             ProductInfo.StockCheckResult result = productService.reduceStock(new OrderCommand.OrderItemList(command));
-
             assertThat(result.checkStocks()).hasSize(2);
 
             assertThat(result.checkStocks().get(0).isEnough()).isTrue();

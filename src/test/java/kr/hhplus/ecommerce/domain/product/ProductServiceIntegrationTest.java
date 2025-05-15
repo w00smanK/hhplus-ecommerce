@@ -134,4 +134,56 @@ class ProductServiceIntegrationTest {
             assertThat(productStockRepository.findById(awayJersey.getId()).get().getStock()).isEqualTo(500L);
         }
     }
+
+    @Nested
+    @DisplayName("상품 옵션 ID로 상품 조회")
+    class FindProductByOptionId {
+
+        @Test
+        @DisplayName("상품 옵션 ID로 상품 조회 성공")
+        void success() {
+            // given
+            ProductCommand.FindByProductOptionId command = new ProductCommand.FindByProductOptionId(homeJersey.getId());
+
+            // when
+            ProductInfo.ProductDetail result = productService.findProductByOptionId(command);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.getProductId()).isEqualTo(soccerUniform.getId());
+            assertThat(result.getBrand()).isEqualTo("나이키");
+            assertThat(result.getName()).isEqualTo("축구 유니폼");
+            assertThat(result.getStocks()).hasSize(2);
+
+            // 옵션 확인
+            boolean foundHomeJersey = false;
+            boolean foundAwayJersey = false;
+
+            for (ProductStock stock : result.getStocks()) {
+                if (stock.getId().equals(homeJersey.getId())) {
+                    assertThat(stock.getOptionValue()).isEqualTo("홈 저지");
+                    assertThat(stock.getPrice()).isEqualTo(89_000L);
+                    foundHomeJersey = true;
+                } else if (stock.getId().equals(awayJersey.getId())) {
+                    assertThat(stock.getOptionValue()).isEqualTo("어웨이 저지");
+                    assertThat(stock.getPrice()).isEqualTo(92_000L);
+                    foundAwayJersey = true;
+                }
+            }
+
+            assertThat(foundHomeJersey).isTrue();
+            assertThat(foundAwayJersey).isTrue();
+        }
+
+        @Test
+        @DisplayName("상품 옵션 ID로 상품 조회 실패 - 존재하지 않는 옵션")
+        void notFound() {
+            // given
+            ProductCommand.FindByProductOptionId command = new ProductCommand.FindByProductOptionId(999L);
+
+            // when & then
+            CustomException ex = assertThrows(CustomException.class, () -> productService.findProductByOptionId(command));
+            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+        }
+    }
 }

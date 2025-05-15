@@ -126,9 +126,9 @@ class ProductServiceTest {
 
             when(productStockRepository.findByIdWithPessimisticLock(101L)).thenReturn(Optional.of(PRODUCT_OPTION1));
             when(productStockRepository.findByIdWithPessimisticLock(102L)).thenReturn(Optional.of(PRODUCT_OPTION2));
-
+          
             ProductInfo.StockCheckResult result = productService.reduceStock(new OrderCommand.OrderItemList(items));
-
+          
             verify(productStockRepository).findByIdWithPessimisticLock(101L);
             verify(productStockRepository).findByIdWithPessimisticLock(102L);
 

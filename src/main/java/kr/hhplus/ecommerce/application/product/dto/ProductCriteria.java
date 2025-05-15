@@ -12,4 +12,9 @@ public record ProductCriteria() {
         }
     }
 
+    public record Best(
+            String date,
+            Integer limit
+    ) {
+    }
 }
