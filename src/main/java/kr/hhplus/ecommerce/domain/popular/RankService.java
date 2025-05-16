@@ -1,0 +1,78 @@
+package kr.hhplus.ecommerce.domain.popular;
+
+import kr.hhplus.ecommerce.domain.popular.dto.RankCommand;
+import kr.hhplus.ecommerce.domain.popular.dto.RankInfo;
+import kr.hhplus.ecommerce.domain.popular.entity.PopularRank;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * 인기 상품 랭킹 서비스
+ */
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class RankService {
+
+    private final PopularRankRepository popularRankRepository;
+    private final PopularRedisRepository popularRedisRepository;
+
+    /**
+     * 판매 랭킹 생성
+     * @param command 랭킹 생성 명령
+     */
+    @Transactional
+    public void createSellRank(RankCommand.CreateList command) {
+        List<PopularRank> ranks = command.getCommands().stream()
+                .map(cmd -> {
+                    // Redis에 랭킹 정보 저장
+                    popularRedisRepository.addDailyRank(cmd.getProductId(), cmd.getQuantity(), cmd.getDate());
+                    
+                    // DB에 랭킹 정보 저장
+                    return PopularRank.create(cmd.getProductId(), cmd.getQuantity(), cmd.getDate());
+                })
+                .collect(Collectors.toList());
+
+        popularRankRepository.saveAll(ranks);
+        log.info("판매 랭킹 생성 완료 - 날짜: {}, 상품 수: {}", 
+                command.getCommands().get(0).getDate(), 
+                command.getCommands().size());
+    }
+
+    /**
+     * 인기 판매 랭킹 조회
+     * @param command 랭킹 조회 명령
+     * @return 인기 상품 목록
+     */
+    @Transactional(readOnly = true)
+    public RankInfo.PopularProducts getPopularSellRank(RankCommand.PopularSellRank command) {
+        LocalDate endDate = command.getDate();
+        LocalDate startDate = endDate.minusDays(command.getDays() - 1);
+        
+        // Redis에서 랭킹 정보 조회
+        List<Long> productIds = popularRedisRepository.getTopProductsByDays(
+                startDate, command.getDays(), command.getTop());
+        
+        // Redis에 데이터가 없으면 DB에서 조회
+        if (productIds.isEmpty()) {
+            log.info("Redis에 랭킹 정보가 없어 DB에서 조회합니다. 기간: {} ~ {}", startDate, endDate);
+            List<Object[]> results = popularRankRepository.findTopByRankDateBetween(
+                    startDate, endDate, command.getTop());
+            
+            productIds = results.stream()
+                    .map(result -> (Long) result[0])
+                    .collect(Collectors.toList());
+        }
+        
+        log.info("인기 판매 랭킹 조회 완료 - 기간: {} ~ {}, 상품 수: {}", 
+                startDate, endDate, productIds.size());
+        
+        return RankInfo.PopularProducts.of(productIds);
+    }
+}
