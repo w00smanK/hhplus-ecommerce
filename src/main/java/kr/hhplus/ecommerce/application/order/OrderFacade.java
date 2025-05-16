@@ -41,7 +41,6 @@ public class OrderFacade {
     @Transactional
     public OrderResult.Create order(OrderCriteria.Create criteria) {
 
-        log.info("✅ 요청 옵션 목록: {}", criteria.items());
         // 상품 조회
         ProductInfo.ProductDetail product = productService.findProduct(new ProductCommand.Find(criteria.productId()));
         List<OrderCommand.OrderItem> orderItemCommand = criteria.items().stream()
@@ -50,7 +49,6 @@ public class OrderFacade {
                         .map(option -> new OrderCommand.OrderItem(item.productOptionId(), option.getPrice(), item.quantity())))
                 .toList();
 
-        log.info("✅ 생성된 주문 아이템: {}", orderItemCommand.stream().map(OrderCommand.OrderItem::productOptionId).toList());
         // 주문 생성
         OrderInfo.Create order = orderService.createOrder(new OrderCommand.Create(criteria.userId(), orderItemCommand));
 

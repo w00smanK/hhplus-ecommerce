@@ -1,6 +1,5 @@
 package kr.hhplus.ecommerce.domain.product.dto;
 
-import kr.hhplus.ecommerce.domain.product.entity.Product;
 import kr.hhplus.ecommerce.domain.product.entity.ProductStock;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -46,7 +45,7 @@ public class ProductInfo {
                     .collect(Collectors.toList());
 
             return ProductDetail.builder()
-                    .productId(product.getId())
+                    .productId(product.getProductId())
                     .brand(product.getBrand())
                     .name(product.getName())
                     .stocks(copied)
@@ -64,5 +63,32 @@ public class ProductInfo {
     }
 
     public record StockCheckResult(List<StockStatus> checkStocks) {
+    }
+
+    @Getter
+    public static class Product {
+        private final Long productId;
+        private final String productName;
+        private final Long productPrice;
+
+        @Builder
+        private Product(Long productId, String productName, Long productPrice) {
+            this.productId = productId;
+            this.productName = productName;
+            this.productPrice = productPrice;
+        }
+    }
+
+    @Getter
+    public static class Products {
+        private final List<Product> products;
+
+        private Products(List<Product> products) {
+            this.products = products;
+        }
+
+        public static Products of(List<Product> products) {
+            return new Products(products);
+        }
     }
 }

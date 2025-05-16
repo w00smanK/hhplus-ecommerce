@@ -4,6 +4,7 @@ package kr.hhplus.ecommerce.domain.order.dto;
 import kr.hhplus.ecommerce.domain.order.entity.OrderStatus;
 import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public record OrderCommand() {
@@ -64,5 +65,13 @@ public record OrderCommand() {
             Integer days,
             Integer limit
     ) {
+    }
+
+    public record DateQuery(
+            LocalDate date
+    ) {
+        public static DateQuery of(LocalDate date) {
+            return new DateQuery(date);
+        }
     }
 }

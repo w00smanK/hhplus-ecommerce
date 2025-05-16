@@ -88,4 +88,41 @@ public class ProductService {
         }).toList());
     }
 
+    @Transactional(readOnly = true)
+    public ProductInfo.Products getProducts(ProductCommand.Products command) {
+        log.info("상품 목록 조회 요청 - 상품 ID 목록: {}", command.getProductIds());
+
+        List<ProductInfo.Product> products = new java.util.ArrayList<>();
+
+        // 상품 ID 목록으로 상품 조회
+        for (Long productId : command.getProductIds()) {
+            try {
+                Product product = productRepository.findById(productId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+                // 상품 정보 변환
+                ProductInfo.Product productInfo = ProductInfo.Product.builder()
+                        .productId(product.getId())
+                        .productName(product.getName())
+                        .productPrice(getProductPrice(product.getId()))
+                        .build();
+
+                products.add(productInfo);
+            } catch (Exception e) {
+                log.warn("상품 조회 실패 - 상품 ID: {}, 오류: {}", productId, e.getMessage());
+            }
+        }
+
+        log.info("상품 목록 조회 완료 - 상품 수: {}", products.size());
+        return ProductInfo.Products.of(products);
+    }
+
+    private Long getProductPrice(Long productId) {
+        List<ProductStock> stocks = productStockRepository.findByProductId(productId);
+        if (stocks.isEmpty()) {
+            return 0L;
+        }
+        return stocks.get(0).getPrice();
+    }
+
 }
