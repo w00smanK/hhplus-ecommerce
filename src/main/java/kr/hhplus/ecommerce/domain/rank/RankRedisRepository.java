@@ -1,4 +1,4 @@
-package kr.hhplus.ecommerce.domain.popular;
+package kr.hhplus.ecommerce.domain.rank;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * 인기 상품 Redis 저장소 인터페이스
  */
-public interface PopularRedisRepository {
+public interface RankRedisRepository {
 
     /**
      * 일별 인기 상품 랭킹 저장

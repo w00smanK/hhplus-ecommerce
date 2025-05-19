@@ -1,12 +1,12 @@
-package kr.hhplus.ecommerce.application.popular;
+package kr.hhplus.ecommerce.application.rank;
 
-import kr.hhplus.ecommerce.application.popular.dto.PopularCriteria;
-import kr.hhplus.ecommerce.application.popular.dto.PopularResult;
+import kr.hhplus.ecommerce.application.rank.dto.RankCriteria;
+import kr.hhplus.ecommerce.application.rank.dto.RankResult;
 import kr.hhplus.ecommerce.config.CacheType;
 import kr.hhplus.ecommerce.config.RedisCacheCleaner;
 import kr.hhplus.ecommerce.config.RedisCacheTemplate;
-import kr.hhplus.ecommerce.domain.popular.RankService;
-import kr.hhplus.ecommerce.domain.popular.dto.RankInfo;
+import kr.hhplus.ecommerce.domain.rank.RankService;
+import kr.hhplus.ecommerce.domain.rank.dto.RankInfo;
 import kr.hhplus.ecommerce.domain.product.ProductService;
 import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
 import org.junit.jupiter.api.AfterEach;
@@ -26,7 +26,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PopularFacadeCacheTest {
+class RankFacadeCacheTest {
 
     @Mock
     private ProductService productService;
@@ -41,7 +41,7 @@ class PopularFacadeCacheTest {
     private RedisCacheCleaner redisCacheCleaner;
 
     @InjectMocks
-    private PopularFacade popularFacade;
+    private RankFacade rankFacade;
 
     private final String cacheKey = "top:5:days:3";
 
@@ -83,15 +83,15 @@ class PopularFacadeCacheTest {
     @Test
     void getPopularProducts() {
         // given
-        when(redisCacheTemplate.get(eq(CacheType.CacheName.POPULAR_PRODUCT), eq(cacheKey), eq(PopularResult.PopularProducts.class)))
+        when(redisCacheTemplate.get(eq(CacheType.CacheName.POPULAR_PRODUCT), eq(cacheKey), eq(RankResult.PopularProducts.class)))
                 .thenReturn(Optional.empty())
                 .thenReturn(Optional.of(createMockPopularProducts()));
 
         // when
-        popularFacade.getPopularProducts(PopularCriteria.PopularProducts.ofTop5Days3());
+        rankFacade.getPopularProducts(RankCriteria.PopularProducts.ofTop5Days3());
 
         // then
-        verify(redisCacheTemplate, times(1)).get(eq(CacheType.CacheName.POPULAR_PRODUCT), eq(cacheKey), eq(PopularResult.PopularProducts.class));
+        verify(redisCacheTemplate, times(1)).get(eq(CacheType.CacheName.POPULAR_PRODUCT), eq(cacheKey), eq(RankResult.PopularProducts.class));
         verify(rankService, times(1)).getPopularSellRank(any());
         verify(productService, times(1)).getProducts(any());
     }
@@ -100,14 +100,14 @@ class PopularFacadeCacheTest {
     @Test
     void updatePopularProductsForCache() {
         // given
-        when(redisCacheTemplate.get(eq(CacheType.CacheName.POPULAR_PRODUCT), eq(cacheKey), eq(PopularResult.PopularProducts.class)))
+        when(redisCacheTemplate.get(eq(CacheType.CacheName.POPULAR_PRODUCT), eq(cacheKey), eq(RankResult.PopularProducts.class)))
                 .thenReturn(Optional.empty());
 
         // when
-        popularFacade.updatePopularProducts(PopularCriteria.PopularProducts.ofTop5Days3());
+        rankFacade.updatePopularProducts(RankCriteria.PopularProducts.ofTop5Days3());
 
         // then
-        verify(redisCacheTemplate, times(1)).put(eq(CacheType.CacheName.POPULAR_PRODUCT), eq(cacheKey), any(PopularResult.PopularProducts.class));
+        verify(redisCacheTemplate, times(1)).put(eq(CacheType.CacheName.POPULAR_PRODUCT), eq(cacheKey), any(RankResult.PopularProducts.class));
         verify(rankService, times(1)).getPopularSellRank(any());
         verify(productService, times(1)).getProducts(any());
     }
@@ -120,20 +120,20 @@ class PopularFacadeCacheTest {
                 .thenReturn(Optional.of("test"));
 
         // when
-        popularFacade.updatePopularProducts(PopularCriteria.PopularProducts.ofTop5Days3());
+        rankFacade.updatePopularProducts(RankCriteria.PopularProducts.ofTop5Days3());
 
         // then
-        verify(redisCacheTemplate, times(1)).put(eq(CacheType.CacheName.POPULAR_PRODUCT), eq(cacheKey), any(PopularResult.PopularProducts.class));
+        verify(redisCacheTemplate, times(1)).put(eq(CacheType.CacheName.POPULAR_PRODUCT), eq(cacheKey), any(RankResult.PopularProducts.class));
         verify(rankService, times(1)).getPopularSellRank(any());
         verify(productService, times(1)).getProducts(any());
     }
 
-    private PopularResult.PopularProducts createMockPopularProducts() {
-        List<PopularResult.PopularProduct> products = List.of(
-                PopularResult.PopularProduct.of(3L, "상품명3", 3000L),
-                PopularResult.PopularProduct.of(2L, "상품명2", 2000L),
-                PopularResult.PopularProduct.of(1L, "상품명1", 1000L)
+    private RankResult.PopularProducts createMockPopularProducts() {
+        List<RankResult.PopularProduct> products = List.of(
+                RankResult.PopularProduct.of(3L, "상품명3", 3000L),
+                RankResult.PopularProduct.of(2L, "상품명2", 2000L),
+                RankResult.PopularProduct.of(1L, "상품명1", 1000L)
         );
-        return PopularResult.PopularProducts.of(products);
+        return RankResult.PopularProducts.of(products);
     }
 }

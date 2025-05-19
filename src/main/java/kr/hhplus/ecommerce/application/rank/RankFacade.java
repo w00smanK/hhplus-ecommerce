@@ -1,15 +1,15 @@
-package kr.hhplus.ecommerce.application.popular;
+package kr.hhplus.ecommerce.application.rank;
 
-import kr.hhplus.ecommerce.application.popular.dto.PopularCriteria;
-import kr.hhplus.ecommerce.application.popular.dto.PopularResult;
+import kr.hhplus.ecommerce.application.rank.dto.RankCriteria;
+import kr.hhplus.ecommerce.application.rank.dto.RankResult;
 import kr.hhplus.ecommerce.config.CacheType;
 import kr.hhplus.ecommerce.config.RedisCacheTemplate;
 import kr.hhplus.ecommerce.domain.order.OrderService;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
-import kr.hhplus.ecommerce.domain.popular.RankService;
-import kr.hhplus.ecommerce.domain.popular.dto.RankCommand;
-import kr.hhplus.ecommerce.domain.popular.dto.RankInfo;
+import kr.hhplus.ecommerce.domain.rank.RankService;
+import kr.hhplus.ecommerce.domain.rank.dto.RankCommand;
+import kr.hhplus.ecommerce.domain.rank.dto.RankInfo;
 import kr.hhplus.ecommerce.domain.product.ProductService;
 import kr.hhplus.ecommerce.domain.product.dto.ProductCommand;
 import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
@@ -23,7 +23,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class PopularFacade {
+public class RankFacade {
 
     private final ProductService productService;
     private final OrderService orderService;
@@ -40,14 +40,14 @@ public class PopularFacade {
     }
 
     @Transactional(readOnly = true)
-    public PopularResult.PopularProducts getPopularProducts(PopularCriteria.PopularProducts criteria) {
+    public RankResult.PopularProducts getPopularProducts(RankCriteria.PopularProducts criteria) {
         String cacheKey = "top:" + criteria.getTop() + ":days:" + criteria.getDays();
 
         // 캐시에서 조회
-        Optional<PopularResult.PopularProducts> cached = redisCacheTemplate.get(
+        Optional<RankResult.PopularProducts> cached = redisCacheTemplate.get(
                 CacheType.CacheName.POPULAR_PRODUCT, 
                 cacheKey, 
-                PopularResult.PopularProducts.class);
+                RankResult.PopularProducts.class);
 
         // 캐시에 있으면 반환
         if (cached.isPresent()) {
@@ -55,17 +55,17 @@ public class PopularFacade {
         }
 
         // 캐시에 없으면 계산하고 캐시에 저장
-        PopularResult.PopularProducts result = calculatePopularProducts(criteria.getTop(), criteria.getDays());
+        RankResult.PopularProducts result = calculatePopularProducts(criteria.getTop(), criteria.getDays());
         redisCacheTemplate.put(CacheType.CacheName.POPULAR_PRODUCT, cacheKey, result);
         return result;
     }
 
     @Transactional(readOnly = true)
-    public PopularResult.PopularProducts updatePopularProducts(PopularCriteria.PopularProducts criteria) {
+    public RankResult.PopularProducts updatePopularProducts(RankCriteria.PopularProducts criteria) {
         String cacheKey = "top:" + criteria.getTop() + ":days:" + criteria.getDays();
 
         // 계산하고 캐시 갱신
-        PopularResult.PopularProducts result = calculatePopularProducts(criteria.getTop(), criteria.getDays());
+        RankResult.PopularProducts result = calculatePopularProducts(criteria.getTop(), criteria.getDays());
         redisCacheTemplate.put(CacheType.CacheName.POPULAR_PRODUCT, cacheKey, result);
         return result;
     }
@@ -86,7 +86,7 @@ public class PopularFacade {
         );
     }
 
-    private PopularResult.PopularProducts calculatePopularProducts(int top, int days) {
+    private RankResult.PopularProducts calculatePopularProducts(int top, int days) {
         LocalDate now = LocalDate.now();
 
         RankCommand.PopularSellRank popularSellRankCommand = RankCommand.PopularSellRank.of(top, days, now);
@@ -95,13 +95,13 @@ public class PopularFacade {
         ProductCommand.Products productsCommand = ProductCommand.Products.of(popularProducts.getProductIds());
         ProductInfo.Products products = productService.getProducts(productsCommand);
 
-        return PopularResult.PopularProducts.of(products.getProducts().stream()
+        return RankResult.PopularProducts.of(products.getProducts().stream()
             .map(this::toPopularProduct)
             .toList());
     }
 
-    private PopularResult.PopularProduct toPopularProduct(ProductInfo.Product product) {
-        return PopularResult.PopularProduct.builder()
+    private RankResult.PopularProduct toPopularProduct(ProductInfo.Product product) {
+        return RankResult.PopularProduct.builder()
             .productId(product.getProductId())
             .productName(product.getProductName())
             .productPrice(product.getProductPrice())

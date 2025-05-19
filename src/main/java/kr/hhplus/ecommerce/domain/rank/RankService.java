@@ -1,8 +1,8 @@
-package kr.hhplus.ecommerce.domain.popular;
+package kr.hhplus.ecommerce.domain.rank;
 
-import kr.hhplus.ecommerce.domain.popular.dto.RankCommand;
-import kr.hhplus.ecommerce.domain.popular.dto.RankInfo;
-import kr.hhplus.ecommerce.domain.popular.entity.PopularRank;
+import kr.hhplus.ecommerce.domain.rank.dto.RankCommand;
+import kr.hhplus.ecommerce.domain.rank.dto.RankInfo;
+import kr.hhplus.ecommerce.domain.rank.entity.PopularRank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class RankService {
 
     private final PopularRankRepository popularRankRepository;
-    private final PopularRedisRepository popularRedisRepository;
+    private final RankRedisRepository rankRedisRepository;
 
     /**
      * 판매 랭킹 생성
@@ -32,7 +32,7 @@ public class RankService {
         List<PopularRank> ranks = command.getCommands().stream()
                 .map(cmd -> {
                     // Redis에 랭킹 정보 저장
-                    popularRedisRepository.addDailyRank(cmd.getProductId(), cmd.getQuantity(), cmd.getDate());
+                    rankRedisRepository.addDailyRank(cmd.getProductId(), cmd.getQuantity(), cmd.getDate());
                     
                     // DB에 랭킹 정보 저장
                     return PopularRank.create(cmd.getProductId(), cmd.getQuantity(), cmd.getDate());
@@ -56,7 +56,7 @@ public class RankService {
         LocalDate startDate = endDate.minusDays(command.getDays() - 1);
         
         // Redis에서 랭킹 정보 조회
-        List<Long> productIds = popularRedisRepository.getTopProductsByDays(
+        List<Long> productIds = rankRedisRepository.getTopProductsByDays(
                 startDate, command.getDays(), command.getTop());
         
         // Redis에 데이터가 없으면 DB에서 조회

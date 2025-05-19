@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.interfaces.scheduler;
 
-import kr.hhplus.ecommerce.application.popular.dto.PopularCriteria;
-import kr.hhplus.ecommerce.application.popular.PopularFacade;
+import kr.hhplus.ecommerce.application.rank.dto.RankCriteria;
+import kr.hhplus.ecommerce.application.rank.RankFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,7 +17,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class PopularProductScheduler {
 
-    private final PopularFacade popularFacade;
+    private final RankFacade rankFacade;
 
     @Scheduled(cron = "0 0 0 * * *")
     public void createDailyRank() {
@@ -25,7 +25,7 @@ public class PopularProductScheduler {
         try {
             // 전일 주문 데이터 기반으로 인기 상품 랭킹 생성
             LocalDate yesterday = LocalDate.now().minusDays(1);
-            popularFacade.createDailyRankAt(yesterday);
+            rankFacade.createDailyRankAt(yesterday);
             log.info("===== 일일 인기 상품 랭킹 생성 완료 - 날짜: {} =====", yesterday);
             
             // 인기 상품 캐시 갱신
@@ -41,7 +41,7 @@ public class PopularProductScheduler {
     private void updatePopularProductsCache() {
         log.info("===== 인기 상품 캐시 갱신 시작 =====");
         try {
-            popularFacade.updatePopularProducts(PopularCriteria.PopularProducts.ofTop5Days3());
+            rankFacade.updatePopularProducts(RankCriteria.PopularProducts.ofTop5Days3());
             log.info("===== 인기 상품 캐시 갱신 완료 =====");
         } catch (Exception e) {
             log.error("인기 상품 캐시 갱신 중 오류 발생", e);

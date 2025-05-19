@@ -1,6 +1,6 @@
-package kr.hhplus.ecommerce.infra.popular;
+package kr.hhplus.ecommerce.infra.rank;
 
-import kr.hhplus.ecommerce.domain.popular.PopularRedisRepository;
+import kr.hhplus.ecommerce.domain.rank.RankRedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-public class PopularRedisRepositoryImpl implements PopularRedisRepository {
+public class RankRepositoryImpl implements RankRedisRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
     private static final String DAILY_RANK_KEY_PREFIX = "ranking:daily:";

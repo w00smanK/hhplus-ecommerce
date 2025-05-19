@@ -1,6 +1,6 @@
-package kr.hhplus.ecommerce.domain.popular;
+package kr.hhplus.ecommerce.domain.rank;
 
-import kr.hhplus.ecommerce.domain.popular.entity.Rank;
+import kr.hhplus.ecommerce.domain.rank.entity.PopularRank;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,21 +11,21 @@ import java.util.List;
 /**
  * 인기 상품 랭킹 저장소 인터페이스
  */
-public interface RankRepository extends JpaRepository<Rank, Long> {
+public interface PopularRankRepository extends JpaRepository<PopularRank, Long> {
 
     /**
      * 특정 날짜의 인기 상품 랭킹 조회
      */
-    @Query("SELECT r FROM Rank r WHERE r.rankDate = :date ORDER BY r.quantity DESC LIMIT :limit")
-    List<Rank> findTopByRankDate(@Param("date") LocalDate date, @Param("limit") int limit);
+    @Query("SELECT p FROM PopularRank p WHERE p.rankDate = :date ORDER BY p.quantity DESC LIMIT :limit")
+    List<PopularRank> findTopByRankDate(@Param("date") LocalDate date, @Param("limit") int limit);
 
     /**
      * 여러 날짜의 인기 상품 랭킹 조회
      */
-    @Query("SELECT r.productId, SUM(r.quantity) as totalQuantity " +
-           "FROM Rank r " +
-           "WHERE r.rankDate BETWEEN :startDate AND :endDate " +
-           "GROUP BY r.productId " +
+    @Query("SELECT p.productId, SUM(p.quantity) as totalQuantity " +
+           "FROM PopularRank p " +
+           "WHERE p.rankDate BETWEEN :startDate AND :endDate " +
+           "GROUP BY p.productId " +
            "ORDER BY totalQuantity DESC " +
            "LIMIT :limit")
     List<Object[]> findTopByRankDateBetween(

@@ -1,7 +1,7 @@
-package kr.hhplus.ecommerce.application.popular;
+package kr.hhplus.ecommerce.application.rank;
 
-import kr.hhplus.ecommerce.application.popular.dto.PopularCriteria;
-import kr.hhplus.ecommerce.application.popular.dto.PopularResult;
+import kr.hhplus.ecommerce.application.rank.dto.RankCriteria;
+import kr.hhplus.ecommerce.application.rank.dto.RankResult;
 import kr.hhplus.ecommerce.config.CacheType;
 import kr.hhplus.ecommerce.config.RedisCacheCleaner;
 import kr.hhplus.ecommerce.config.RedisCacheTemplate;
@@ -23,10 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class PopularFacadeIntegrationTest {
+class RankFacadeIntegrationTest {
 
     @Autowired
-    private PopularFacade popularFacade;
+    private RankFacade rankFacade;
 
     @Autowired
     private ProductRepository productRepository;
@@ -56,7 +56,7 @@ class PopularFacadeIntegrationTest {
         productRepository.save(product3);
         
         // 인기 상품 랭킹 생성 (전일 데이터)
-        popularFacade.createDailyRankAt(LocalDate.now().minusDays(1));
+        rankFacade.createDailyRankAt(LocalDate.now().minusDays(1));
     }
 
     @AfterEach
@@ -69,12 +69,12 @@ class PopularFacadeIntegrationTest {
     @Test
     void getPopularProducts() {
         // given
-        Optional<PopularResult.PopularProducts> emptyCached = redisCacheTemplate.get(
-                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, PopularResult.PopularProducts.class);
+        Optional<RankResult.PopularProducts> emptyCached = redisCacheTemplate.get(
+                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, RankResult.PopularProducts.class);
 
         // when
-        PopularResult.PopularProducts result = popularFacade.getPopularProducts(
-                PopularCriteria.PopularProducts.ofTop5Days3());
+        RankResult.PopularProducts result = rankFacade.getPopularProducts(
+                RankCriteria.PopularProducts.ofTop5Days3());
 
         // then
         assertThat(emptyCached).isEmpty();
@@ -84,8 +84,8 @@ class PopularFacadeIntegrationTest {
         assertThat(result.getProducts()).isNotEmpty();
         
         // 캐시 검증
-        Optional<PopularResult.PopularProducts> cached = redisCacheTemplate.get(
-                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, PopularResult.PopularProducts.class);
+        Optional<RankResult.PopularProducts> cached = redisCacheTemplate.get(
+                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, RankResult.PopularProducts.class);
         assertThat(cached).isPresent();
     }
 
@@ -93,12 +93,12 @@ class PopularFacadeIntegrationTest {
     @Test
     void updatePopularProductsForCache() {
         // given
-        Optional<PopularResult.PopularProducts> emptyCached = redisCacheTemplate.get(
-                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, PopularResult.PopularProducts.class);
+        Optional<RankResult.PopularProducts> emptyCached = redisCacheTemplate.get(
+                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, RankResult.PopularProducts.class);
 
         // when
-        PopularResult.PopularProducts result = popularFacade.updatePopularProducts(
-                PopularCriteria.PopularProducts.ofTop5Days3());
+        RankResult.PopularProducts result = rankFacade.updatePopularProducts(
+                RankCriteria.PopularProducts.ofTop5Days3());
 
         // then
         assertThat(emptyCached).isEmpty();
@@ -108,8 +108,8 @@ class PopularFacadeIntegrationTest {
         assertThat(result.getProducts()).isNotEmpty();
         
         // 캐시 검증
-        Optional<PopularResult.PopularProducts> cached = redisCacheTemplate.get(
-                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, PopularResult.PopularProducts.class);
+        Optional<RankResult.PopularProducts> cached = redisCacheTemplate.get(
+                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, RankResult.PopularProducts.class);
         assertThat(cached).isPresent();
     }
 
@@ -122,8 +122,8 @@ class PopularFacadeIntegrationTest {
                 CacheType.CacheName.POPULAR_PRODUCT, cacheKey, String.class);
 
         // when
-        PopularResult.PopularProducts result = popularFacade.updatePopularProducts(
-                PopularCriteria.PopularProducts.ofTop5Days3());
+        RankResult.PopularProducts result = rankFacade.updatePopularProducts(
+                RankCriteria.PopularProducts.ofTop5Days3());
 
         // then
         assertThat(existCached).isPresent();
@@ -134,8 +134,8 @@ class PopularFacadeIntegrationTest {
         assertThat(result.getProducts()).isNotEmpty();
         
         // 캐시 검증
-        Optional<PopularResult.PopularProducts> cached = redisCacheTemplate.get(
-                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, PopularResult.PopularProducts.class);
+        Optional<RankResult.PopularProducts> cached = redisCacheTemplate.get(
+                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, RankResult.PopularProducts.class);
         assertThat(cached).isPresent();
     }
     

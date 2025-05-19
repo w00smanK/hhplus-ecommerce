@@ -1,21 +1,21 @@
-package kr.hhplus.ecommerce.domain.popular.entity;
+package kr.hhplus.ecommerce.domain.rank.entity;
 
-import jakarta.persistence.*;
 import kr.hhplus.ecommerce.domain.BaseEntity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import jakarta.persistence.*;
 import java.time.LocalDate;
 
 /**
  * 인기 상품 랭킹 엔티티
  */
 @Entity
-@Table(name = "rank")
+@Table(name = "popular_rank")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Rank extends BaseEntity {
+public class PopularRank extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,16 +30,13 @@ public class Rank extends BaseEntity {
     @Column(name = "rank_date", nullable = false)
     private LocalDate rankDate;
 
-    private Rank(Long productId, Long quantity, LocalDate rankDate) {
+    public PopularRank(Long productId, Long quantity, LocalDate rankDate) {
         this.productId = productId;
         this.quantity = quantity;
         this.rankDate = rankDate;
     }
 
-    /**
-     * 판매 랭킹 생성
-     */
-    public static Rank createSell(Long productId, LocalDate date, Long quantity) {
-        return new Rank(productId, quantity, date);
+    public static PopularRank create(Long productId, Long quantity, LocalDate rankDate) {
+        return new PopularRank(productId, quantity, rankDate);
     }
 }

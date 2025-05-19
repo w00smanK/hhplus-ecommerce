@@ -1,11 +1,11 @@
-package kr.hhplus.ecommerce.application.popular.dto;
+package kr.hhplus.ecommerce.application.rank.dto;
 
 import lombok.*;
 
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class PopularResult {
+public class RankResult {
 
     @Getter
     @Setter

@@ -1,11 +1,11 @@
-package kr.hhplus.ecommerce.application.popular.dto;
+package kr.hhplus.ecommerce.application.rank.dto;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class PopularCriteria {
+public class RankCriteria {
 
     @Getter
     public static class PopularProducts {
@@ -23,7 +23,7 @@ public class PopularCriteria {
         }
 
         public static PopularProducts ofTop5Days3() {
-            return new PopularProducts(PopularConstant.TOP_5, PopularConstant.DAYS_3);
+            return new PopularProducts(RankConstant.TOP_5, RankConstant.DAYS_3);
         }
     }
 }

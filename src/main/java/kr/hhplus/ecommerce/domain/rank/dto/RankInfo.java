@@ -1,4 +1,4 @@
-package kr.hhplus.ecommerce.domain.popular.dto;
+package kr.hhplus.ecommerce.domain.rank.dto;
 
 import lombok.AccessLevel;
 import lombok.Getter;
