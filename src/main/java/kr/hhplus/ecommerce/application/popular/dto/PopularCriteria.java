@@ -1,4 +1,4 @@
-package kr.hhplus.ecommerce.application.popular;
+package kr.hhplus.ecommerce.application.popular.dto;
 
 import lombok.AccessLevel;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package kr.hhplus.ecommerce.scheduler;
+package kr.hhplus.ecommerce.interfaces.scheduler;
 
 import kr.hhplus.ecommerce.application.coupon.CouponFacade;
 import lombok.RequiredArgsConstructor;

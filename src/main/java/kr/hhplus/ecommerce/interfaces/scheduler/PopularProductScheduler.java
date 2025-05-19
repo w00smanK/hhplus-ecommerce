@@ -1,6 +1,6 @@
-package kr.hhplus.ecommerce.scheduler;
+package kr.hhplus.ecommerce.interfaces.scheduler;
 
-import kr.hhplus.ecommerce.application.popular.PopularCriteria;
+import kr.hhplus.ecommerce.application.popular.dto.PopularCriteria;
 import kr.hhplus.ecommerce.application.popular.PopularFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

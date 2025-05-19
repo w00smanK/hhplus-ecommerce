@@ -4,6 +4,7 @@ import kr.hhplus.ecommerce.application.coupon.CouponFacade;
 import kr.hhplus.ecommerce.domain.coupon.CouponRepository;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
 import kr.hhplus.ecommerce.domain.coupon.CouponRedisRepository;
+import kr.hhplus.ecommerce.interfaces.scheduler.CouponDailyScheduler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

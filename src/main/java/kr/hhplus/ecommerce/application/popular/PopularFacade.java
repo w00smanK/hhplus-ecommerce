@@ -1,5 +1,7 @@
 package kr.hhplus.ecommerce.application.popular;
 
+import kr.hhplus.ecommerce.application.popular.dto.PopularCriteria;
+import kr.hhplus.ecommerce.application.popular.dto.PopularResult;
 import kr.hhplus.ecommerce.config.CacheType;
 import kr.hhplus.ecommerce.config.RedisCacheTemplate;
 import kr.hhplus.ecommerce.domain.order.OrderService;
