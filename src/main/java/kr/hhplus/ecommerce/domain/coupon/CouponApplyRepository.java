@@ -2,7 +2,7 @@ package kr.hhplus.ecommerce.domain.coupon;
 
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
 
-public interface CouponRedisRepository {
+public interface CouponApplyRepository {
 
     /**
      * 쿠폰 초기화 - 쿠폰 ID와 수량을 Redis에 저장

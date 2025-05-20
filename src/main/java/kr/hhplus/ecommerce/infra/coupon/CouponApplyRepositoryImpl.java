@@ -1,6 +1,6 @@
 package kr.hhplus.ecommerce.infra.coupon;
 
-import kr.hhplus.ecommerce.domain.coupon.CouponRedisRepository;
+import kr.hhplus.ecommerce.domain.coupon.CouponApplyRepository;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import java.util.Set;
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-public class CouponRedisRepositoryImpl implements CouponRedisRepository {
+public class CouponApplyRepositoryImpl implements CouponApplyRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
     private static final String COUPON_KEY_PREFIX = "coupon:";

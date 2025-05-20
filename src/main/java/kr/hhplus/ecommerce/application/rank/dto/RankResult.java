@@ -1,50 +1,36 @@
 package kr.hhplus.ecommerce.application.rank.dto;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+import java.util.Collections;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RankResult {
+    
+    private List<RankProduct> products;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    public static class PopularProducts {
-
-        private List<PopularProduct> products;
-
-        private PopularProducts(List<PopularProduct> products) {
-            this.products = products;
-        }
-
-        public static PopularProducts of(List<PopularProduct> products) {
-            return new PopularProducts(products);
-        }
+    private RankResult(List<RankProduct> products) {
+        this.products = products;
     }
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    public static class PopularProduct {
+    public static RankResult of(List<RankProduct> products) {
+        return new RankResult(products);
+    }
 
-        private Long productId;
-        private String productName;
-        private Long productPrice;
+    public static RankResult empty() {
+        return new RankResult(Collections.emptyList());
+    }
 
-        @Builder
-        private PopularProduct(Long productId, String productName, Long productPrice) {
-            this.productId = productId;
-            this.productName = productName;
-            this.productPrice = productPrice;
-        }
+    public List<RankProduct> getProducts() {
+        return products;
+    }
 
-        public static PopularProduct of(Long productId, String productName, Long productPrice) {
-            return PopularProduct.builder()
-                .productId(productId)
-                .productName(productName)
-                .productPrice(productPrice)
-                .build();
-        }
+    public record RankProduct(
+        Long productId,
+        String productName
+    ) {
     }
 }

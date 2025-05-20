@@ -1,8 +1,16 @@
 package kr.hhplus.ecommerce.application.rank.dto;
 
-public class RankConstant {
+public enum RankConstant {
+    TOP_5(5),
+    DAYS_3(3);
 
-    public static final int TOP_5 = 5;
-    public static final int DAYS_3 = 3;
+    private final int value;
 
+    RankConstant(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return value;
+    }
 }

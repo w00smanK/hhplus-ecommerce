@@ -36,12 +36,11 @@ public record OrderInfo() {
     public record PaidProducts(
             List<PaidProduct> products
     ) {
-        public List<PaidProduct> getProducts() {
-            return products;
-        }
-
         public static PaidProducts of(List<PaidProduct> products) {
             return new PaidProducts(products);
         }
     }
+
+
+
 }

@@ -19,7 +19,7 @@ public class CouponService {
 
     private final CouponRepository couponRepository;
     private final IssuedCouponRepository issuedCouponRepository;
-    private final CouponRedisRepository couponRedisRepository;
+    private final CouponApplyRepository couponApplyRepository;
 
 
     // 선착순 쿠폰 단일쿠폰
@@ -87,12 +87,12 @@ public class CouponService {
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
             // 이미 발급받은 쿠폰인지 확인
-            if (couponRedisRepository.hasIssuedCoupon(command.userId(), command.couponId())) {
+            if (couponApplyRepository.hasIssuedCoupon(command.userId(), command.couponId())) {
                 throw new CustomException(ErrorCode.DUPLICATE_COUPON);
             }
 
             // Redis를 통한 쿠폰 발급 시도
-            boolean issued = couponRedisRepository.issueCoupon(command.userId(), command.couponId());
+            boolean issued = couponApplyRepository.issueCoupon(command.userId(), command.couponId());
             if (!issued) {
                 throw new CustomException(ErrorCode.BAD_REQUEST);
             }
@@ -103,7 +103,7 @@ public class CouponService {
             return issuedCoupon;
         } catch (Exception e) {
             // 발급 실패 시 Redis에서도 롤백
-            couponRedisRepository.rollbackIssuance(command.userId(), command.couponId());
+            couponApplyRepository.rollbackIssuance(command.userId(), command.couponId());
             throw e;
         }
     }
@@ -132,7 +132,7 @@ public class CouponService {
         Coupon savedCoupon = couponRepository.save(newCoupon);
 
         // Redis에 초기화
-        couponRedisRepository.initializeCoupon(savedCoupon);
+        couponApplyRepository.initializeCoupon(savedCoupon);
 
         log.info("일일 쿠폰 초기화 완료 - couponId: {}, quantity: {}", savedCoupon.getId(), savedCoupon.getQuantity());
 
@@ -144,7 +144,7 @@ public class CouponService {
      */
     public boolean isEventEnded() {
         // Redis에서 남은 쿠폰 수량 확인
-        long remainingStock = couponRedisRepository.getCouponStock(FIRST_COME_COUPON_ID);
+        long remainingStock = couponApplyRepository.getCouponStock(FIRST_COME_COUPON_ID);
         return remainingStock <= 0;
     }
 
@@ -155,7 +155,7 @@ public class CouponService {
     @Transactional
     public void synchronizeCouponQuantity(Long couponId) {
         // Redis에서 남은 쿠폰 수량 확인
-        long remainingStock = couponRedisRepository.getCouponStock(couponId);
+        long remainingStock = couponApplyRepository.getCouponStock(couponId);
         log.info("Redis 쿠폰 수량 동기화 - couponId: {}, remainingStock: {}", couponId, remainingStock);
 
         // DB에서 쿠폰 조회

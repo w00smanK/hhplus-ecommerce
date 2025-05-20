@@ -2,7 +2,7 @@ package kr.hhplus.ecommerce.domain.rank;
 
 import kr.hhplus.ecommerce.domain.rank.dto.RankCommand;
 import kr.hhplus.ecommerce.domain.rank.dto.RankInfo;
-import kr.hhplus.ecommerce.domain.rank.entity.PopularRank;
+import kr.hhplus.ecommerce.domain.rank.entity.Rank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RankService {
 
-    private final PopularRankRepository popularRankRepository;
+    private final RankRepository rankRepository;
     private final RankRedisRepository rankRedisRepository;
 
     /**
@@ -29,50 +29,48 @@ public class RankService {
      */
     @Transactional
     public void createSellRank(RankCommand.CreateList command) {
-        List<PopularRank> ranks = command.getCommands().stream()
+        List<Rank> ranks = command.commands().stream()
                 .map(cmd -> {
                     // Redis에 랭킹 정보 저장
-                    rankRedisRepository.addDailyRank(cmd.getProductId(), cmd.getQuantity(), cmd.getDate());
+                    rankRedisRepository.addDailyRank(cmd.productId(), Long.valueOf(cmd.quantity()), cmd.date());
                     
                     // DB에 랭킹 정보 저장
-                    return PopularRank.create(cmd.getProductId(), cmd.getQuantity(), cmd.getDate());
+                    return Rank.create(cmd.productId(), Long.valueOf(cmd.quantity()), cmd.date());
                 })
                 .collect(Collectors.toList());
 
-        popularRankRepository.saveAll(ranks);
+        rankRepository.saveAll(ranks);
         log.info("판매 랭킹 생성 완료 - 날짜: {}, 상품 수: {}", 
-                command.getCommands().get(0).getDate(), 
-                command.getCommands().size());
+                command.commands().get(0).date(), 
+                command.commands().size());
     }
 
     /**
-     * 인기 판매 랭킹 조회
+     * 인기 상품 랭킹 조회
      * @param command 랭킹 조회 명령
      * @return 인기 상품 목록
      */
     @Transactional(readOnly = true)
-    public RankInfo.PopularProducts getPopularSellRank(RankCommand.PopularSellRank command) {
-        LocalDate endDate = command.getDate();
-        LocalDate startDate = endDate.minusDays(command.getDays() - 1);
+    public RankInfo getRankProducts(RankCommand.RankQuery command) {
+        LocalDate date = command.date();
         
         // Redis에서 랭킹 정보 조회
         List<Long> productIds = rankRedisRepository.getTopProductsByDays(
-                startDate, command.getDays(), command.getTop());
+                date, 1, command.top());
         
         // Redis에 데이터가 없으면 DB에서 조회
         if (productIds.isEmpty()) {
-            log.info("Redis에 랭킹 정보가 없어 DB에서 조회합니다. 기간: {} ~ {}", startDate, endDate);
-            List<Object[]> results = popularRankRepository.findTopByRankDateBetween(
-                    startDate, endDate, command.getTop());
+            log.info("Redis에 랭킹 정보가 없어 DB에서 조회합니다. 날짜: {}", date);
+            List<Rank> ranks = rankRepository.findTopByRankDate(date, command.top());
             
-            productIds = results.stream()
-                    .map(result -> (Long) result[0])
+            productIds = ranks.stream()
+                    .map(Rank::getProductId)
                     .collect(Collectors.toList());
         }
         
-        log.info("인기 판매 랭킹 조회 완료 - 기간: {} ~ {}, 상품 수: {}", 
-                startDate, endDate, productIds.size());
+        log.info("인기 상품 랭킹 조회 완료 - 날짜: {}, 상품 수: {}", 
+                date, productIds.size());
         
-        return RankInfo.PopularProducts.of(productIds);
+        return RankInfo.of(productIds);
     }
 }

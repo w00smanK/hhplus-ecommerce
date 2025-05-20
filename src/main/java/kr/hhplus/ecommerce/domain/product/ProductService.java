@@ -89,10 +89,10 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public ProductInfo.Products getProducts(ProductCommand.Products command) {
+    public ProductInfo.RankProducts rankProducts(ProductCommand.Products command) {
         log.info("상품 목록 조회 요청 - 상품 ID 목록: {}", command.getProductIds());
 
-        List<ProductInfo.Product> products = new java.util.ArrayList<>();
+        List<ProductInfo.RankProduct> products = new java.util.ArrayList<>();
 
         // 상품 ID 목록으로 상품 조회
         for (Long productId : command.getProductIds()) {
@@ -101,7 +101,7 @@ public class ProductService {
                         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
                 // 상품 정보 변환
-                ProductInfo.Product productInfo = ProductInfo.Product.builder()
+                ProductInfo.RankProduct productInfo = ProductInfo.RankProduct.builder()
                         .productId(product.getId())
                         .productName(product.getName())
                         .productPrice(getProductPrice(product.getId()))
@@ -114,7 +114,7 @@ public class ProductService {
         }
 
         log.info("상품 목록 조회 완료 - 상품 수: {}", products.size());
-        return ProductInfo.Products.of(products);
+        return ProductInfo.RankProducts.of(products);
     }
 
     private Long getProductPrice(Long productId) {

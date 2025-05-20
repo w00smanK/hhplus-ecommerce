@@ -12,5 +12,6 @@ public class CacheType {
         public static final String PRODUCT = "product";
         public static final String BEST_PRODUCT = "best-products";
         public static final String POPULAR_PRODUCT = "popular-products";
+        public static final String RANK_PRODUCT = "popular-products";
     }
 }

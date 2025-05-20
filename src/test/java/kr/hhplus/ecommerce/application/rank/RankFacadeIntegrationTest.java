@@ -46,9 +46,9 @@ class RankFacadeIntegrationTest {
     @BeforeEach
     void setUp() {
         // 테스트 데이터 생성
-        product1 = createProduct("상품명1", 1000L, ProductSellingStatus.SELLING);
-        product2 = createProduct("상품명2", 2000L, ProductSellingStatus.SELLING);
-        product3 = createProduct("상품명3", 3000L, ProductSellingStatus.STOP_SELLING);
+        product1 = createProduct("나이키 에어포스", 129000L, ProductSellingStatus.SELLING);
+        product2 = createProduct("나이키 덩크 로우", 139000L, ProductSellingStatus.SELLING);
+        product3 = createProduct("나이키 에어맥스", 159000L, ProductSellingStatus.SELLING);
         
         // 테스트 데이터 저장
         productRepository.save(product1);
@@ -63,18 +63,21 @@ class RankFacadeIntegrationTest {
     void tearDown() {
         // 캐시 초기화
         redisCacheCleaner.clean();
+        
+        // 데이터 정리
+        productRepository.deleteAll();
     }
 
     @DisplayName("인기 상품을 캐싱 조회 한다.")
     @Test
-    void getPopularProducts() {
+    void getRankProducts() {
         // given
-        Optional<RankResult.PopularProducts> emptyCached = redisCacheTemplate.get(
-                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, RankResult.PopularProducts.class);
+        RankCriteria criteria = RankCriteria.of(5, 3);
+        Optional<RankResult> emptyCached = redisCacheTemplate.get(
+                CacheType.CacheName.RANK_PRODUCT, cacheKey, RankResult.class);
 
         // when
-        RankResult.PopularProducts result = rankFacade.getPopularProducts(
-                RankCriteria.PopularProducts.ofTop5Days3());
+        RankResult result = rankFacade.getRankProducts(criteria);
 
         // then
         assertThat(emptyCached).isEmpty();
@@ -84,21 +87,21 @@ class RankFacadeIntegrationTest {
         assertThat(result.getProducts()).isNotEmpty();
         
         // 캐시 검증
-        Optional<RankResult.PopularProducts> cached = redisCacheTemplate.get(
-                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, RankResult.PopularProducts.class);
+        Optional<RankResult> cached = redisCacheTemplate.get(
+                CacheType.CacheName.RANK_PRODUCT, cacheKey, RankResult.class);
         assertThat(cached).isPresent();
     }
 
     @DisplayName("인기 상품을 캐싱 한다.")
     @Test
-    void updatePopularProductsForCache() {
+    void updateRankProducts() {
         // given
-        Optional<RankResult.PopularProducts> emptyCached = redisCacheTemplate.get(
-                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, RankResult.PopularProducts.class);
+        RankCriteria criteria = RankCriteria.of(5, 3);
+        Optional<RankResult> emptyCached = redisCacheTemplate.get(
+                CacheType.CacheName.RANK_PRODUCT, cacheKey, RankResult.class);
 
         // when
-        RankResult.PopularProducts result = rankFacade.updatePopularProducts(
-                RankCriteria.PopularProducts.ofTop5Days3());
+        RankResult result = rankFacade.updateRankProducts(criteria);
 
         // then
         assertThat(emptyCached).isEmpty();
@@ -108,22 +111,22 @@ class RankFacadeIntegrationTest {
         assertThat(result.getProducts()).isNotEmpty();
         
         // 캐시 검증
-        Optional<RankResult.PopularProducts> cached = redisCacheTemplate.get(
-                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, RankResult.PopularProducts.class);
+        Optional<RankResult> cached = redisCacheTemplate.get(
+                CacheType.CacheName.RANK_PRODUCT, cacheKey, RankResult.class);
         assertThat(cached).isPresent();
     }
 
     @DisplayName("인기 상품을 캐시 갱신 한다.")
     @Test
-    void updatePopularProductsForRefresh() {
+    void updateRankProductsForRefresh() {
         // given
-        redisCacheTemplate.put(CacheType.CacheName.POPULAR_PRODUCT, cacheKey, "test");
+        RankCriteria criteria = RankCriteria.of(5, 3);
+        redisCacheTemplate.put(CacheType.CacheName.RANK_PRODUCT, cacheKey, "test");
         Optional<String> existCached = redisCacheTemplate.get(
-                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, String.class);
+                CacheType.CacheName.RANK_PRODUCT, cacheKey, String.class);
 
         // when
-        RankResult.PopularProducts result = rankFacade.updatePopularProducts(
-                RankCriteria.PopularProducts.ofTop5Days3());
+        RankResult result = rankFacade.updateRankProducts(criteria);
 
         // then
         assertThat(existCached).isPresent();
@@ -134,12 +137,16 @@ class RankFacadeIntegrationTest {
         assertThat(result.getProducts()).isNotEmpty();
         
         // 캐시 검증
-        Optional<RankResult.PopularProducts> cached = redisCacheTemplate.get(
-                CacheType.CacheName.POPULAR_PRODUCT, cacheKey, RankResult.PopularProducts.class);
+        Optional<RankResult> cached = redisCacheTemplate.get(
+                CacheType.CacheName.RANK_PRODUCT, cacheKey, RankResult.class);
         assertThat(cached).isPresent();
     }
     
     private Product createProduct(String name, Long price, ProductSellingStatus status) {
-        return Product.create(name, price, status);
+        Product product = new Product();
+        product.setName(name);
+        product.setPrice(price);
+        product.setSellingStatus(status);
+        return product;
     }
 }

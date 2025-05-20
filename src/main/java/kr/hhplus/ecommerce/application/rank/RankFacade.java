@@ -7,22 +7,28 @@ import kr.hhplus.ecommerce.config.RedisCacheTemplate;
 import kr.hhplus.ecommerce.domain.order.OrderService;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
-import kr.hhplus.ecommerce.domain.rank.RankService;
-import kr.hhplus.ecommerce.domain.rank.dto.RankCommand;
-import kr.hhplus.ecommerce.domain.rank.dto.RankInfo;
 import kr.hhplus.ecommerce.domain.product.ProductService;
 import kr.hhplus.ecommerce.domain.product.dto.ProductCommand;
 import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
+import kr.hhplus.ecommerce.domain.product.entity.Product;
+import kr.hhplus.ecommerce.domain.rank.RankService;
+import kr.hhplus.ecommerce.domain.rank.dto.RankCommand;
+import kr.hhplus.ecommerce.domain.rank.dto.RankInfo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RankFacade {
 
     private final ProductService productService;
@@ -30,81 +36,122 @@ public class RankFacade {
     private final RankService rankService;
     private final RedisCacheTemplate redisCacheTemplate;
 
+    /**
+     * 특정 날짜에 대한 일별 판매 순위 생성
+     * @param date 날짜
+     */
     @Transactional
     public void createDailyRankAt(LocalDate date) {
-        OrderCommand.DateQuery orderCommand = OrderCommand.DateQuery.of(date);
-        OrderInfo.PaidProducts paidProducts = orderService.getPaidProducts(orderCommand);
+        log.info("일별 판매 순위 생성 시작 - 날짜: {}", date);
+        
+        try {
+            OrderCommand.DateQuery orderCommand = OrderCommand.DateQuery.of(date);
+            OrderInfo.PaidProducts paidProducts = orderService.getPaidProducts(orderCommand);
 
-        RankCommand.CreateList rankCommand = createListCommand(paidProducts, date);
-        rankService.createSellRank(rankCommand);
-    }
+            if (paidProducts.products().isEmpty()) {
+                log.info("해당 날짜의 결제 완료 상품이 없습니다 - 날짜: {}", date);
+                return;
+            }
 
-    @Transactional(readOnly = true)
-    public RankResult.PopularProducts getPopularProducts(RankCriteria.PopularProducts criteria) {
-        String cacheKey = "top:" + criteria.getTop() + ":days:" + criteria.getDays();
-
-        // 캐시에서 조회
-        Optional<RankResult.PopularProducts> cached = redisCacheTemplate.get(
-                CacheType.CacheName.POPULAR_PRODUCT, 
-                cacheKey, 
-                RankResult.PopularProducts.class);
-
-        // 캐시에 있으면 반환
-        if (cached.isPresent()) {
-            return cached.get();
+            // 판매 데이터를 랭킹 명령으로 변환
+            RankCommand.CreateList rankCommand = createListCommand(paidProducts, date);
+            
+            // Redis와 DB에 랭킹 데이터 저장
+            rankService.createSellRank(rankCommand);
+            log.info("일별 판매 순위 생성 완료 - 날짜: {}, 상품 수: {}", 
+                    date, paidProducts.products().size());
+        } catch (Exception e) {
+            log.error("일별 판매 순위 생성 실패 - 날짜: {}, 오류: {}", date, e.getMessage(), e);
         }
-
-        // 캐시에 없으면 계산하고 캐시에 저장
-        RankResult.PopularProducts result = calculatePopularProducts(criteria.getTop(), criteria.getDays());
-        redisCacheTemplate.put(CacheType.CacheName.POPULAR_PRODUCT, cacheKey, result);
-        return result;
     }
 
+    /**
+     * 매일 새벽 1시에 전날 판매 데이터 기반으로 랭킹 갱신
+     */
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void updateDailyRank() {
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        log.info("일별 판매 순위 자동 갱신 시작 - 날짜: {}", yesterday);
+        createDailyRankAt(yesterday);
+    }
+
+    /**
+     * 상품 랭킹 목록 조회
+     * @param criteria 조회 기준(상위 개수, 기간)
+     * @return 상품 랭킹 목록
+     */
     @Transactional(readOnly = true)
-    public RankResult.PopularProducts updatePopularProducts(RankCriteria.PopularProducts criteria) {
-        String cacheKey = "top:" + criteria.getTop() + ":days:" + criteria.getDays();
-
-        // 계산하고 캐시 갱신
-        RankResult.PopularProducts result = calculatePopularProducts(criteria.getTop(), criteria.getDays());
-        redisCacheTemplate.put(CacheType.CacheName.POPULAR_PRODUCT, cacheKey, result);
-        return result;
+    public RankResult getRankProducts(RankCriteria criteria) {
+        log.info("상품 랭킹 목록 조회 - TOP: {}, 기간: {}일", criteria.top(), criteria.days());
+        
+        try {
+            // Redis에서 인기 상품 ID 목록 조회
+            RankCommand.RankQuery command = RankCommand.RankQuery.of(
+                    criteria.top(), criteria.days(), LocalDate.now());
+            RankInfo rankProducts = rankService.getRankProducts(command);
+            
+            if (rankProducts.productIds().isEmpty()) {
+                log.info("랭킹 상품이 없습니다");
+                return RankResult.empty();
+            }
+            
+            // 상품 상세 정보 조회
+            ProductCommand.Products productsCommand = ProductCommand.Products.of(
+                    rankProducts.productIds());
+            ProductInfo.RankProducts productRanks = productService.rankProducts(productsCommand);
+            
+            if (productRanks.getProducts().isEmpty()) {
+                log.warn("랭킹 상품 ID에 해당하는 상품 정보가 없습니다 - 상품 ID: {}", 
+                        rankProducts.productIds());
+                return RankResult.empty();
+            }
+            
+            // 응답 변환 (랭킹 순서 유지)
+            List<RankResult.RankProduct> result = new ArrayList<>();
+            for (Long productId : rankProducts.productIds()) {
+                productRanks.getProducts().stream()
+                    .filter(p -> p.getId().equals(productId))
+                    .findFirst()
+                    .ifPresent(product -> result.add(toRankProduct(product)));
+            }
+            
+            log.info("상품 랭킹 목록 조회 완료 - 상품 수: {}", result.size());
+            return RankResult.of(result);
+        } catch (Exception e) {
+            log.error("상품 랭킹 목록 조회 실패 - 오류: {}", e.getMessage(), e);
+            return RankResult.empty();
+        }
     }
 
-    private RankCommand.CreateList createListCommand(OrderInfo.PaidProducts paidProducts, LocalDate yesterday) {
-        List<RankCommand.Create> commands = paidProducts.getProducts().stream()
-            .map(product -> createCommand(product, yesterday))
-            .toList();
+    /**
+     * 주문 정보를 랭킹 명령으로 변환
+     */
+    private RankCommand.CreateList createListCommand(OrderInfo.PaidProducts paidProducts, LocalDate date) {
+        List<RankCommand.Create> commands = paidProducts.products().stream()
+                .map(product -> createCommand(product, date))
+                .collect(Collectors.toList());
 
         return RankCommand.CreateList.of(commands);
     }
 
-    private RankCommand.Create createCommand(OrderInfo.PaidProduct product, LocalDate yesterday) {
+    /**
+     * 개별 상품 주문 정보를 랭킹 명령으로 변환
+     */
+    private RankCommand.Create createCommand(OrderInfo.PaidProduct product, LocalDate date) {
         return RankCommand.Create.of(
-            product.productId(),
-            product.quantity(),
-            yesterday
+                product.productId(),
+                product.quantity().intValue(),
+                date
         );
     }
 
-    private RankResult.PopularProducts calculatePopularProducts(int top, int days) {
-        LocalDate now = LocalDate.now();
-
-        RankCommand.PopularSellRank popularSellRankCommand = RankCommand.PopularSellRank.of(top, days, now);
-        RankInfo.PopularProducts popularProducts = rankService.getPopularSellRank(popularSellRankCommand);
-
-        ProductCommand.Products productsCommand = ProductCommand.Products.of(popularProducts.getProductIds());
-        ProductInfo.Products products = productService.getProducts(productsCommand);
-
-        return RankResult.PopularProducts.of(products.getProducts().stream()
-            .map(this::toPopularProduct)
-            .toList());
-    }
-
-    private RankResult.PopularProduct toPopularProduct(ProductInfo.Product product) {
-        return RankResult.PopularProduct.builder()
-            .productId(product.getProductId())
-            .productName(product.getProductName())
-            .productPrice(product.getProductPrice())
-            .build();
+    /**
+     * 상품 정보를 랭킹 상품 응답으로 변환
+     */
+    private RankResult.RankProduct toRankProduct(Product product) {
+        return new RankResult.RankProduct(
+                product.getId(),
+                product.getName()
+        );
     }
 }

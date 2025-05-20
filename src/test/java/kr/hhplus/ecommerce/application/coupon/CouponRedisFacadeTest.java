@@ -5,7 +5,7 @@ import kr.hhplus.ecommerce.application.coupon.dto.CouponResult;
 import kr.hhplus.ecommerce.concurrency.support.ConcurrentExecutor;
 import kr.hhplus.ecommerce.domain.coupon.CouponRepository;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
-import kr.hhplus.ecommerce.domain.coupon.CouponRedisRepository;
+import kr.hhplus.ecommerce.domain.coupon.CouponApplyRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,7 +38,7 @@ class CouponRedisFacadeTest {
     private CouponRepository couponRepository;
 
     @Autowired
-    private CouponRedisRepository couponRedisRepository;
+    private CouponApplyRepository couponApplyRepository;
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
@@ -51,7 +51,7 @@ class CouponRedisFacadeTest {
         COUPON = couponRepository.save(new Coupon(1000L, 10));
 
         // Redis에 쿠폰 초기화
-        couponRedisRepository.initializeCoupon(COUPON);
+        couponApplyRepository.initializeCoupon(COUPON);
     }
 
     @Test
@@ -94,7 +94,7 @@ class CouponRedisFacadeTest {
         assertThat(successCount.get() + failureCount.get()).isEqualTo(threadCount);
 
         // Redis에 남은 쿠폰 수량 확인
-        long remainingStock = couponRedisRepository.getCouponStock(savedCouponId);
+        long remainingStock = couponApplyRepository.getCouponStock(savedCouponId);
         log.info("Redis에 남은 쿠폰 수량: {}", remainingStock);
 
         // DB에 저장된 쿠폰 수량 확인
@@ -115,7 +115,7 @@ class CouponRedisFacadeTest {
         long couponId = testCoupon.getId();
 
         // Redis에 쿠폰 초기화 (타임스탬프 기반 스코어 사용)
-        couponRedisRepository.initializeCoupon(testCoupon);
+        couponApplyRepository.initializeCoupon(testCoupon);
 
         // Redis에 저장된 쿠폰 정보 확인
         String couponKey = "coupon:" + couponId;
@@ -144,7 +144,7 @@ class CouponRedisFacadeTest {
         assertThat(issuedResults).hasSize(10);
 
         // Redis에 남은 쿠폰 수량 확인
-        long remainingStock = couponRedisRepository.getCouponStock(couponId);
+        long remainingStock = couponApplyRepository.getCouponStock(couponId);
         assertThat(remainingStock).isEqualTo(0);
 
         // 발급된 쿠폰 정보 확인

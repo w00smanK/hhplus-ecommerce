@@ -122,6 +122,7 @@ public class OrderService {
 
         List<OrderInfo.PaidProduct> paidProducts = new java.util.ArrayList<>();
 
+        // 더미데이터인듯
         paidProducts.add(OrderInfo.PaidProduct.of(1L, 10L));
         paidProducts.add(OrderInfo.PaidProduct.of(2L, 5L));
         paidProducts.add(OrderInfo.PaidProduct.of(3L, 3L));
