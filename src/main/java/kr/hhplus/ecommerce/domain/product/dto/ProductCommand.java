@@ -3,6 +3,8 @@ package kr.hhplus.ecommerce.domain.product.dto;
 
 import lombok.Getter;
 
+import java.util.List;
+
 public class ProductCommand {
 
     @Getter
@@ -24,6 +26,19 @@ public class ProductCommand {
 
         public Long getProductOptionId() {
             return productOptionId;
+        }
+    }
+
+    @Getter
+    public static class Products {
+        private final List<Long> productIds;
+
+        private Products(List<Long> productIds) {
+            this.productIds = productIds;
+        }
+
+        public static Products of(List<Long> productIds) {
+            return new Products(productIds);
         }
     }
 }

@@ -25,4 +25,11 @@ public class Product extends BaseEntity {
         this.brand = brand;
         this.name = name;
     }
+
+    public static Product create(String name, Long price, ProductSellingStatus status) {
+        Product product = new Product();
+        product.name = name;
+        product.brand = "nike"; // 테스트용 기본 브랜드
+        return product;
+    }
 }

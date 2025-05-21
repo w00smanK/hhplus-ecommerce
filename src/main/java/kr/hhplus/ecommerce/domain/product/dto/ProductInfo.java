@@ -65,4 +65,34 @@ public class ProductInfo {
 
     public record StockCheckResult(List<StockStatus> checkStocks) {
     }
+
+
+    @Getter
+    public static class RankProduct {
+        private final Long productId;
+        private final String productName;
+        private final Long productPrice;
+
+        @Builder
+        private RankProduct(Long productId, String productName, Long productPrice) {
+            this.productId = productId;
+            this.productName = productName;
+            this.productPrice = productPrice;
+        }
+    }
+
+    @Getter
+    public static class RankProducts {
+        private final List<RankProduct> products;
+
+        private RankProducts(List<RankProduct> products) {
+            this.products = products;
+        }
+
+        public static RankProducts of(List<RankProduct> products) {
+            return new RankProducts(products);
+        }
+    }
+
+
 }

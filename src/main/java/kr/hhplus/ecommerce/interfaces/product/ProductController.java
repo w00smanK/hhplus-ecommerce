@@ -2,7 +2,7 @@ package kr.hhplus.ecommerce.interfaces.product;
 
 import kr.hhplus.ecommerce.application.product.ProductFacade;
 import kr.hhplus.ecommerce.application.product.dto.ProductCriteria;
-import kr.hhplus.ecommerce.interfaces.presentation.response.StatusResponse;
+import kr.hhplus.ecommerce.interfaces.common.StatusResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

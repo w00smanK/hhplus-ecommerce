@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.domain.product;
 
-import kr.hhplus.ecommerce.config.exception.ErrorCode;
 import kr.hhplus.ecommerce.config.exception.CustomException;
+import kr.hhplus.ecommerce.config.exception.ErrorCode;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.product.dto.ProductCommand;
 import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
@@ -62,7 +62,6 @@ public class ProductService {
     }
 
     @Transactional
-//    public ProductInfo.StockCheckResult reduceStock(List<OrderCommand.OrderItem> commands) {
         public ProductInfo.StockCheckResult reduceStock(OrderCommand.OrderItemList commands) {
         return new ProductInfo.StockCheckResult(commands.orderItems().stream().map(i -> {
             ProductStock productStock = productStockRepository.findByIdWithPessimisticLock(i.productOptionId())
@@ -87,5 +86,43 @@ public class ProductService {
             }
         }).toList());
     }
+
+    @Transactional(readOnly = true)
+    public ProductInfo.RankProducts rankProducts(ProductCommand.Products command) {
+        log.info("상품 목록 조회 요청 - 상품 ID 목록: {}", command.getProductIds());
+
+        List<ProductInfo.RankProduct> products = new java.util.ArrayList<>();
+
+        // 상품 ID 목록으로 상품 조회
+        for (Long productId : command.getProductIds()) {
+            try {
+                Product product = productRepository.findById(productId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+                // 상품 정보 변환
+                ProductInfo.RankProduct productInfo = ProductInfo.RankProduct.builder()
+                        .productId(product.getId())
+                        .productName(product.getName())
+                        .productPrice(getProductPrice(product.getId()))
+                        .build();
+
+                products.add(productInfo);
+            } catch (Exception e) {
+                log.warn("상품 조회 실패 - 상품 ID: {}, 오류: {}", productId, e.getMessage());
+            }
+        }
+
+        log.info("상품 목록 조회 완료 - 상품 수: {}", products.size());
+        return ProductInfo.RankProducts.of(products);
+    }
+
+    private Long getProductPrice(Long productId) {
+        List<ProductStock> stocks = productStockRepository.findByProductId(productId);
+        if (stocks.isEmpty()) {
+            return 0L;
+        }
+        return stocks.get(0).getPrice();
+    }
+
 
 }

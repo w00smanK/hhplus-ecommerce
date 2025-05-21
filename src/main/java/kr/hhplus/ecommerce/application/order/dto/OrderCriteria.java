@@ -12,12 +12,10 @@ public record OrderCriteria() {
     ) {
     }
 
-
     public record OrderItem(
             Long productOptionId,
             Long quantity
     ) {
     }
-
 
 }
