@@ -17,5 +17,13 @@ public record CouponResult() {
     ) {
     }
 
+    @Builder
+    public record Info(
+            Long id,
+            Long discountPrice,
+            Integer quantity
+    ) {
+    }
+
 
 }

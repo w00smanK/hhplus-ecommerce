@@ -82,33 +82,5 @@ class PointFacadeTest {
         assertThat(result.account()).isEqualTo(point.getAccount());
     }
 
-//
-//    @Test
-//    @DisplayName("포인트 충전 실패 - 존재하지 않는 사용자")
-//    void charge_userNotFound() {
-//        // given
-//        long invalidUserId = -1L;
-//        PointCriteria.Charge criteria = PointCriteria.Charge.of(invalidUserId, 10_000L);
-//
-//        // expect
-//        assertThatThrownBy(() -> pointFacade.charge(criteria))
-//                .isInstanceOf(IllegalArgumentException.class)
-//                .hasMessageContaining("사용자가 존재하지 않습니다.");
-//    }
-//
-//    @Test
-//    @DisplayName("포인트 충전 실패 - 음수 금액 충전")
-//    void charge_negativeAmount() {
-//        // given
-//        PointCriteria.Charge criteria = PointCriteria.Charge.of(userId, -10_000L);
-//
-//        // expect
-//        assertThatThrownBy(() -> pointFacade.charge(criteria))
-//                .isInstanceOf(IllegalArgumentException.class)
-//                .hasMessageContaining("충전 금액은 0보다 커야 합니다"); // 커스텀 메시지 예시
-//    }
-//
-//
-
 }
 

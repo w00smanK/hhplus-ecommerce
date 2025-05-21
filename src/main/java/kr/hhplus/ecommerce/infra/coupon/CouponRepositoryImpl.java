@@ -25,7 +25,6 @@ public class CouponRepositoryImpl implements CouponRepository {
 
     @Override
     public Optional<Coupon> findById(Long couponId) {
-        return Optional.ofNullable(couponJpaRepository.findById(couponId)
-                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다.")));
+        return couponJpaRepository.findById(couponId);
     }
 }
