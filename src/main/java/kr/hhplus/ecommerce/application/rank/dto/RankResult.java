@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 import java.util.Collections;
 import java.util.List;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@Getter
 public class RankResult {
     
     private List<RankProduct> products;

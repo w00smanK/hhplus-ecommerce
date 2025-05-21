@@ -73,7 +73,6 @@ public class CouponFacade {
 
     /**
      * Redis와 DB의 쿠폰 수량 동기화
-     * Redis의 남은 쿠폰 수량을 DB에 반영
      */
     @Transactional
     public void synchronizeCouponQuantity(Long couponId) {

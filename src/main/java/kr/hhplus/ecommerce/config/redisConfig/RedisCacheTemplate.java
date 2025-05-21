@@ -1,4 +1,4 @@
-package kr.hhplus.ecommerce.config;
+package kr.hhplus.ecommerce.config.redisConfig;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

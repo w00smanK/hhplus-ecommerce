@@ -24,7 +24,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductFacade {
 
-
     private final ProductService productService;
     private final OrderService orderService;
 
@@ -60,18 +59,18 @@ public class ProductFacade {
 
         // 상품 정보 조회 및 반환
         List<ProductInfo.ProductDetail> productDetails = optionIds.stream()
-            .map(id -> productService.findProductByOptionId(id))
+            .map(productService::findProductByOptionId)
             .toList();
 
         return ProductResult.ProductList.from(ProductInfo.ProductList.of(productDetails));
     }
-
-    /**
-     * 인기 판매 상품 캐시 갱신
-     */
     @CachePut(value = CacheType.CacheName.BEST_PRODUCT, key = "'date:' + #criteria.date() + ':limit:' + #criteria.limit()")
     @Transactional
     public ProductResult.ProductList refreshBestProductCache(ProductCriteria.Best criteria) {
         return findBestSelling(criteria);
     }
+
+
+
+
 }

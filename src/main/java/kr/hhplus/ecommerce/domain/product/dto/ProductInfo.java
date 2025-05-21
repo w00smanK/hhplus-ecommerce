@@ -83,13 +83,13 @@ public class ProductInfo {
 
     @Getter
     public static class RankProducts {
-        private final List<Product> products;
+        private final List<RankProduct> products;
 
-        private RankProducts(List<Product> products) {
+        private RankProducts(List<RankProduct> products) {
             this.products = products;
         }
 
-        public static RankProducts of(List<Product> products) {
+        public static RankProducts of(List<RankProduct> products) {
             return new RankProducts(products);
         }
     }

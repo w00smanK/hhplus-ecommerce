@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.domain.product;
 
-import kr.hhplus.ecommerce.config.exception.ErrorCode;
 import kr.hhplus.ecommerce.config.exception.CustomException;
+import kr.hhplus.ecommerce.config.exception.ErrorCode;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.product.dto.ProductCommand;
 import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
@@ -62,7 +62,6 @@ public class ProductService {
     }
 
     @Transactional
-//    public ProductInfo.StockCheckResult reduceStock(List<OrderCommand.OrderItem> commands) {
         public ProductInfo.StockCheckResult reduceStock(OrderCommand.OrderItemList commands) {
         return new ProductInfo.StockCheckResult(commands.orderItems().stream().map(i -> {
             ProductStock productStock = productStockRepository.findByIdWithPessimisticLock(i.productOptionId())
@@ -124,5 +123,6 @@ public class ProductService {
         }
         return stocks.get(0).getPrice();
     }
+
 
 }

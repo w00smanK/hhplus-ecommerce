@@ -1,10 +1,15 @@
 package kr.hhplus.ecommerce.domain.rank;
 
+import kr.hhplus.ecommerce.application.product.dto.ProductCriteria;
+import kr.hhplus.ecommerce.application.product.dto.ProductResult;
+import kr.hhplus.ecommerce.config.CacheType;
 import kr.hhplus.ecommerce.domain.rank.dto.RankCommand;
 import kr.hhplus.ecommerce.domain.rank.dto.RankInfo;
 import kr.hhplus.ecommerce.domain.rank.entity.Rank;
+import kr.hhplus.ecommerce.infra.rank.RankRedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,5 +77,14 @@ public class RankService {
                 date, productIds.size());
         
         return RankInfo.of(productIds);
+    }
+
+    /**
+     * 인기 판매 상품 캐시 갱신
+     */
+    @CachePut(value = CacheType.CacheName.BEST_PRODUCT, key = "'date:' + #criteria.date() + ':limit:' + #criteria.limit()")
+    @Transactional
+    public ProductResult.ProductList refreshBestProductCache(ProductCriteria.Best criteria) {
+        return findBestSelling(criteria);
     }
 }

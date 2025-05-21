@@ -1,10 +1,9 @@
 package kr.hhplus.ecommerce.scheduler;
 
-import kr.hhplus.ecommerce.application.coupon.CouponFacade;
 import kr.hhplus.ecommerce.domain.coupon.CouponRepository;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
 import kr.hhplus.ecommerce.domain.coupon.CouponApplyRepository;
-import kr.hhplus.ecommerce.interfaces.scheduler.CouponDailyScheduler;
+import kr.hhplus.ecommerce.interfaces.scheduler.DailyScheduler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @DisplayName("[통합테스트] CouponDailyScheduler")
 @ActiveProfiles("test")
-class CouponDailySchedulerTest {
+class DailySchedulerTest {
 
-    @Autowired
-    private CouponFacade couponFacade;
 
     @Autowired
     private CouponRepository couponRepository;
@@ -28,13 +25,13 @@ class CouponDailySchedulerTest {
     private CouponApplyRepository couponApplyRepository;
 
     @Autowired
-    private CouponDailyScheduler couponDailyScheduler;
+    private DailyScheduler dailyScheduler;
 
     @Test
     @DisplayName("일일 쿠폰 발급 스케줄러 테스트")
     void couponDailySchedulerTest() {
         // 스케줄러의 publishDailyCoupon 메서드 직접 호출
-        couponDailyScheduler.publishDailyCoupon();
+        dailyScheduler.publishDailyCoupon();
 
         // 쿠폰이 생성되었는지 확인
         Coupon coupon = couponRepository.findById(1L)

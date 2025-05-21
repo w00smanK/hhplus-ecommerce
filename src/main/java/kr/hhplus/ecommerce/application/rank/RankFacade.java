@@ -2,15 +2,13 @@ package kr.hhplus.ecommerce.application.rank;
 
 import kr.hhplus.ecommerce.application.rank.dto.RankCriteria;
 import kr.hhplus.ecommerce.application.rank.dto.RankResult;
-import kr.hhplus.ecommerce.config.CacheType;
-import kr.hhplus.ecommerce.config.RedisCacheTemplate;
+import kr.hhplus.ecommerce.config.redisConfig.RedisCacheTemplate;
 import kr.hhplus.ecommerce.domain.order.OrderService;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
 import kr.hhplus.ecommerce.domain.product.ProductService;
 import kr.hhplus.ecommerce.domain.product.dto.ProductCommand;
 import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
-import kr.hhplus.ecommerce.domain.product.entity.Product;
 import kr.hhplus.ecommerce.domain.rank.RankService;
 import kr.hhplus.ecommerce.domain.rank.dto.RankCommand;
 import kr.hhplus.ecommerce.domain.rank.dto.RankInfo;
@@ -23,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,7 +35,6 @@ public class RankFacade {
 
     /**
      * 특정 날짜에 대한 일별 판매 순위 생성
-     * @param date 날짜
      */
     @Transactional
     public void createDailyRankAt(LocalDate date) {
@@ -65,20 +61,9 @@ public class RankFacade {
         }
     }
 
-    /**
-     * 매일 새벽 1시에 전날 판매 데이터 기반으로 랭킹 갱신
-     */
-    @Scheduled(cron = "0 0 0 * * ?")
-    public void updateDailyRank() {
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        log.info("일별 판매 순위 자동 갱신 시작 - 날짜: {}", yesterday);
-        createDailyRankAt(yesterday);
-    }
 
     /**
      * 상품 랭킹 목록 조회
-     * @param criteria 조회 기준(상위 개수, 기간)
-     * @return 상품 랭킹 목록
      */
     @Transactional(readOnly = true)
     public RankResult getRankProducts(RankCriteria criteria) {
@@ -110,7 +95,7 @@ public class RankFacade {
             List<RankResult.RankProduct> result = new ArrayList<>();
             for (Long productId : rankProducts.productIds()) {
                 productRanks.getProducts().stream()
-                    .filter(p -> p.getId().equals(productId))
+                    .filter(p -> p.getProductId().equals(productId))
                     .findFirst()
                     .ifPresent(product -> result.add(toRankProduct(product)));
             }
@@ -148,10 +133,10 @@ public class RankFacade {
     /**
      * 상품 정보를 랭킹 상품 응답으로 변환
      */
-    private RankResult.RankProduct toRankProduct(Product product) {
+    private RankResult.RankProduct toRankProduct(ProductInfo.RankProduct product) {
         return new RankResult.RankProduct(
-                product.getId(),
-                product.getName()
+                product.getProductId(),
+                product.getProductName()
         );
     }
 }
