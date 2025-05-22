@@ -46,6 +46,10 @@ public class CouponService {
         return CouponInfo.CouponStock.from(coupon, issuedCoupon);
     }
 
+    /**
+     * 기본 쿠폰 발급 (동시성 제어 없음)
+     * 주의: 동시성 이슈가 있을 수 있으므로 단일 사용자 환경에서만 사용
+     */
     @Transactional
     public IssuedCoupon issue(CouponCommand.Issue command) {
 
@@ -62,8 +66,12 @@ public class CouponService {
         return issuedCouponRepository.save(new IssuedCoupon(command.userId(), command.couponId()));
     }
 
+    /**
+     * DB 비관적 락을 이용한 쿠폰 발급
+     * 데이터베이스 레벨에서 동시성 제어
+     */
     @Transactional
-    public IssuedCoupon issueWithLock(CouponCommand.Issue command) {
+    public IssuedCoupon issueWithPessimisticLock(CouponCommand.Issue command) {
 
         Coupon coupon = couponRepository.findByIdWithLock(command.couponId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
@@ -79,6 +87,7 @@ public class CouponService {
 
     /**
      * Redis Sorted Set을 이용한 선착순 쿠폰 발급
+     * Redis 자체의 Single Thread 특성으로 동시성 제어
      */
     @Transactional
     public IssuedCoupon issueWithRedis(CouponCommand.Issue command) {
@@ -106,6 +115,37 @@ public class CouponService {
             couponApplyRepository.rollbackIssuance(command.userId(), command.couponId());
             throw e;
         }
+    }
+
+    /**
+     * 분산락을 이용한 쿠폰 발급
+     * 애플리케이션 레벨에서 분산락으로 동시성 제어
+     * 멀티 인스턴스 환경에서 안전한 발급 보장
+     */
+    @kr.hhplus.ecommerce.common.aop.annotation.DistributedLock(
+            prefix = "coupon:issue",
+            key = "#command.couponId",
+            waitTime = 10,
+            leaseTime = 3
+    )
+    @Transactional
+    public IssuedCoupon issueWithDistributedLock(CouponCommand.Issue command) {
+        Coupon coupon = couponRepository.findById(command.couponId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        // 이미 발급받은 쿠폰인지 확인
+        if (issuedCouponRepository.findByUserIdAndCouponId(command.userId(), command.couponId()).isPresent()) {
+            throw new CustomException(ErrorCode.DUPLICATE_COUPON);
+        }
+
+        if (coupon.getQuantity() <= 0) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
+
+        coupon.issue();
+        couponRepository.save(coupon);
+
+        return issuedCouponRepository.save(new IssuedCoupon(command.userId(), command.couponId()));
     }
 
     @Transactional
