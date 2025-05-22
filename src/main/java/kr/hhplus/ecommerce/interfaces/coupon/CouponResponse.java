@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.interfaces.coupon;
 
-import kr.hhplus.ecommerce.application.coupon.dto.CouponResult;
 import kr.hhplus.ecommerce.domain.coupon.entity.CouponStatus;
+import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
 
 import java.time.LocalDateTime;
 
@@ -14,13 +14,13 @@ public record CouponResponse() {
             CouponStatus status,
             LocalDateTime expiredAt
     ) {
-        public static CreateUserCoupon from(CouponResult.Issued result) {
+        public static CreateUserCoupon from(IssuedCoupon issuedCoupon) {
             return new CreateUserCoupon(
-                    result.id(),
-                    result.userId(),
-                    result.couponId(),
-                    result.status(),
-                    result.expiredAt()
+                    issuedCoupon.getId(),
+                    issuedCoupon.getUserId(),
+                    issuedCoupon.getCouponId(),
+                    issuedCoupon.getStatus(),
+                    issuedCoupon.getExpiredAt()
             );
         }
     }

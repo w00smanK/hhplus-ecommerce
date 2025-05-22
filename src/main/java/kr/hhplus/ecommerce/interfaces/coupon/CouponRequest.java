@@ -1,6 +1,6 @@
 package kr.hhplus.ecommerce.interfaces.coupon;
 
-import kr.hhplus.ecommerce.application.coupon.dto.CouponCriteria;
+import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
 
 public record CouponRequest() {
 
@@ -8,8 +8,8 @@ public record CouponRequest() {
             long userId,
             long couponId
     ) {
-        public CouponCriteria.Issue toCriteria() {
-            return new CouponCriteria.Issue(userId, couponId);
+        public CouponCommand.Issue toCommand() {
+            return new CouponCommand.Issue(userId, couponId);
         }
     }
 

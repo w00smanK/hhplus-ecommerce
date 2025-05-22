@@ -1,7 +1,7 @@
 package kr.hhplus.ecommerce.interfaces.scheduler;
 
-import kr.hhplus.ecommerce.application.coupon.CouponFacade;
 import kr.hhplus.ecommerce.application.rank.RankFacade;
+import kr.hhplus.ecommerce.domain.coupon.CouponService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,7 +18,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class DailyScheduler {
 
-    private final CouponFacade couponFacade;
+    private final CouponService couponService;
     private final RankFacade rankFacade;
 
     // 쿠폰 수량
@@ -33,7 +33,7 @@ public class DailyScheduler {
         log.info("===== 일일 쿠폰 발급 스케줄러 실행 =====");
         try {
             // 100개의 쿠폰 발급
-            couponFacade.initializeFirstComeCoupon();
+            couponService.initializeFirstComeCoupon();
             log.info("===== 일일 쿠폰 발급 완료 ({}개) =====", COUPON_QUANTITY);
         } catch (Exception e) {
             log.error("일일 쿠폰 발급 중 오류 발생", e);

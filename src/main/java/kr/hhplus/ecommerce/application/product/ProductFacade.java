@@ -64,6 +64,8 @@ public class ProductFacade {
 
         return ProductResult.ProductList.from(ProductInfo.ProductList.of(productDetails));
     }
+
+
     @CachePut(value = CacheType.CacheName.BEST_PRODUCT, key = "'date:' + #criteria.date() + ':limit:' + #criteria.limit()")
     @Transactional
     public ProductResult.ProductList refreshBestProductCache(ProductCriteria.Best criteria) {

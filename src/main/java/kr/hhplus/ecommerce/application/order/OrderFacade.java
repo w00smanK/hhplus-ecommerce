@@ -68,4 +68,31 @@ public class OrderFacade {
 
         return OrderResult.Create.from(order);
     }
+
+//    @Async
+//    @TransactionalEventListener(
+//            phase = TransactionPhase.AFTER_COMMIT,
+//            classes = OrderSuccessEvent.class
+//    )
+//    public void success(OrderSuccessEvent event) {
+//        // 외부 플랫폼 데이터 전송
+//        orderExternalClient.sendOrder(event);
+//    }
+//
+//
+//    @Transactional
+//    public void success(long orderId) {
+//        // 주문 ID로 주문 정보를 조회한다. 없으면 예외 발생
+//        Order order = orderRepository.findOrderById(orderId)
+//                .orElseThrow(() -> new BusinessException(BusinessError.ORDER_NOT_FOUND));
+//
+//        // 결제 성공 상태로 변경
+//        order.success();
+//
+//        // 변경된 주문 상태를 저장
+//        orderRepository.saveOrder(order);
+//
+//        // 주문 성공 이벤트 발행
+//        orderEventPublisher.success(order);
+//    }
 }

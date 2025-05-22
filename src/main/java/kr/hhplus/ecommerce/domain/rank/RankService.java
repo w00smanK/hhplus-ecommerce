@@ -79,12 +79,4 @@ public class RankService {
         return RankInfo.of(productIds);
     }
 
-    /**
-     * 인기 판매 상품 캐시 갱신
-     */
-    @CachePut(value = CacheType.CacheName.BEST_PRODUCT, key = "'date:' + #criteria.date() + ':limit:' + #criteria.limit()")
-    @Transactional
-    public ProductResult.ProductList refreshBestProductCache(ProductCriteria.Best criteria) {
-        return findBestSelling(criteria);
-    }
 }
