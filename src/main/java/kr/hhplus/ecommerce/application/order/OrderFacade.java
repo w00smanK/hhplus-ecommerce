@@ -3,16 +3,11 @@ package kr.hhplus.ecommerce.application.order;
 import kr.hhplus.ecommerce.application.order.dto.OrderCriteria;
 import kr.hhplus.ecommerce.application.order.dto.OrderResult;
 import kr.hhplus.ecommerce.common.aop.annotation.DistributedLock;
-import kr.hhplus.ecommerce.domain.coupon.CouponService;
-import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
-import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
 import kr.hhplus.ecommerce.domain.order.OrderEvent;
 import kr.hhplus.ecommerce.domain.order.OrderEventPublisher;
 import kr.hhplus.ecommerce.domain.order.OrderService;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
-import kr.hhplus.ecommerce.domain.payment.PaymentService;
-import kr.hhplus.ecommerce.domain.payment.dto.PaymentCommand;
 import kr.hhplus.ecommerce.domain.product.ProductService;
 import kr.hhplus.ecommerce.domain.product.dto.ProductCommand;
 import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
@@ -30,9 +25,7 @@ import java.util.List;
 public class OrderFacade {
 
     private final ProductService productService;
-    private final CouponService couponService;
     private final OrderService orderService;
-    private final PaymentService paymentService;
     private final OrderEventPublisher eventPublisher;
 
     @DistributedLock(
@@ -67,8 +60,8 @@ public class OrderFacade {
 
         orderService.holdOrder(new OrderCommand.HoldOrder(order.orderId(), checkProductOrder.checkStocks()));
 
-        paymentService.save(new PaymentCommand.Save(order.orderId(), order.paymentAmount()));
-
+        // 결제 정보 생성을 이벤트로 처리
+        eventPublisher.payOrder(OrderEvent.OrderConfirmed.from(order, criteria.userId()));
 
         return OrderResult.Create.from(order);
     }

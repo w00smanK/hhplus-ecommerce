@@ -1,5 +1,6 @@
 package kr.hhplus.ecommerce.domain.order;
 
+import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
 import kr.hhplus.ecommerce.domain.order.entity.Order;
 import kr.hhplus.ecommerce.domain.order.entity.OrderStatus;
 import lombok.*;
@@ -18,16 +19,6 @@ public class OrderEvent {
     private Long paymentAmount;
     private LocalDateTime orderedAt;
 
-    public static OrderEvent from(Order info) {
-        return OrderEvent.builder()
-                .orderId(info.getId())
-                .userId(info.getUserId())
-                .totalAmount(info.getTotalAmount())
-                .discountAmount(info.getDiscountAmount())
-                .paymentAmount(info.getPaymentAmount())
-                .orderedAt(LocalDateTime.now())
-                .build();
-    }
     @Builder
     public OrderEvent(Long orderId, Long userId, Long totalAmount, Long discountAmount, Long paymentAmount, LocalDateTime orderedAt) {
         this.orderId = orderId;
@@ -46,7 +37,19 @@ public class OrderEvent {
             Long paymentAmount,
             Long totalAmount,
             Long discountAmount
-    ) {}
+    ) {
+        public static OrderComplete from(Order order) {
+            return new OrderComplete(
+                order.getId(),
+                order.getUserId(),
+                order.getIssuedCouponId(),
+                order.getStatus(),
+                order.getPaymentAmount(),
+                order.getTotalAmount(),
+                order.getDiscountAmount()
+            );
+        }
+    }
 
     public record OrderCreated(
             Long orderId,
@@ -54,4 +57,18 @@ public class OrderEvent {
             Long couponId,
             Long paymentAmount
     ) {}
+
+    public record OrderConfirmed(
+            Long orderId,
+            Long userId,
+            Long paymentAmount
+    ) {
+        public static OrderConfirmed from(OrderInfo.Create orderInfo, Long userId) {
+            return new OrderConfirmed(
+                orderInfo.orderId(),
+                userId,
+                orderInfo.paymentAmount()
+            );
+        }
+    }
 }
