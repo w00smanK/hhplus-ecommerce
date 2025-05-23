@@ -47,4 +47,11 @@ public class OrderEvent {
             Long totalAmount,
             Long discountAmount
     ) {}
+
+    public record OrderCreated(
+            Long orderId,
+            Long userId,
+            Long couponId,
+            Long paymentAmount
+    ) {}
 }

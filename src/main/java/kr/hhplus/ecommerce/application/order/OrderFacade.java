@@ -6,6 +6,8 @@ import kr.hhplus.ecommerce.common.aop.annotation.DistributedLock;
 import kr.hhplus.ecommerce.domain.coupon.CouponService;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
+import kr.hhplus.ecommerce.domain.order.OrderEvent;
+import kr.hhplus.ecommerce.domain.order.OrderEventPublisher;
 import kr.hhplus.ecommerce.domain.order.OrderService;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
@@ -31,6 +33,7 @@ public class OrderFacade {
     private final CouponService couponService;
     private final OrderService orderService;
     private final PaymentService paymentService;
+    private final OrderEventPublisher eventPublisher;
 
     @DistributedLock(
             prefix = "order:stock",
@@ -50,9 +53,15 @@ public class OrderFacade {
 
         OrderInfo.Create order = orderService.createOrder(new OrderCommand.Create(criteria.userId(), orderItemCommand));
 
-        CouponInfo.CouponStock couponInfo = couponService.use(new CouponCommand.Use(criteria.userId(), criteria.couponId()));
-
-        orderService.useCoupon(OrderCommand.UseCoupon.toCommand(order.orderId(), couponInfo.couponId(), couponInfo.discountPrice()));
+        // 쿠폰 사용을 이벤트로 처리
+        if (criteria.couponId() != null) {
+            eventPublisher.publish(new OrderEvent.OrderCreated(
+                order.orderId(),
+                criteria.userId(),
+                criteria.couponId(),
+                order.paymentAmount()
+            ));
+        }
 
         ProductInfo.StockCheckResult checkProductOrder = productService.reduceStock(new OrderCommand.OrderItemList(orderItemCommand));
 
