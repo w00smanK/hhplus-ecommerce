@@ -6,11 +6,9 @@ import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
 import kr.hhplus.ecommerce.domain.order.entity.Order;
 import kr.hhplus.ecommerce.domain.order.entity.OrderItem;
-import kr.hhplus.ecommerce.domain.order.entity.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -22,6 +20,8 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
+    private final OrderEventPublisher orderEventPublisher;
+
 
     // 주문 오더 생성
     @Transactional
@@ -56,6 +56,7 @@ public class OrderService {
                 order.getDiscountAmount(),
                 order.getPaymentAmount()
         );
+
     }
 
     @Transactional
@@ -106,6 +107,8 @@ public class OrderService {
         Order order = orderRepository.findById(command.orderId())
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
+        orderEventPublisher.complete(OrderEvent.from(order));
+
         return order.pay();
     }
 
@@ -130,8 +133,9 @@ public class OrderService {
         return OrderInfo.PaidProducts.of(paidProducts);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void sendOrder(OrderCommand.Send build) {
+
+    public void sendOrder(OrderCommand.Send commnad) {
         // 주문 정보 전송 비돟기 처리
+        log.info("주문 정보 전송 비동기 처리");
     }
 }

@@ -6,9 +6,7 @@ import kr.hhplus.ecommerce.common.aop.annotation.DistributedLock;
 import kr.hhplus.ecommerce.domain.coupon.CouponService;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponInfo;
-import kr.hhplus.ecommerce.domain.order.OrderCompleteEvent;
 import kr.hhplus.ecommerce.domain.order.OrderService;
-import kr.hhplus.ecommerce.domain.order.OrderEventPublisher;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
 import kr.hhplus.ecommerce.domain.payment.PaymentService;
@@ -33,7 +31,6 @@ public class OrderFacade {
     private final CouponService couponService;
     private final OrderService orderService;
     private final PaymentService paymentService;
-    private final OrderEventPublisher orderEventPublisher;
 
     @DistributedLock(
             prefix = "order:stock",
@@ -44,7 +41,6 @@ public class OrderFacade {
     @Transactional
     public OrderResult.Create order(OrderCriteria.Create criteria) {
 
-        // 상품 조회
         ProductInfo.ProductDetail product = productService.findProduct(new ProductCommand.Find(criteria.productId()));
         List<OrderCommand.OrderItem> orderItemCommand = criteria.items().stream()
                 .flatMap(item -> product.getStocks().stream()
@@ -52,26 +48,18 @@ public class OrderFacade {
                         .map(option -> new OrderCommand.OrderItem(item.productOptionId(), option.getPrice(), item.quantity())))
                 .toList();
 
-        // 주문 생성
         OrderInfo.Create order = orderService.createOrder(new OrderCommand.Create(criteria.userId(), orderItemCommand));
 
-        // 쿠폰 조회, 사용 처리
         CouponInfo.CouponStock couponInfo = couponService.use(new CouponCommand.Use(criteria.userId(), criteria.couponId()));
 
-        // 쿠폰 적용
         orderService.useCoupon(OrderCommand.UseCoupon.toCommand(order.orderId(), couponInfo.couponId(), couponInfo.discountPrice()));
 
-        // 재고 차감 -> 재고 부족시 해당 옵션 상태
         ProductInfo.StockCheckResult checkProductOrder = productService.reduceStock(new OrderCommand.OrderItemList(orderItemCommand));
 
         orderService.holdOrder(new OrderCommand.HoldOrder(order.orderId(), checkProductOrder.checkStocks()));
 
-        //  결제 정보 저장
         paymentService.save(new PaymentCommand.Save(order.orderId(), order.paymentAmount()));
 
-        orderEventPublisher.complete(OrderCompleteEvent.from(order));
-
-        log.info("주문 처리 완료 및 이벤트 발행 - orderId: {}, userId: {}", order.orderId(), order.userId());
 
         return OrderResult.Create.from(order);
     }
