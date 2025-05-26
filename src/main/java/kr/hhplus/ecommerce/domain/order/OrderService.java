@@ -32,29 +32,32 @@ public class OrderService {
                 .sum();
         // 주문 총 금액 계산
         Order order = new Order(command.userId(), totalAmount);
-
-
         Order savedOrder = orderRepository.save(order);
 
-        command.orderItems().forEach(item -> {
-                    orderItemRepository.save(
-                            new OrderItem(
-                                    savedOrder.getId(),
-                                    item.productOptionId(),
-                                    item.price(),
-                                    item.quantity()
-                            ));
-                }
+        command.orderItems().forEach(item -> orderItemRepository.save(
+                new OrderItem(
+                        savedOrder.getId(),
+                        item.productOptionId(),
+                        item.price(),
+                        item.quantity()
+                ))
         );
 
+        orderEventPublisher.publish(new OrderEvent.OrderCreated(
+                savedOrder.getId(),
+                savedOrder.getUserId(),
+                command.couponId(),  // OrderCommand.Create에 couponId 추가 필요
+                savedOrder.getPaymentAmount()
+        ));
+
         return new OrderInfo.Create(
-                order.getId(),
-                order.getUserId(),
-                order.getIssuedCouponId(),
-                order.getStatus(),
-                order.getTotalAmount(),
-                order.getDiscountAmount(),
-                order.getPaymentAmount()
+                savedOrder.getId(),
+                savedOrder.getUserId(),
+                savedOrder.getIssuedCouponId(),
+                savedOrder.getStatus(),
+                savedOrder.getTotalAmount(),
+                savedOrder.getDiscountAmount(),
+                savedOrder.getPaymentAmount()
         );
 
     }

@@ -20,7 +20,7 @@ public class CouponService {
     private final CouponRepository couponRepository;
     private final IssuedCouponRepository issuedCouponRepository;
     private final CouponApplyRepository couponApplyRepository;
-
+    private final CouponEventPublisher eventPublisher;
 
     // 선착순 쿠폰 단일쿠폰
     private static final Long FIRST_COME_COUPON_ID = 1L;
@@ -43,6 +43,7 @@ public class CouponService {
 
         issuedCoupon.use();
 
+        eventPublisher.use(issuedCoupon);
         return CouponInfo.CouponStock.from(coupon, issuedCoupon);
     }
 

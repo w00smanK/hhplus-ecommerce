@@ -12,6 +12,7 @@ public record OrderCommand() {
 
     public record Create(
             Long userId,
+            Long couponId,
             List<OrderItem> orderItems
     ) {
     }

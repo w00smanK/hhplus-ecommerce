@@ -56,7 +56,13 @@ public class OrderEvent {
             Long userId,
             Long couponId,
             Long paymentAmount
-    ) {}
+    ) {
+        public record OrderItem(
+                Long productOptionId,
+                Long price,
+                Integer quantity
+        ) {}
+    }
 
     public record OrderConfirmed(
             Long orderId,
