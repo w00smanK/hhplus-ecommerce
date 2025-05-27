@@ -16,7 +16,7 @@ public class CouponEventPublisherImpl implements CouponEventPublisher {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
-    public void use(CouponEvent.UseCoupon event) {
+    public void couponUseEvent(CouponEvent.UseCoupon event) {
         applicationEventPublisher.publishEvent(event);
     }
 }

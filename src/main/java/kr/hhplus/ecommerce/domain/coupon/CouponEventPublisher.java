@@ -2,5 +2,5 @@ package kr.hhplus.ecommerce.domain.coupon;
 
 public interface CouponEventPublisher {
 
-    void use(CouponEvent.UseCoupon event);
+    void couponUseEvent(CouponEvent.UseCoupon event);
 }

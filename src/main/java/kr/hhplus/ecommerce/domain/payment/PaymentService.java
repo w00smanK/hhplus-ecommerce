@@ -20,9 +20,9 @@ public class PaymentService {
     private final OrderRepository orderRepository;
 
     @Transactional
-    public Payment save(PaymentCommand.Save command) {
+    public Payment create(PaymentCommand.Save command) {
 
-        return paymentRepository.save(new Payment(command.orderId(), command.amount()));
+        return paymentRepository.create(new Payment(command.orderId(), command.amount()));
     }
 
     @Transactional(readOnly = true)

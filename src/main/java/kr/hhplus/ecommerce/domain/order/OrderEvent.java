@@ -1,11 +1,13 @@
 package kr.hhplus.ecommerce.domain.order;
 
+import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
 import kr.hhplus.ecommerce.domain.order.entity.Order;
 import kr.hhplus.ecommerce.domain.order.entity.OrderStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @ToString
@@ -19,15 +21,6 @@ public class OrderEvent {
     private Long paymentAmount;
     private LocalDateTime orderedAt;
 
-    @Builder
-    public OrderEvent(Long orderId, Long userId, Long totalAmount, Long discountAmount, Long paymentAmount, LocalDateTime orderedAt) {
-        this.orderId = orderId;
-        this.userId = userId;
-        this.totalAmount = totalAmount;
-        this.discountAmount = discountAmount;
-        this.paymentAmount = paymentAmount;
-        this.orderedAt = orderedAt;
-    }
 
     public record OrderComplete(
             Long orderId,
@@ -55,14 +48,8 @@ public class OrderEvent {
             Long orderId,
             Long userId,
             Long couponId,
-            Long paymentAmount
-    ) {
-        public record OrderItem(
-                Long productOptionId,
-                Long price,
-                Integer quantity
-        ) {}
-    }
+            List<OrderCommand.OrderItem> orderItems
+    ) {}
 
     public record OrderConfirmed(
             Long orderId,

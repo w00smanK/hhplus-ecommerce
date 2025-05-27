@@ -19,12 +19,12 @@ public class CouponEventListener {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void useCoupon(OrderEvent.OrderCreated event) {
+    public void couponUse(OrderEvent.OrderCreated event) {
         if (event.couponId() == null) {
             return;
         }
         try {
-            couponService.use(new CouponCommand.Use(event.userId(), event.couponId()));
+            couponService.use(new CouponCommand.Use(event.userId(), event.couponId(), event.orderId()));
             log.info("쿠폰 사용 완료 - orderId: {}", event.orderId());
         } catch (Exception e) {
             log.error("쿠폰 사용 실패 - orderId: {}, couponId: {}", event.orderId(), event.couponId(), e);

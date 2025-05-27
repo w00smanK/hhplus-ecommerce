@@ -1,5 +1,6 @@
 package kr.hhplus.ecommerce.domain.coupon;
 
+import kr.hhplus.ecommerce.common.aop.annotation.DistributedLock;
 import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
@@ -35,7 +36,6 @@ public class CouponService {
             return CouponInfo.CouponStock.from();
         }
         Coupon coupon = couponRepository.findById(command.couponId())
-//        Coupon coupon = couponRepository.findByIdWithLock(command.couponId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         IssuedCoupon issuedCoupon = issuedCouponRepository.findByUserIdAndCouponId(command.userId(), command.couponId())
@@ -43,39 +43,25 @@ public class CouponService {
 
         issuedCoupon.use();
 
-        eventPublisher.use(issuedCoupon);
+        eventPublisher.couponUseEvent(
+                new CouponEvent.UseCoupon(
+                        command.userId(),
+                        command.couponId(),
+                        command.orderId(),
+                        issuedCoupon.getId(),
+                        coupon.getDiscountPrice()
+                )
+        );
         return CouponInfo.CouponStock.from(coupon, issuedCoupon);
     }
 
-    /**
-     * 기본 쿠폰 발급 (동시성 제어 없음)
-     * 주의: 동시성 이슈가 있을 수 있으므로 단일 사용자 환경에서만 사용
-     */
+
     @Transactional
     public IssuedCoupon issue(CouponCommand.Issue command) {
 
         Coupon coupon = couponRepository.findById(command.couponId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         log.info("쿠폰 발급Service : {}", coupon.getId());
-
-        if (coupon.getQuantity() <= 0) {
-            throw new CustomException(ErrorCode.BAD_REQUEST);
-        }
-
-        coupon.issue();
-
-        return issuedCouponRepository.save(new IssuedCoupon(command.userId(), command.couponId()));
-    }
-
-    /**
-     * DB 비관적 락을 이용한 쿠폰 발급
-     * 데이터베이스 레벨에서 동시성 제어
-     */
-    @Transactional
-    public IssuedCoupon issueWithPessimisticLock(CouponCommand.Issue command) {
-
-        Coupon coupon = couponRepository.findByIdWithLock(command.couponId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         if (coupon.getQuantity() <= 0) {
             throw new CustomException(ErrorCode.BAD_REQUEST);
@@ -118,12 +104,7 @@ public class CouponService {
         }
     }
 
-    /**
-     * 분산락을 이용한 쿠폰 발급
-     * 애플리케이션 레벨에서 분산락으로 동시성 제어
-     * 멀티 인스턴스 환경에서 안전한 발급 보장
-     */
-    @kr.hhplus.ecommerce.common.aop.annotation.DistributedLock(
+    @DistributedLock(
             prefix = "coupon:issue",
             key = "#command.couponId",
             waitTime = 10,

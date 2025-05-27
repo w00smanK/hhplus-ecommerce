@@ -30,6 +30,10 @@ public record OrderCommand() {
             return new OrderItemList(orderItems);
         }
     }
+    public record ReduceStock(
+            Long orderId,
+            List<OrderItem> orderItems
+    ) {}
 
     public record HoldOrder(
             Long orderId,

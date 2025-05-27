@@ -9,7 +9,8 @@ public record CouponCommand() {
 
     public record Use(
             Long userId,
-            Long couponId
+            Long couponId,
+            Long orderId
     ) {
     }
 

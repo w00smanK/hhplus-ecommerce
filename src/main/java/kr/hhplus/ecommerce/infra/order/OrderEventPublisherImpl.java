@@ -15,14 +15,14 @@ public class OrderEventPublisherImpl implements OrderEventPublisher {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
-    public void complete(OrderEvent.OrderComplete event) {
+    public void orderComplete(OrderEvent.OrderComplete event) {
         log.info("주문 완료 이벤트 발행 - orderId: {}, userId: {}, paymentAmount: {}",
                 event.orderId(), event.userId(),event.paymentAmount());
         applicationEventPublisher.publishEvent(event);
     }
 
     @Override
-    public void publish(OrderEvent.OrderCreated event) {
+    public void orderPublish(OrderEvent.OrderCreated event) {
         applicationEventPublisher.publishEvent(event);
     }
 

@@ -43,11 +43,11 @@ public class OrderService {
                 ))
         );
 
-        orderEventPublisher.publish(new OrderEvent.OrderCreated(
+        orderEventPublisher.orderPublish(new OrderEvent.OrderCreated(
                 savedOrder.getId(),
                 savedOrder.getUserId(),
                 command.couponId(),  // OrderCommand.Create에 couponId 추가 필요
-                savedOrder.getPaymentAmount()
+                command.orderItems()
         ));
 
         return new OrderInfo.Create(
@@ -110,7 +110,7 @@ public class OrderService {
         Order order = orderRepository.findById(command.orderId())
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
-        orderEventPublisher.complete(OrderEvent.OrderComplete.from(order));
+        orderEventPublisher.orderComplete(OrderEvent.OrderComplete.from(order));
         return order.pay();
     }
 
