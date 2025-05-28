@@ -105,13 +105,13 @@ public class OrderService {
     }
 
     @Transactional
-    public Order pay(OrderCommand.Find command) {
+    public Order orderComplete(OrderCommand.Find command) {
 
         Order order = orderRepository.findById(command.orderId())
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
         orderEventPublisher.orderComplete(OrderEvent.OrderComplete.from(order));
-        return order.pay();
+        return order.complete();
     }
 
     @Transactional(readOnly = true)

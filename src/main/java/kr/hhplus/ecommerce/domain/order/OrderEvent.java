@@ -14,12 +14,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderEvent {
 
-    private Long orderId;
-    private Long userId;
-    private Long totalAmount;
-    private Long discountAmount;
-    private Long paymentAmount;
-    private LocalDateTime orderedAt;
 
 
     public record OrderComplete(

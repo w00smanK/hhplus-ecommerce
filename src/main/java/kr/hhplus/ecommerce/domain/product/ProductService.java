@@ -71,6 +71,7 @@ public class ProductService {
             if (productStock.canPurchase(i.quantity())) {
                 Long remainingStock = productStock.reduceStock(i.quantity());
 
+                // 추후 리팩토링 필요
                 // 재고 차감 성공 이벤트 발행
                 productEventPublisher.publish(
                         new ProductEvent.StockDeducted(

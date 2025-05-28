@@ -37,7 +37,7 @@ public class PaymentFacade {
         Payment pay = paymentService.pay(new PaymentCommand.Pay(payment.getId(), order.getPaymentAmount()));
 
         // 주문 상태 변경
-        order = orderService.pay(new OrderCommand.Find(payment.getOrderId()));
+        order = orderService.orderComplete(new OrderCommand.Find(payment.getOrderId()));
 
         return new PaymentResult.Pay(
                 pay.getId(),
