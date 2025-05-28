@@ -34,8 +34,6 @@ public class PaymentService {
         return payment;
     }
 
-    // 결제 정보 생성 후 결제 완료 할때 이벤트임 주문생성하고 카프카 만들고 주문생성시 결제정보에서 수신하고 결제정보만들고 나는 주문완료 시 결제이벤트
-    // 발생시켜서 결제까지
     @Transactional
     public Payment pay(PaymentCommand.Pay command) throws Exception {
 

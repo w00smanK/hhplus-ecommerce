@@ -19,7 +19,7 @@ public class OrderEventListener {
     private final OrderService orderService;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void sendOrder(OrderEvent.OrderComplete event) {
+    public void handleSendOrder(OrderEvent.OrderComplete event) {
         orderService.sendOrder(OrderCommand.Send.of(event));
     }
 
@@ -33,7 +33,7 @@ public class OrderEventListener {
         orderService.holdOrder(
                 new OrderCommand.HoldOrder(
                         event.orderId(),
-                        event.st()
+                        event.stockStatuses()
                 )
         );
     }

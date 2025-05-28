@@ -26,8 +26,5 @@ public class OrderEventPublisherImpl implements OrderEventPublisher {
         applicationEventPublisher.publishEvent(event);
     }
 
-    @Override
-    public void payOrder(OrderEvent.OrderConfirmed event) {
-        applicationEventPublisher.publishEvent(event);
-    }
+
 }

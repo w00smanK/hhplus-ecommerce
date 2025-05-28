@@ -16,11 +16,9 @@ public class PaymentEventListener {
 
     private final PaymentService paymentService;
 
+
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void createPayment(OrderEvent.OrderConfirmed event) {
-        log.info("결제 정보 생성 이벤트 수신 - orderId: {}, paymentAmount: {}", 
-                event.orderId(), event.paymentAmount());
-        
+    public void handleCreatePayment(OrderEvent.OrderComplete event) {
         paymentService.create(new PaymentCommand.Save(event.orderId(), event.paymentAmount()));
     }
 }

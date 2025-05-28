@@ -19,7 +19,7 @@ public class CouponEventListener {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void couponUse(OrderEvent.OrderCreated event) {
+    public void hangleCouponUse(OrderEvent.OrderCreated event) {
         if (event.couponId() == null) {
             return;
         }

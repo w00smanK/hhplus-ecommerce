@@ -5,6 +5,4 @@ public interface OrderEventPublisher {
     void orderComplete(OrderEvent.OrderComplete event);
 
     void orderPublish(OrderEvent.OrderCreated event);
-
-    void payOrder(OrderEvent.OrderConfirmed event);
 }

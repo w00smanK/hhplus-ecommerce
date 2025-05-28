@@ -88,21 +88,19 @@ public class ProductService {
                         remainingStock
                 );
             } else {
-                // 재고 부족 이벤트 발행
-                productEventPublisher.publish(
-                        new ProductEvent.StockInsufficient(
-                                commands.orderId(),
-                                productStock.getId(),
-                                i.quantity(),
-                                productStock.getStock()
-                    )
-                );
-                return new ProductInfo.StockStatus(
+                ProductInfo.StockStatus failedStockStatus = new ProductInfo.StockStatus(
                         productStock.getId(),
                         false,
                         i.quantity(),
                         productStock.getStock()
                 );
+                productEventPublisher.publish(
+                        new ProductEvent.StockInsufficient(
+                                commands.orderId(),
+                                List.of(failedStockStatus)
+                        )
+                );
+                return failedStockStatus;
             }
         }).toList());
     }

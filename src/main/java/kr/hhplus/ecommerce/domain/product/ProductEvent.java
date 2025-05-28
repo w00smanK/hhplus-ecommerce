@@ -1,5 +1,9 @@
 package kr.hhplus.ecommerce.domain.product;
 
+import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
+
+import java.util.List;
+
 public class ProductEvent {
 
     // 재고 차감 이벤트
@@ -13,8 +17,6 @@ public class ProductEvent {
     // 재고 부족 이벤트
     public record StockInsufficient(
             Long orderId,
-            Long productOptionId,
-            Long requestedQuantity,
-            Long currentStock
+            List<ProductInfo.StockStatus> stockStatuses
     ) {}
 }

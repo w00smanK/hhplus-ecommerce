@@ -14,8 +14,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderEvent {
 
-
-
     public record OrderComplete(
             Long orderId,
             Long userId,
