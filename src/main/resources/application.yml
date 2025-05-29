@@ -50,8 +50,11 @@ spring:
       properties:
         spring.json.trusted.packages: "*"
     producer:
+      retries: 4
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        retry.backoff.ms: 1000
     listener:
       type: batch
       ack-mode: manual
