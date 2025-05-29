@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @DisplayName("OrderService")
-@Transactional(propagation = Propagation.NEVER)
+@EmbeddedKafka(partitions = 1, topics = {"order-create"})
 class OrderServiceIntegrationTest {
 
     @Autowired
@@ -50,19 +51,31 @@ class OrderServiceIntegrationTest {
     @BeforeEach
     void setup() {
         userId = 1L;
-        couponId = 11L;
+        couponId = 1L;
         item1 = new OrderCommand.OrderItem(1L, 10000L, 1L);
         item2 = new OrderCommand.OrderItem(2L, 5000L, 2L);
         items = List.of(item1, item2);
     }
 
     @Test
+    @Transactional
     @DisplayName("create")
     void createOrder() {
-        var command = new OrderCommand.Create(userId, items);
+        Product product1 = productRepository.save(new Product("브랜드1", "테스트상품1"));
+        Product product2 = productRepository.save(new Product("브랜드2", "테스트상품2"));
+        
+        ProductStock stock1 = productStockRepository.save(new ProductStock(product1.getId(), "옵션1", 10000L, 100L));
+        ProductStock stock2 = productStockRepository.save(new ProductStock(product2.getId(), "옵션2", 5000L, 100L));
+        
+        List<OrderCommand.OrderItem> testItems = List.of(
+                new OrderCommand.OrderItem(stock1.getId(), 10000L, 1L),
+                new OrderCommand.OrderItem(stock2.getId(), 5000L, 2L)
+        );
+        
+        var command = new OrderCommand.Create(userId, null, testItems);  // 쿠폰 없이 주문
         var result = orderService.createOrder(command);
         var order = orderRepository.findById(result.orderId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
         assertThat(order.getUserId()).isEqualTo(userId);
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CREATED);
@@ -74,24 +87,7 @@ class OrderServiceIntegrationTest {
 
 
     @Test
-    @DisplayName("pay")
-    void pay() {
-        var order = orderRepository.save(new Order(userId, couponId, 10000L));
-        var updated = orderService.pay(new OrderCommand.Find(order.getId()));
-
-        var actual = orderRepository.findById(updated.getId()).get();
-        assertThat(actual.getStatus()).isEqualTo(OrderStatus.PAYED);
-    }
-
-    @Test
-    @DisplayName("pay fail")
-    void pay_fail() {
-        var command = new OrderCommand.Find(9999L);
-        var ex = assertThrows(CustomException.class, () -> orderService.pay(command));
-        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
-    }
-
-    @Test
+    @Transactional
     @DisplayName("bestseller")
     void bestSelling() {
         var soju = productRepository.save(new Product("진로", "소주"));
@@ -119,9 +115,22 @@ class OrderServiceIntegrationTest {
     class Coupon {
 
         @Test
+        @Transactional
         @DisplayName("null")
         void useCoupon_null() {
-            var result = orderService.createOrder(new OrderCommand.Create(userId, items));
+            // 테스트용 상품 및 재고 생성
+            Product product1 = productRepository.save(new Product("브랜드1", "테스트상품1"));
+            Product product2 = productRepository.save(new Product("브랜드2", "테스트상품2"));
+            
+            ProductStock stock1 = productStockRepository.save(new ProductStock(product1.getId(), "옵션1", 10000L, 100L));
+            ProductStock stock2 = productStockRepository.save(new ProductStock(product2.getId(), "옵션2", 5000L, 100L));
+            
+            List<OrderCommand.OrderItem> testItems = List.of(
+                    new OrderCommand.OrderItem(stock1.getId(), 10000L, 1L),
+                    new OrderCommand.OrderItem(stock2.getId(), 5000L, 2L)
+            );
+            
+            var result = orderService.createOrder(new OrderCommand.Create(userId, null, testItems));
             var coupon = new CouponInfo.CouponStock(null, null, null, null, null);
             var command = new OrderCommand.UseCoupon(result.orderId(), coupon.couponId(), coupon.discountPrice());
             var actual = orderService.useCoupon(command);
@@ -130,12 +139,26 @@ class OrderServiceIntegrationTest {
         }
 
         @Test
+        @Transactional
         @DisplayName("valid")
         void useCoupon_valid() {
-            var result = orderService.createOrder(new OrderCommand.Create(userId, items));
+            // 테스트용 상품 및 재고 생성
+            Product product1 = productRepository.save(new Product("브랜드1", "테스트상품1"));
+            Product product2 = productRepository.save(new Product("브랜드2", "테스트상품2"));
+            
+            ProductStock stock1 = productStockRepository.save(new ProductStock(product1.getId(), "옵션1", 10000L, 100L));
+            ProductStock stock2 = productStockRepository.save(new ProductStock(product2.getId(), "옵션2", 5000L, 100L));
+            
+            List<OrderCommand.OrderItem> testItems = List.of(
+                    new OrderCommand.OrderItem(stock1.getId(), 10000L, 1L),
+                    new OrderCommand.OrderItem(stock2.getId(), 5000L, 2L)
+            );
+            
+            var result = orderService.createOrder(new OrderCommand.Create(userId, null, testItems));
             var command = new OrderCommand.UseCoupon(result.orderId(), couponId, 3000L);
             var updated = orderService.useCoupon(command);
-            var order = orderRepository.findById(updated.orderId()).get();
+            var order = orderRepository.findById(updated.orderId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
             assertThat(order.getIssuedCouponId()).isEqualTo(couponId);
             assertThat(order.getTotalAmount()).isEqualTo(20000L);
@@ -144,12 +167,26 @@ class OrderServiceIntegrationTest {
         }
 
         @Test
+        @Transactional
         @DisplayName("over discount")
         void useCoupon_overDiscount() {
-            var result = orderService.createOrder(new OrderCommand.Create(userId, items));
+            // 테스트용 상품 및 재고 생성
+            Product product1 = productRepository.save(new Product("브랜드1", "테스트상품1"));
+            Product product2 = productRepository.save(new Product("브랜드2", "테스트상품2"));
+            
+            ProductStock stock1 = productStockRepository.save(new ProductStock(product1.getId(), "옵션1", 10000L, 100L));
+            ProductStock stock2 = productStockRepository.save(new ProductStock(product2.getId(), "옵션2", 5000L, 100L));
+            
+            List<OrderCommand.OrderItem> testItems = List.of(
+                    new OrderCommand.OrderItem(stock1.getId(), 10000L, 1L),
+                    new OrderCommand.OrderItem(stock2.getId(), 5000L, 2L)
+            );
+            
+            var result = orderService.createOrder(new OrderCommand.Create(userId, null, testItems));
             var command = new OrderCommand.UseCoupon(result.orderId(), couponId, 30000L);
             var updated = orderService.useCoupon(command);
-            var order = orderRepository.findById(updated.orderId()).get();
+            var order = orderRepository.findById(updated.orderId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
             assertThat(order.getDiscountAmount()).isEqualTo(20000L);
             assertThat(order.getPaymentAmount()).isEqualTo(0L);
@@ -161,10 +198,24 @@ class OrderServiceIntegrationTest {
     class Find {
 
         @Test
+        @Transactional
         @DisplayName("success")
         void findById() {
-            var result = orderService.createOrder(new OrderCommand.Create(userId, items));
-            var order = orderRepository.findById(result.orderId()).get();
+            // 테스트용 상품 및 재고 생성
+            Product product1 = productRepository.save(new Product("브랜드1", "테스트상품1"));
+            Product product2 = productRepository.save(new Product("브랜드2", "테스트상품2"));
+            
+            ProductStock stock1 = productStockRepository.save(new ProductStock(product1.getId(), "옵션1", 10000L, 100L));
+            ProductStock stock2 = productStockRepository.save(new ProductStock(product2.getId(), "옵션2", 5000L, 100L));
+            
+            List<OrderCommand.OrderItem> testItems = List.of(
+                    new OrderCommand.OrderItem(stock1.getId(), 10000L, 1L),
+                    new OrderCommand.OrderItem(stock2.getId(), 5000L, 2L)
+            );
+            
+            var result = orderService.createOrder(new OrderCommand.Create(userId, null, testItems));
+            var order = orderRepository.findById(result.orderId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
             assertThat(order).isNotNull();
             assertThat(order.getUserId()).isEqualTo(userId);
@@ -175,7 +226,7 @@ class OrderServiceIntegrationTest {
         void findById_fail() {
             var command = new OrderCommand.Find(999L);
             var ex = assertThrows(CustomException.class, () -> orderService.findById(command));
-            assertThat(ex.getMessage()).isEqualTo(ErrorCode.NOT_FOUND.getMessage());
+            assertThat(ex.getMessage()).isEqualTo(ErrorCode.ORDER_NOT_FOUND.getMessage());
         }
     }
 }

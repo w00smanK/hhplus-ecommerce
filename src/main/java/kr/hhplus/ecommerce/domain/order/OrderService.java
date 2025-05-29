@@ -46,7 +46,7 @@ public class OrderService {
         orderEventPublisher.orderPublish(new OrderEvent.OrderCreated(
                 savedOrder.getId(),
                 savedOrder.getUserId(),
-                command.couponId(),  // OrderCommand.Create에 couponId 추가 필요
+                command.couponId(),
                 command.orderItems()
         ));
 
