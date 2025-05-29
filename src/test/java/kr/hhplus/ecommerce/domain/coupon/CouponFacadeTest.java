@@ -1,8 +1,7 @@
-package kr.hhplus.ecommerce.application.coupon;
+package kr.hhplus.ecommerce.domain.coupon;
 
-import kr.hhplus.ecommerce.application.coupon.dto.CouponCriteria;
 import kr.hhplus.ecommerce.concurrency.support.ConcurrentExecutor;
-import kr.hhplus.ecommerce.domain.coupon.CouponRepository;
+import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CouponFacadeTest {
 
     @Autowired
-    private CouponFacade couponFacade;
+    private CouponService couponService;
 
     @Autowired
     private CouponRepository couponRepository;
@@ -57,7 +56,7 @@ class CouponFacadeTest {
             long idx = i;
             tasks.add(() -> {
                 try {
-                    couponFacade.couponFirstIssue(new CouponCriteria.Issue(idx,savedCouponId));
+                    couponService.issueWithRedis(new CouponCommand.Issue(idx, savedCouponId));
                     successCount.incrementAndGet();
                     log.info("✅ 쿠폰 발급 성공 - idx: {}", idx);
                 } catch (Exception e) {

@@ -1,6 +1,7 @@
 package kr.hhplus.ecommerce.domain.order.dto;
 
 
+import kr.hhplus.ecommerce.domain.order.OrderEvent;
 import kr.hhplus.ecommerce.domain.order.entity.OrderStatus;
 import kr.hhplus.ecommerce.domain.product.dto.ProductInfo;
 
@@ -11,6 +12,7 @@ public record OrderCommand() {
 
     public record Create(
             Long userId,
+            Long couponId,
             List<OrderItem> orderItems
     ) {
     }
@@ -28,6 +30,10 @@ public record OrderCommand() {
             return new OrderItemList(orderItems);
         }
     }
+    public record ReduceStock(
+            Long orderId,
+            List<OrderItem> orderItems
+    ) {}
 
     public record HoldOrder(
             Long orderId,
@@ -59,6 +65,17 @@ public record OrderCommand() {
             Long totalAmount,
             Long discountAmount
     ) {
+        public static Send of(OrderEvent.OrderComplete event) {
+            return new Send(
+                    event.orderId(),
+                    event.userId(),
+                    event.issuedCouponId(),
+                    event.status(),
+                    event.paymentAmount(),
+                    event.totalAmount(),
+                    event.discountAmount()
+            );
+        }
     }
 
     public record FindBest(

@@ -1,11 +1,9 @@
-package kr.hhplus.ecommerce.application.coupon;
+package kr.hhplus.ecommerce.domain.coupon;
 
-import kr.hhplus.ecommerce.application.coupon.dto.CouponCriteria;
-import kr.hhplus.ecommerce.application.coupon.dto.CouponResult;
 import kr.hhplus.ecommerce.concurrency.support.ConcurrentExecutor;
-import kr.hhplus.ecommerce.domain.coupon.CouponRepository;
+import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
 import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
-import kr.hhplus.ecommerce.domain.coupon.CouponApplyRepository;
+import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CouponRedisFacadeTest {
 
     @Autowired
-    private CouponFacade couponFacade;
+    private CouponService couponService;
 
     @Autowired
     private CouponRepository couponRepository;
@@ -73,7 +71,7 @@ class CouponRedisFacadeTest {
             long userId = i;
             tasks.add(() -> {
                 try {
-                    couponFacade.couponFirstIssueWithRedis(new CouponCriteria.Issue(userId, savedCouponId));
+                    couponService.issueWithRedis(new CouponCommand.Issue(userId, savedCouponId));
                     successCount.incrementAndGet();
                     log.info("✅ Redis 쿠폰 발급 성공 - userId: {}", userId);
                 } catch (Exception e) {
@@ -87,7 +85,7 @@ class CouponRedisFacadeTest {
         ConcurrentExecutor.execute(threadPoolSize, threadCount, tasks);
 
         // 모든 작업이 완료된 후 Redis와 DB 동기화
-        couponFacade.synchronizeCouponQuantity(savedCouponId);
+        couponService.synchronizeCouponQuantity(savedCouponId);
 
         // Assert
         log.info("🎯 Redis 쿠폰 발급 최종 결과 - 성공: {}, 실패: {}", successCount.get(), failureCount.get());
@@ -127,12 +125,12 @@ class CouponRedisFacadeTest {
         });
 
         List<Long> userIds = List.of(100L, 101L, 102L, 103L, 104L,105L, 106L, 107L, 108L, 109L);
-        List<CouponResult.Issued> issuedResults = new ArrayList<>();
+        List<IssuedCoupon> issuedResults = new ArrayList<>();
 
         for (Long userId : userIds) {
             try {
                 Thread.sleep(1000);
-                CouponResult.Issued result = couponFacade.couponFirstIssueWithRedis(new CouponCriteria.Issue(userId, couponId));
+                IssuedCoupon result = couponService.issueWithRedis(new CouponCommand.Issue(userId, couponId));
                 issuedResults.add(result);
                 log.info("✅ 쿠폰 발급 성공 - userId: {}, 시간: {}", userId, System.currentTimeMillis());
             } catch (Exception e) {
@@ -149,12 +147,12 @@ class CouponRedisFacadeTest {
 
         // 발급된 쿠폰 정보 확인
         for (int i = 0; i < issuedResults.size(); i++) {
-            log.info("발급된 쿠폰 #{} - userId: {}", i+1, issuedResults.get(i).userId());
+            log.info("발급된 쿠폰 #{} - userId: {}", i+1, issuedResults.get(i).getUserId());
         }
 
         // 발급된 쿠폰의 userId가 요청 순서대로인지 확인
         for (int i = 0; i < issuedResults.size(); i++) {
-            assertThat(issuedResults.get(i).userId()).isEqualTo(userIds.get(i));
+            assertThat(issuedResults.get(i).getUserId()).isEqualTo(userIds.get(i));
         }
     }
 }

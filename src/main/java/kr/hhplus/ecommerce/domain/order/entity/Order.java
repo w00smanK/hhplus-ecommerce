@@ -75,7 +75,7 @@ public class Order extends BaseEntity {
         log.info("totalAmount");
     }
 
-    public Order pay() {
+    public Order complete() {
         this.status = OrderStatus.PAYED;
         return this;
     }

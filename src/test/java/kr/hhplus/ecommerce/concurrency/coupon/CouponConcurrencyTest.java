@@ -84,7 +84,7 @@ public class CouponConcurrencyTest {
             final long userId = i + 1;
             tasks.add(() -> {
                 try {
-                    couponService.issueWithLock(new CouponCommand.Issue(userId, couponId));
+                    couponService.issueWithPessimisticLock(new CouponCommand.Issue(userId, couponId));
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     failureCount.incrementAndGet();

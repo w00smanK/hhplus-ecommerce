@@ -6,11 +6,9 @@ import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
 import kr.hhplus.ecommerce.domain.order.entity.Order;
 import kr.hhplus.ecommerce.domain.order.entity.OrderItem;
-import kr.hhplus.ecommerce.domain.order.entity.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -22,6 +20,8 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
+    private final OrderEventPublisher orderEventPublisher;
+
 
     // 주문 오더 생성
     @Transactional
@@ -32,30 +32,34 @@ public class OrderService {
                 .sum();
         // 주문 총 금액 계산
         Order order = new Order(command.userId(), totalAmount);
-
-
         Order savedOrder = orderRepository.save(order);
 
-        command.orderItems().forEach(item -> {
-                    orderItemRepository.save(
-                            new OrderItem(
-                                    savedOrder.getId(),
-                                    item.productOptionId(),
-                                    item.price(),
-                                    item.quantity()
-                            ));
-                }
+        command.orderItems().forEach(item -> orderItemRepository.save(
+                new OrderItem(
+                        savedOrder.getId(),
+                        item.productOptionId(),
+                        item.price(),
+                        item.quantity()
+                ))
         );
 
+        orderEventPublisher.orderPublish(new OrderEvent.OrderCreated(
+                savedOrder.getId(),
+                savedOrder.getUserId(),
+                command.couponId(),  // OrderCommand.Create에 couponId 추가 필요
+                command.orderItems()
+        ));
+
         return new OrderInfo.Create(
-                order.getId(),
-                order.getUserId(),
-                order.getIssuedCouponId(),
-                order.getStatus(),
-                order.getTotalAmount(),
-                order.getDiscountAmount(),
-                order.getPaymentAmount()
+                savedOrder.getId(),
+                savedOrder.getUserId(),
+                savedOrder.getIssuedCouponId(),
+                savedOrder.getStatus(),
+                savedOrder.getTotalAmount(),
+                savedOrder.getDiscountAmount(),
+                savedOrder.getPaymentAmount()
         );
+
     }
 
     @Transactional
@@ -101,12 +105,13 @@ public class OrderService {
     }
 
     @Transactional
-    public Order pay(OrderCommand.Find command) {
+    public Order orderComplete(OrderCommand.Find command) {
 
         Order order = orderRepository.findById(command.orderId())
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
-        return order.pay();
+        orderEventPublisher.orderComplete(OrderEvent.OrderComplete.from(order));
+        return order.complete();
     }
 
     @Transactional(readOnly = true)
@@ -130,8 +135,9 @@ public class OrderService {
         return OrderInfo.PaidProducts.of(paidProducts);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void sendOrder(OrderCommand.Send build) {
+
+    public void sendOrder(OrderCommand.Send commnad) {
         // 주문 정보 전송 비돟기 처리
+        log.info("주문 정보 전송 비동기 처리");
     }
 }

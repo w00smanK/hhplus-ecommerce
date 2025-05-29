@@ -1,5 +1,6 @@
 package kr.hhplus.ecommerce.domain.coupon;
 
+import kr.hhplus.ecommerce.common.aop.annotation.DistributedLock;
 import kr.hhplus.ecommerce.config.exception.CustomException;
 import kr.hhplus.ecommerce.config.exception.ErrorCode;
 import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
@@ -20,7 +21,7 @@ public class CouponService {
     private final CouponRepository couponRepository;
     private final IssuedCouponRepository issuedCouponRepository;
     private final CouponApplyRepository couponApplyRepository;
-
+    private final CouponEventPublisher eventPublisher;
 
     // 선착순 쿠폰 단일쿠폰
     private static final Long FIRST_COME_COUPON_ID = 1L;
@@ -35,7 +36,6 @@ public class CouponService {
             return CouponInfo.CouponStock.from();
         }
         Coupon coupon = couponRepository.findById(command.couponId())
-//        Coupon coupon = couponRepository.findByIdWithLock(command.couponId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         IssuedCoupon issuedCoupon = issuedCouponRepository.findByUserIdAndCouponId(command.userId(), command.couponId())
@@ -43,8 +43,18 @@ public class CouponService {
 
         issuedCoupon.use();
 
+        eventPublisher.couponUseEvent(
+                new CouponEvent.UseCoupon(
+                        command.userId(),
+                        command.couponId(),
+                        command.orderId(),
+                        issuedCoupon.getId(),
+                        coupon.getDiscountPrice()
+                )
+        );
         return CouponInfo.CouponStock.from(coupon, issuedCoupon);
     }
+
 
     @Transactional
     public IssuedCoupon issue(CouponCommand.Issue command) {
@@ -62,23 +72,9 @@ public class CouponService {
         return issuedCouponRepository.save(new IssuedCoupon(command.userId(), command.couponId()));
     }
 
-    @Transactional
-    public IssuedCoupon issueWithLock(CouponCommand.Issue command) {
-
-        Coupon coupon = couponRepository.findByIdWithLock(command.couponId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-
-        if (coupon.getQuantity() <= 0) {
-            throw new CustomException(ErrorCode.BAD_REQUEST);
-        }
-
-        coupon.issue();
-
-        return issuedCouponRepository.save(new IssuedCoupon(command.userId(), command.couponId()));
-    }
-
     /**
      * Redis Sorted Set을 이용한 선착순 쿠폰 발급
+     * Redis 자체의 Single Thread 특성으로 동시성 제어
      */
     @Transactional
     public IssuedCoupon issueWithRedis(CouponCommand.Issue command) {
@@ -106,6 +102,32 @@ public class CouponService {
             couponApplyRepository.rollbackIssuance(command.userId(), command.couponId());
             throw e;
         }
+    }
+
+    @DistributedLock(
+            prefix = "coupon:issue",
+            key = "#command.couponId",
+            waitTime = 10,
+            leaseTime = 3
+    )
+    @Transactional
+    public IssuedCoupon issueWithDistributedLock(CouponCommand.Issue command) {
+        Coupon coupon = couponRepository.findById(command.couponId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        // 이미 발급받은 쿠폰인지 확인
+        if (issuedCouponRepository.findByUserIdAndCouponId(command.userId(), command.couponId()).isPresent()) {
+            throw new CustomException(ErrorCode.DUPLICATE_COUPON);
+        }
+
+        if (coupon.getQuantity() <= 0) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
+
+        coupon.issue();
+        couponRepository.save(coupon);
+
+        return issuedCouponRepository.save(new IssuedCoupon(command.userId(), command.couponId()));
     }
 
     @Transactional

@@ -21,6 +21,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductStockRepository productStockRepository;
+    private final ProductEventPublisher productEventPublisher;
 
     @Transactional
     public ProductInfo.ProductList findAll() {
@@ -62,7 +63,7 @@ public class ProductService {
     }
 
     @Transactional
-        public ProductInfo.StockCheckResult reduceStock(OrderCommand.OrderItemList commands) {
+    public ProductInfo.StockCheckResult reduceStock(OrderCommand.ReduceStock commands) {
         return new ProductInfo.StockCheckResult(commands.orderItems().stream().map(i -> {
             ProductStock productStock = productStockRepository.findByIdWithPessimisticLock(i.productOptionId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
@@ -70,6 +71,16 @@ public class ProductService {
             if (productStock.canPurchase(i.quantity())) {
                 Long remainingStock = productStock.reduceStock(i.quantity());
 
+                // 추후 리팩토링 필요
+                // 재고 차감 성공 이벤트 발행
+                productEventPublisher.publish(
+                        new ProductEvent.StockDeducted(
+                            commands.orderId(),
+                            productStock.getId(),
+                            i.quantity(),
+                            remainingStock
+                    )
+                );
                 return new ProductInfo.StockStatus(
                         productStock.getId(),
                         true,
@@ -77,12 +88,19 @@ public class ProductService {
                         remainingStock
                 );
             } else {
-                return new ProductInfo.StockStatus(
+                ProductInfo.StockStatus failedStockStatus = new ProductInfo.StockStatus(
                         productStock.getId(),
                         false,
                         i.quantity(),
                         productStock.getStock()
                 );
+                productEventPublisher.publish(
+                        new ProductEvent.StockInsufficient(
+                                commands.orderId(),
+                                List.of(failedStockStatus)
+                        )
+                );
+                return failedStockStatus;
             }
         }).toList());
     }
@@ -123,6 +141,5 @@ public class ProductService {
         }
         return stocks.get(0).getPrice();
     }
-
 
 }
