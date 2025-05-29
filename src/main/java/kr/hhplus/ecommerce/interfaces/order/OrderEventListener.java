@@ -1,7 +1,6 @@
 package kr.hhplus.ecommerce.interfaces.order;
 
 import kr.hhplus.ecommerce.domain.coupon.CouponEvent;
-import kr.hhplus.ecommerce.domain.order.OrderEvent;
 import kr.hhplus.ecommerce.domain.order.OrderService;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.product.ProductEvent;
@@ -18,11 +17,6 @@ public class OrderEventListener {
 
     private final OrderService orderService;
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleSendOrder(OrderEvent.OrderComplete event) {
-        orderService.sendOrder(OrderCommand.Send.of(event));
-    }
-
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handleUseCouponEvent(CouponEvent.UseCoupon event) {
         orderService.useCoupon(new OrderCommand.UseCoupon(event.orderId(), event.issuedCouponId(), event.userId()));
@@ -37,6 +31,4 @@ public class OrderEventListener {
                 )
         );
     }
-
 }
-

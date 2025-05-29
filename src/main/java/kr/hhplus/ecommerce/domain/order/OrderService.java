@@ -136,8 +136,7 @@ public class OrderService {
     }
 
 
-    public void sendOrder(OrderCommand.Send commnad) {
-        // 주문 정보 전송 비돟기 처리
-        log.info("주문 정보 전송 비동기 처리");
+    public void sendOrder(OrderCommand.Send command) {
+        log.info("주문 정보 전송 orderId={}", command.id());
     }
 }
