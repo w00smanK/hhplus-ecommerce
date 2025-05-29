@@ -1,15 +1,11 @@
 package kr.hhplus.ecommerce.domain.rank;
 
-import kr.hhplus.ecommerce.application.product.dto.ProductCriteria;
-import kr.hhplus.ecommerce.application.product.dto.ProductResult;
-import kr.hhplus.ecommerce.config.CacheType;
 import kr.hhplus.ecommerce.domain.rank.dto.RankCommand;
 import kr.hhplus.ecommerce.domain.rank.dto.RankInfo;
 import kr.hhplus.ecommerce.domain.rank.entity.Rank;
 import kr.hhplus.ecommerce.infra.rank.RankRedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

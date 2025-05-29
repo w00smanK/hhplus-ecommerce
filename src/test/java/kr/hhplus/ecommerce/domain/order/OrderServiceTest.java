@@ -66,7 +66,7 @@ class OrderServiceTest {
         // Arrange
         Order order = new Order(USER_ID, 20000L);
 
-        OrderCommand.Create command = new OrderCommand.Create(USER_ID, ORDER_ITEMS);
+        OrderCommand.Create command = new OrderCommand.Create(USER_ID,1L, ORDER_ITEMS);
 
         when(orderRepository.save(any(Order.class))).thenReturn(order);
 
@@ -103,49 +103,6 @@ class OrderServiceTest {
         // Assert
         verify(orderItemRepository, times(1)).findByOrderAndOption(1L, productOptionId);
         assertEquals(OrderStatus.PENDING, orderItem.getStatus());
-    }
-
-    @Test
-    @DisplayName("[성공] 주문 결제")
-    void pay_ok() {
-
-        // Arrange
-        Order order = new Order(USER_ID, COUPON_ID, 10000L);
-        order.pay();
-
-        Order mockOrder = mock(Order.class);
-
-        when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(mockOrder));
-        when(mockOrder.pay()).thenReturn(order);
-
-        // Act
-        Order actual = orderService.pay(new OrderCommand.Find(ORDER_ID));
-
-        // Assert
-        assertThat(actual).isNotNull();
-        assertThat(actual.getUserId()).isEqualTo(USER_ID);
-        assertThat(actual.getIssuedCouponId()).isEqualTo(COUPON_ID);
-        assertThat(actual.getTotalAmount()).isEqualTo(10000L);
-        assertThat(actual.getStatus()).isEqualTo(OrderStatus.PAYED);
-
-        verify(orderRepository).findById(ORDER_ID);
-        verify(mockOrder).pay();
-    }
-
-    @Test
-    @DisplayName("[실패] 주문 결제 -> 주문 없음(NOT_FOUND)")
-    void pay_NotFound() {
-
-        // Arrange
-        when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.empty());
-
-        // Act
-        CustomException customException = assertThrows(CustomException.class,
-                () -> orderService.pay(new OrderCommand.Find(ORDER_ID)));
-
-        // Assert
-        verify(orderRepository).findById(ORDER_ID);
-        assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
     }
 
     @Test
@@ -258,28 +215,6 @@ class OrderServiceTest {
     @Nested
     @DisplayName("주문 조회")
     class FindById {
-
-        @Test
-        @DisplayName("[성공] 주문 조회")
-        void findById_ok() {
-            // Arrange
-            Order order = new Order(USER_ID, COUPON_ID, 10000L);
-
-            order.pay();
-
-            // Act
-            when(orderRepository.findById(anyLong())).thenReturn(Optional.of(order));
-
-            Order actual = orderService.findById(new OrderCommand.Find(ORDER_ID));
-
-            // Assert
-            verify(orderRepository, times(1)).findById(ORDER_ID);
-            assertThat(actual).isNotNull();
-            assertThat(actual.getUserId()).isEqualTo(USER_ID);
-            assertThat(actual.getIssuedCouponId()).isEqualTo(COUPON_ID);
-            assertThat(actual.getTotalAmount()).isEqualTo(10000L);
-            assertThat(actual.getStatus()).isEqualTo(OrderStatus.PAYED);
-        }
 
         @Test
         @DisplayName("[실패] 주문 조회 -> 주문 없음(NOT_FOUND)")

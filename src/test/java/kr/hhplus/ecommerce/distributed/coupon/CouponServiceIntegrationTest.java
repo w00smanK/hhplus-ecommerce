@@ -54,7 +54,7 @@ class CouponServiceIntegrationTest {
     @DisplayName("[성공] 쿠폰 적용시 상태 변경 (ISSUED -> USED)")
     void useCoupon_ok() {
 
-        CouponCommand.Use command = new CouponCommand.Use(USER_ID, COUPON_ID);
+        CouponCommand.Use command = new CouponCommand.Use(USER_ID, COUPON_ID,1L);
 
         couponService.use(command);
 
