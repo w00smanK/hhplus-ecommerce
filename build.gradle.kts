@@ -37,6 +37,9 @@ dependencies {
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 	implementation("org.springdoc:springdoc-openapi-starter-common:2.0.2")
 
+	// Kafka
+	implementation("org.springframework.kafka:spring-kafka")
+
 
 	// redis
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
@@ -63,6 +66,9 @@ dependencies {
 	testImplementation ("org.testcontainers:testcontainers:1.19.1")
 	testImplementation ("org.testcontainers:junit-jupiter:1.19.1")
 	testImplementation ("org.testcontainers:redis:1.19.1")
+	//kafka
+	testImplementation("org.springframework.kafka:spring-kafka-test")
+	testImplementation("org.testcontainers:kafka")
 }
 
 tasks.withType<Test> {
