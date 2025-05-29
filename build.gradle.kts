@@ -69,6 +69,8 @@ dependencies {
 	//kafka
 	testImplementation("org.springframework.kafka:spring-kafka-test")
 	testImplementation("org.testcontainers:kafka")
+	//awaitility
+	testImplementation("org.awaitility:awaitility:4.2.0")
 }
 
 tasks.withType<Test> {
