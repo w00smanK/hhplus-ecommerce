@@ -16,4 +16,9 @@ public class CouponEvent {
             Long issuedCouponId,
             Long discountPrice
     ) {}
+
+    public record IssueCoupon(
+            Long userId,
+            Long issuedCouponId
+    ){}
 }
