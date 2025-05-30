@@ -16,4 +16,11 @@ public interface CouponApi {
     StatusResponse<CouponResponse.CreateUserCoupon> createUserCoupon(
             @RequestBody CouponRequest.Issue request
     );
+
+    @Operation(summary = "Kafka 기반 선착순 쿠폰 발급", description = "Kafka를 통해 선착순 쿠폰 발급을 요청합니다.")
+    @ApiResponse(responseCode = "200", description = "쿠폰 발급 요청 성공")
+    @PostMapping("/kafka")
+    StatusResponse<String> createUserCouponWithKafka(
+            @RequestBody CouponRequest.Issue request
+    );
 }

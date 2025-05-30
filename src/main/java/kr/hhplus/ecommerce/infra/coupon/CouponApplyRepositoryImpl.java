@@ -36,6 +36,28 @@ public class CouponApplyRepositoryImpl implements CouponApplyRepository {
     }
 
     @Override
+    public boolean issueCouponEvent(Long userId, Long couponId) {
+        String couponKey = getCouponKey(couponId);
+        String issuedKey = getIssuedKey(couponId, userId);
+
+        // 이미 발급받았는지 확인
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(issuedKey))) {
+            return false;
+        }
+
+        // 재고에서 하나 꺼냄
+        Set<ZSetOperations.TypedTuple<String>> popped = redisTemplate.opsForZSet().popMin(couponKey, 1);
+        if (popped == null || popped.isEmpty()) {
+            return false;
+        }
+
+        // 발급 기록 저장 (단순히 중복 방지를 위한 마킹)
+        return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(issuedKey, "1"));
+    }
+
+
+
+    @Override
     public boolean issueCoupon(Long userId, Long couponId) {
         String couponKey = getCouponKey(couponId);
         String issuedKey = getIssuedKey(couponId, userId);
@@ -99,6 +121,10 @@ public class CouponApplyRepositoryImpl implements CouponApplyRepository {
         return Boolean.TRUE.equals(redisTemplate.hasKey(issuedKey));
     }
 
+
+
+
+
     @Override
     public void rollbackIssuance(Long userId, Long couponId) {
         String couponKey = getCouponKey(couponId);
@@ -117,11 +143,39 @@ public class CouponApplyRepositoryImpl implements CouponApplyRepository {
         }
     }
 
+    @Override
+    public boolean addToIssueQueue(Long userId, Long couponId) {
+        String queueKey = getQueueKey(couponId);
+        String issuedKey = getIssuedKey(couponId, userId);
+
+        // 이미 발급받았거나 대기 중인지 확인
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(issuedKey))) {
+            return false;
+        }
+
+        // 발급 대기 큐에 추가 (score는 현재 시간으로 선착순 보장)
+        ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
+        Double score = (double) System.currentTimeMillis();
+        Boolean added = zSetOps.add(queueKey, userId.toString(), score);
+        
+        if (Boolean.TRUE.equals(added)) {
+            // 대기 상태 마킹
+            redisTemplate.opsForValue().set(issuedKey, "PENDING");
+            log.info("발급 대기 큐 추가 성공 - userId: {}, couponId: {}", userId, couponId);
+        }
+        
+        return Boolean.TRUE.equals(added);
+    }
+
     private String getCouponKey(Long couponId) {
         return COUPON_KEY_PREFIX + couponId;
     }
 
     private String getIssuedKey(Long couponId, Long userId) {
         return COUPON_ISSUED_KEY_PREFIX + couponId + ":" + userId;
+    }
+
+    private String getQueueKey(Long couponId) {
+        return "coupon:queue:" + couponId;
     }
 }

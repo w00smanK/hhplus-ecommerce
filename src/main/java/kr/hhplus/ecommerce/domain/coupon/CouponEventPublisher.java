@@ -4,6 +4,5 @@ public interface CouponEventPublisher {
 
     void couponUseEvent(CouponEvent.UseCoupon event);
 
-    void publish(CouponEvent.IssueCoupon event);
-
+    void publishEvent(CouponEvent.CouponIssuedEvent event);
 }

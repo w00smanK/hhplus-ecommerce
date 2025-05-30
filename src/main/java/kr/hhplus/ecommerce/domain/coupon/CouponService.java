@@ -142,6 +142,35 @@ public class CouponService {
     }
 
     /**
+     * Kafka를 통한 선착순 쿠폰 발급 요청
+     * Redis에서 중복 검사 후 Kafka로 발급 요청 전송
+     */
+    @Transactional
+    public void issueCouponKafka(CouponCommand.Issue command) {
+        // Redis에서 이미 발급받은 쿠폰인지 확인
+        if (couponApplyRepository.hasIssuedCoupon(command.userId(), command.couponId())) {
+            throw new CustomException(ErrorCode.DUPLICATE_COUPON);
+        }
+        
+        // Redis에서 쿠폰 잔여 수량 확인
+        long remainingStock = couponApplyRepository.getCouponStock(command.couponId());
+        if (remainingStock <= 0) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
+        
+        // Redis에 발급 대기 상태로 등록 (Sorted Set에 추가)
+        boolean addedToQueue = couponApplyRepository.addToIssueQueue(command.userId(), command.couponId());
+        if (!addedToQueue) {
+            throw new CustomException(ErrorCode.DUPLICATE_COUPON);
+        }
+        
+        // Kafka로 발급 요청 이벤트 발행
+        eventPublisher.publishEvent(CouponEvent.CouponIssuedEvent.of(command.couponId(), command.userId()));
+        
+        log.info("쿠폰 발급 요청 처리 완료 - couponId: {}, userId: {}", command.couponId(), command.userId());
+    }
+
+    /**
      * 일일 쿠폰 초기화
      * 매일 0시 00분에 100개의 쿠폰을 생성하고 Redis에 저장
      */

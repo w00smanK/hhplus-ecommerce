@@ -4,10 +4,7 @@ import kr.hhplus.ecommerce.domain.coupon.CouponEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @Component
@@ -16,12 +13,12 @@ public class CouponKafkaEventPublisher {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void publish(CouponEvent.UseCoupon event) {
+    public void publish(CouponEvent.IssueCoupon event) {
         try {
-
+            kafkaTemplate.send("coupon.v1.issue", String.valueOf(event.issuedCouponId()), event);
+            log.info("쿠폰 발급 Kafka 전송 완료 - issuedCouponId: {}", event.issuedCouponId());
         } catch (Exception e) {
+            log.error("쿠폰 Kafka 발급 전송 실패", e);
         }
     }
 }
