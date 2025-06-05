@@ -178,4 +178,49 @@ public class CouponApplyRepositoryImpl implements CouponApplyRepository {
     private String getQueueKey(Long couponId) {
         return "coupon:queue:" + couponId;
     }
+
+    // 개발/테스트용 메서드들
+    /**
+     * 개발/테스트용: 특정 쿠폰의 재고를 수동으로 설정
+     */
+    public void setManualCouponStock(Long couponId, int quantity) {
+        String couponKey = getCouponKey(couponId);
+        
+        // 기존 쿠폰 데이터 삭제
+        redisTemplate.delete(couponKey);
+        
+        // 새로운 쿠폰 재고 설정
+        ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
+        long baseTime = System.currentTimeMillis();
+        
+        for (int i = 0; i < quantity; i++) {
+            zSetOps.add(couponKey, "coupon:" + i, baseTime + i);
+        }
+        
+        log.info("수동으로 쿠폰 재고 설정 완료 - couponId: {}, quantity: {}", couponId, quantity);
+    }
+
+
+    /**
+     * 개발/테스트용: 모든 쿠폰 관련 Redis 데이터 삭제
+     */
+    public void clearAllCouponData(Long couponId) {
+        String couponKey = getCouponKey(couponId);
+        String queueKey = getQueueKey(couponId);
+        String issuedPattern = COUPON_ISSUED_KEY_PREFIX + couponId + ":*";
+        
+        // 쿠폰 재고 데이터 삭제
+        redisTemplate.delete(couponKey);
+        
+        // 대기 큐 삭제
+        redisTemplate.delete(queueKey);
+        
+        // 발급 기록 삭제 (패턴 매칭으로 일괄 삭제)
+        Set<String> keysToDelete = redisTemplate.keys(issuedPattern);
+        if (keysToDelete != null && !keysToDelete.isEmpty()) {
+            redisTemplate.delete(keysToDelete);
+        }
+        
+        log.info("쿠폰 관련 모든 Redis 데이터 삭제 완료 - couponId: {}", couponId);
+    }
 }

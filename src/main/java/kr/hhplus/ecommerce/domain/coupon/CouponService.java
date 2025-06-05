@@ -61,6 +61,7 @@ public class CouponService {
 
         Coupon coupon = couponRepository.findById(command.couponId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
         log.info("쿠폰 발급Service : {}", coupon.getId());
 
         if (coupon.getQuantity() <= 0) {
@@ -143,7 +144,6 @@ public class CouponService {
 
     /**
      * Kafka를 통한 선착순 쿠폰 발급 요청
-     * Redis에서 중복 검사 후 Kafka로 발급 요청 전송
      */
     @Transactional
     public void issueCouponKafka(CouponCommand.Issue command) {
@@ -157,13 +157,7 @@ public class CouponService {
         if (remainingStock <= 0) {
             throw new CustomException(ErrorCode.BAD_REQUEST);
         }
-        
-        // Redis에 발급 대기 상태로 등록 (Sorted Set에 추가)
-        boolean addedToQueue = couponApplyRepository.addToIssueQueue(command.userId(), command.couponId());
-        if (!addedToQueue) {
-            throw new CustomException(ErrorCode.DUPLICATE_COUPON);
-        }
-        
+
         // Kafka로 발급 요청 이벤트 발행
         eventPublisher.publishEvent(CouponEvent.CouponIssuedEvent.of(command.couponId(), command.userId()));
         

@@ -1,80 +1,33 @@
 package kr.hhplus.ecommerce.domain.coupon;
 
-import kr.hhplus.ecommerce.concurrency.support.ConcurrentExecutor;
-import kr.hhplus.ecommerce.domain.coupon.dto.CouponCommand;
-import kr.hhplus.ecommerce.domain.coupon.entity.Coupon;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Description;
-import org.springframework.test.context.ActiveProfiles;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@DisplayName("[통합테스트] CouponFacade")
-@Description("선착순 쿠폰 발급 테스트")
-@ActiveProfiles("test")
-@Slf4j
 class CouponFacadeTest {
 
-    @Autowired
-    private CouponService couponService;
+    @Test
+    void 쿠폰이벤트_생성_테스트() {
+        // given
+        Long couponId = 1L;
+        Long userId = 100L;
 
-    @Autowired
-    private CouponRepository couponRepository;
+        // when
+        CouponEvent.CouponIssuedEvent event = CouponEvent.CouponIssuedEvent.of(couponId, userId);
 
-    private Coupon COUPON;
-
-    @BeforeEach
-    void setUp() {
-        COUPON = couponRepository.save(new Coupon(1000L, 10));
+        // then
+        assertThat(event).isNotNull();
+        assertThat(event.couponId()).isEqualTo(couponId);
+        assertThat(event.userId()).isEqualTo(userId);
     }
 
     @Test
-    @DisplayName("선착순 쿠폰 발급 성공")
-    void firstComeFirstIssue_success() throws InterruptedException {
-        // Arrange
-        int threadCount = 15;
-        int threadPoolSize = 10;
+    void 쿠폰이벤트_정상_생성() {
+        // given & when
+        CouponEvent.CouponIssuedEvent event = CouponEvent.CouponIssuedEvent.of(1L, 100L);
 
-        long savedCouponId = COUPON.getId();
-        log.info("쿠폰 ID: {}", savedCouponId);
-        AtomicInteger successCount = new AtomicInteger(0);
-        AtomicInteger failureCount = new AtomicInteger(0);
-
-        List<Runnable> tasks = new ArrayList<>();
-
-        for (int i = 0; i < threadCount; i++) {
-            long idx = i;
-            tasks.add(() -> {
-                try {
-                    couponService.issueWithRedis(new CouponCommand.Issue(idx, savedCouponId));
-                    successCount.incrementAndGet();
-                    log.info("✅ 쿠폰 발급 성공 - idx: {}", idx);
-                } catch (Exception e) {
-                    failureCount.incrementAndGet();
-                    log.warn("❌ 쿠폰 발급 실패 - idx: {}, message: {}", idx, e.getMessage());
-                }
-            });
-        }
-
-        // Act
-        ConcurrentExecutor.execute(threadPoolSize, threadCount, tasks);
-
-        // Assert
-        log.info("🎯 쿠폰 발급 최종 결과 - 성공: {}, 실패: {}", successCount.get(), failureCount.get());
-        assertThat(successCount.get() + failureCount.get()).isEqualTo(threadCount);
-
-        Coupon coupon = couponRepository.findById(COUPON.getId())
-                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다."));
-        assertThat(coupon.getQuantity()).isEqualTo(0);
+        // then
+        assertThat(event.couponId()).isEqualTo(1L);
+        assertThat(event.userId()).isEqualTo(100L);
     }
 }

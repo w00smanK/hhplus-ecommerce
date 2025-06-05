@@ -2,7 +2,6 @@ package kr.hhplus.ecommerce.interfaces.coupon;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.hhplus.ecommerce.domain.coupon.CouponService;
-import kr.hhplus.ecommerce.domain.coupon.entity.CouponStatus;
 import kr.hhplus.ecommerce.domain.coupon.entity.IssuedCoupon;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;

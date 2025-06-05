@@ -17,4 +17,20 @@ public class StatusResponse<T> {
                 .data(data)
                 .build();
     }
+
+    public static <T> StatusResponse<T> success(T data) {
+        return StatusResponse.<T>builder()
+                .status(200)
+                .message("SUCCESS")
+                .data(data)
+                .build();
+    }
+
+    public static <T> StatusResponse<T> fail(String message) {
+        return StatusResponse.<T>builder()
+                .status(500)
+                .message(message)
+                .data(null)
+                .build();
+    }
 }
