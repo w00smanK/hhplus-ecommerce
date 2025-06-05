@@ -30,7 +30,7 @@ class PaymentServiceIntegrationTest {
     @BeforeEach
     void setUp() {
         orderId = 100L;
-        payment = paymentRepository.save(new Payment(orderId, 100000L));
+        payment = paymentRepository.create(new Payment(orderId, 100000L));
     }
 
     @Test

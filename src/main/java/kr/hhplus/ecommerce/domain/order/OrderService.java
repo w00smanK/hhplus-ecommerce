@@ -46,7 +46,7 @@ public class OrderService {
         orderEventPublisher.orderPublish(new OrderEvent.OrderCreated(
                 savedOrder.getId(),
                 savedOrder.getUserId(),
-                command.couponId(),  // OrderCommand.Create에 couponId 추가 필요
+                command.couponId(),
                 command.orderItems()
         ));
 
@@ -136,8 +136,7 @@ public class OrderService {
     }
 
 
-    public void sendOrder(OrderCommand.Send commnad) {
-        // 주문 정보 전송 비돟기 처리
-        log.info("주문 정보 전송 비동기 처리");
+    public void sendOrder(OrderCommand.Send command) {
+        log.info("주문 정보 전송 orderId={}", command.id());
     }
 }

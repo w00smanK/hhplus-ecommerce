@@ -63,7 +63,7 @@ class CouponServiceTest {
                 .expiredAt(LocalDateTime.now().plusDays(30))
                 .build();
 
-        COMMAND = new CouponCommand.Use(USER_ID, COUPON_ID);
+        COMMAND = new CouponCommand.Use(USER_ID, 1L,COUPON_ID);
     }
 
     @Nested

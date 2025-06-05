@@ -1,5 +1,6 @@
 package kr.hhplus.ecommerce.interfaces.order;
 
+import kr.hhplus.ecommerce.application.order.dto.OrderResult;
 import kr.hhplus.ecommerce.domain.order.OrderService;
 import kr.hhplus.ecommerce.domain.order.dto.OrderCommand;
 import kr.hhplus.ecommerce.domain.order.dto.OrderInfo;
@@ -38,8 +39,8 @@ public class OrderController implements OrderApi {
                 .filter(option -> item.id().equals(option.getId()))
                 .map(option -> new OrderCommand.OrderItem(
                     item.id(), 
-                    option.getPrice(), 
-                    item.quantity().intValue()
+                    option.getPrice(),
+                        (long) item.quantity().intValue()
                 )))
             .toList();
         
@@ -48,6 +49,6 @@ public class OrderController implements OrderApi {
             new OrderCommand.Create(request.userId(), request.couponId(), orderItems)
         );
         
-        return ResponseEntity.ok().body(OrderResponse.Create.from(order));
+        return ResponseEntity.ok().body(OrderResponse.Create.from(OrderResult.Create.from(order)));
     }
 }

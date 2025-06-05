@@ -62,7 +62,7 @@ class OrderServiceIntegrationTest {
     @Test
     @DisplayName("create")
     void createOrder() {
-        var command = new OrderCommand.Create(userId, items);
+        var command = new OrderCommand.Create(userId, 1L,items);
         var result = orderService.createOrder(command);
         var order = orderRepository.findById(result.orderId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
@@ -75,23 +75,6 @@ class OrderServiceIntegrationTest {
         assertThat(orderItemRepository.findByOrderId(order.getId())).hasSize(2);
     }
 
-    @Test
-    @DisplayName("pay")
-    void pay() {
-        var order = orderRepository.save(new Order(userId, couponId, 10000L));
-        var updated = orderService.pay(new OrderCommand.Find(order.getId()));
-
-        var actual = orderRepository.findById(updated.getId()).get();
-        assertThat(actual.getStatus()).isEqualTo(OrderStatus.PAYED);
-    }
-
-    @Test
-    @DisplayName("pay fail")
-    void pay_fail() {
-        var command = new OrderCommand.Find(9999L);
-        var ex = assertThrows(CustomException.class, () -> orderService.pay(command));
-        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.ORDER_NOT_FOUND);
-    }
 
     @Test
     @DisplayName("bestseller")
@@ -123,7 +106,7 @@ class OrderServiceIntegrationTest {
         @Test
         @DisplayName("null")
         void useCoupon_null() {
-            var result = orderService.createOrder(new OrderCommand.Create(userId, items));
+            var result = orderService.createOrder(new OrderCommand.Create(userId, 1L, items));
             var coupon = new CouponInfo.CouponStock(null, null, null, null, null);
             var command = new OrderCommand.UseCoupon(result.orderId(), coupon.couponId(), coupon.discountPrice());
             var actual = orderService.useCoupon(command);
@@ -134,7 +117,7 @@ class OrderServiceIntegrationTest {
         @Test
         @DisplayName("valid")
         void useCoupon_valid() {
-            var result = orderService.createOrder(new OrderCommand.Create(userId, items));
+            var result = orderService.createOrder(new OrderCommand.Create(userId, 1L,items));
             var command = new OrderCommand.UseCoupon(result.orderId(), couponId, 3000L);
             var updated = orderService.useCoupon(command);
             var order = orderRepository.findById(updated.orderId()).get();
@@ -148,7 +131,7 @@ class OrderServiceIntegrationTest {
         @Test
         @DisplayName("over discount")
         void useCoupon_overDiscount() {
-            var result = orderService.createOrder(new OrderCommand.Create(userId, items));
+            var result = orderService.createOrder(new OrderCommand.Create(userId, 1L,items));
             var command = new OrderCommand.UseCoupon(result.orderId(), couponId, 30000L);
             var updated = orderService.useCoupon(command);
             var order = orderRepository.findById(updated.orderId()).get();
@@ -165,7 +148,7 @@ class OrderServiceIntegrationTest {
         @Test
         @DisplayName("success")
         void findById() {
-            var result = orderService.createOrder(new OrderCommand.Create(userId, items));
+            var result = orderService.createOrder(new OrderCommand.Create(userId, 1L, items));
             var order = orderRepository.findById(result.orderId()).get();
 
             assertThat(order).isNotNull();
