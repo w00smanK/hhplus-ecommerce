@@ -61,6 +61,7 @@ public class CouponService {
 
         Coupon coupon = couponRepository.findById(command.couponId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
         log.info("쿠폰 발급Service : {}", coupon.getId());
 
         if (coupon.getQuantity() <= 0) {
@@ -139,6 +140,52 @@ public class CouponService {
                 });
 
         return issuedCouponRepository.save(new IssuedCoupon(command.userId(), command.couponId()));
+    }
+
+    /**
+     * Kafka를 통한 선착순 쿠폰 발급 요청 (API 호출용)
+     */
+    @Transactional
+    public void requestCouponIssue(CouponCommand.Issue command) {
+        // Redis에서 이미 발급받은 쿠폰인지 확인
+        if (couponApplyRepository.hasIssuedCoupon(command.userId(), command.couponId())) {
+            throw new CustomException(ErrorCode.DUPLICATE_COUPON);
+        }
+        
+        // Redis에서 쿠폰 잔여 수량 확인
+        long remainingStock = couponApplyRepository.getCouponStock(command.couponId());
+        if (remainingStock <= 0) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
+
+        // Kafka로 발급 요청 이벤트 발행
+        eventPublisher.publishEvent(CouponEvent.CouponIssuedEvent.of(command.couponId(), command.userId()));
+        
+        log.info("쿠폰 발급 요청 전송 완료 - couponId: {}, userId: {}", command.couponId(), command.userId());
+    }
+
+    /**
+     * Kafka Consumer에서 호출되는 실제 쿠폰 발급 처리
+     */
+    @Transactional
+    public IssuedCoupon issueCouponKafka(CouponCommand.Issue command) {
+        // Redis에서 이미 발급받은 쿠폰인지 확인
+        if (couponApplyRepository.hasIssuedCoupon(command.userId(), command.couponId())) {
+            throw new CustomException(ErrorCode.DUPLICATE_COUPON);
+        }
+        
+        // Redis를 통한 쿠폰 발급 시도
+        boolean issued = couponApplyRepository.issueCoupon(command.userId(), command.couponId());
+        if (!issued) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
+
+        // DB에 발급 정보 저장
+        IssuedCoupon issuedCoupon = issuedCouponRepository.save(new IssuedCoupon(command.userId(), command.couponId()));
+        
+        log.info("쿠폰 발급 요청 처리 완료 - couponId: {}, userId: {}", command.couponId(), command.userId());
+        
+        return issuedCoupon;
     }
 
     /**

@@ -13,4 +13,9 @@ public record CouponRequest() {
         }
     }
 
+    public record CouponSetting(
+            int quantity
+    ) {
+    }
+
 }

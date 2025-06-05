@@ -23,16 +23,17 @@ services:
     image: bitnami/kafka:3.6
     container_name: kafka
     ports:
-      - "9092:9092"
+      - "9094:9094"
     environment:
       KAFKA_CFG_NODE_ID: 1
       KAFKA_CFG_PROCESS_ROLES: broker,controller
       KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_CFG_LISTENERS=PLAINTEXT: //:9092,CONTROLLER://:9093
-      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_KRAFT_CLUSTER_ID: kafka-cluster-1234
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
     volumes:
       - ./data/kafka:/bitnami/kafka
 
@@ -45,8 +46,36 @@ services:
       - kafka
     environment:
       KAFKA_CLUSTERS_0_NAME: kafka
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9094
+#  k6:
+#    image: grafana/k6:latest
+#    container_name: k6
+#    volumes:
+#      - ./k6:/scripts
+#    #    command: run /scripts/product-best-test.js
+#    #    command: run /scripts/coupon-issue-test.js
+#    depends_on:
+#      - influxdb
+#    environment:
+#      - K6_OUT=influxdb=http://influxdb:8086/k6
+#      -
+#  influxdb:
+#    image: influxdb:1.8
+#    container_name: influxdb
+#    ports:
+#      - "8086:8086"
+#    environment:
+#      - INFLUXDB_DB=k6
+#  grafana:
+#    image: grafana/grafana
+#    container_name: grafana
+#    ports:
+#      - "3000:3000"
+#    volumes:
+#      - ./grafana/volume:/var/lib/grafana
+#    environment:
+#      - GF_AUTH_ANONYMOUS_ENABLED=true
+#      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
 networks:
   default:
     driver: bridge

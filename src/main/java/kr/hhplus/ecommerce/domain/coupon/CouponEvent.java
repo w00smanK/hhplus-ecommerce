@@ -16,4 +16,18 @@ public class CouponEvent {
             Long issuedCouponId,
             Long discountPrice
     ) {}
+
+    public record IssueCoupon(
+            Long userId,
+            Long issuedCouponId
+    ){}
+
+    public record CouponIssuedEvent(
+            Long couponId,
+            Long userId
+    ) {
+        public static CouponIssuedEvent of(Long couponId, Long userId) {
+            return new CouponIssuedEvent(couponId, userId);
+        }
+    }
 }

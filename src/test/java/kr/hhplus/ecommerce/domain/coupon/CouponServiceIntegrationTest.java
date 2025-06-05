@@ -43,7 +43,7 @@ class CouponServiceIntegrationTest {
         //ID 값	동작 방식
         //null	persist → 새로운 row 삽입 (INSERT)
         //있음 (ex. 1000L)	merge → 기존 row 덮어쓰기 (SELECT + UPDATE)
-        COUPON = couponRepository.save(new Coupon(500L, 10));
+        COUPON = couponRepository.save(new Coupon(500L, 100));
         COUPON_ID = COUPON.getId();
         ISSUED_COUPON = issuedCouponRepository.save(new IssuedCoupon(USER_ID, COUPON_ID));
     }
@@ -65,9 +65,7 @@ class CouponServiceIntegrationTest {
     @Test
     @DisplayName("[성공] 쿠폰 발급")
     void issue_ok() {
-
-
-        Coupon newCoupon = couponRepository.save(new Coupon(500L,10));
+        Coupon newCoupon = couponRepository.save(new Coupon(500L,100));
 
         IssuedCoupon issuedCoupon = couponService.issue(new CouponCommand.Issue(USER_ID, newCoupon.getId()));
 

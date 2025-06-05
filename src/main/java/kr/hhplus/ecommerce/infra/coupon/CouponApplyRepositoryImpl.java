@@ -36,6 +36,28 @@ public class CouponApplyRepositoryImpl implements CouponApplyRepository {
     }
 
     @Override
+    public boolean issueCouponEvent(Long userId, Long couponId) {
+        String couponKey = getCouponKey(couponId);
+        String issuedKey = getIssuedKey(couponId, userId);
+
+        // 이미 발급받았는지 확인
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(issuedKey))) {
+            return false;
+        }
+
+        // 재고에서 하나 꺼냄
+        Set<ZSetOperations.TypedTuple<String>> popped = redisTemplate.opsForZSet().popMin(couponKey, 1);
+        if (popped == null || popped.isEmpty()) {
+            return false;
+        }
+
+        // 발급 기록 저장 (단순히 중복 방지를 위한 마킹)
+        return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(issuedKey, "1"));
+    }
+
+
+
+    @Override
     public boolean issueCoupon(Long userId, Long couponId) {
         String couponKey = getCouponKey(couponId);
         String issuedKey = getIssuedKey(couponId, userId);
@@ -99,6 +121,10 @@ public class CouponApplyRepositoryImpl implements CouponApplyRepository {
         return Boolean.TRUE.equals(redisTemplate.hasKey(issuedKey));
     }
 
+
+
+
+
     @Override
     public void rollbackIssuance(Long userId, Long couponId) {
         String couponKey = getCouponKey(couponId);
@@ -117,11 +143,84 @@ public class CouponApplyRepositoryImpl implements CouponApplyRepository {
         }
     }
 
+    @Override
+    public boolean addToIssueQueue(Long userId, Long couponId) {
+        String queueKey = getQueueKey(couponId);
+        String issuedKey = getIssuedKey(couponId, userId);
+
+        // 이미 발급받았거나 대기 중인지 확인
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(issuedKey))) {
+            return false;
+        }
+
+        // 발급 대기 큐에 추가 (score는 현재 시간으로 선착순 보장)
+        ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
+        Double score = (double) System.currentTimeMillis();
+        Boolean added = zSetOps.add(queueKey, userId.toString(), score);
+        
+        if (Boolean.TRUE.equals(added)) {
+            // 대기 상태 마킹
+            redisTemplate.opsForValue().set(issuedKey, "PENDING");
+            log.info("발급 대기 큐 추가 성공 - userId: {}, couponId: {}", userId, couponId);
+        }
+        
+        return Boolean.TRUE.equals(added);
+    }
+
     private String getCouponKey(Long couponId) {
         return COUPON_KEY_PREFIX + couponId;
     }
 
     private String getIssuedKey(Long couponId, Long userId) {
         return COUPON_ISSUED_KEY_PREFIX + couponId + ":" + userId;
+    }
+
+    private String getQueueKey(Long couponId) {
+        return "coupon:queue:" + couponId;
+    }
+
+    // 개발/테스트용 메서드들
+    /**
+     * 개발/테스트용: 특정 쿠폰의 재고를 수동으로 설정
+     */
+    public void setManualCouponStock(Long couponId, int quantity) {
+        String couponKey = getCouponKey(couponId);
+        
+        // 기존 쿠폰 데이터 삭제
+        redisTemplate.delete(couponKey);
+        
+        // 새로운 쿠폰 재고 설정
+        ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
+        long baseTime = System.currentTimeMillis();
+        
+        for (int i = 0; i < quantity; i++) {
+            zSetOps.add(couponKey, "coupon:" + i, baseTime + i);
+        }
+        
+        log.info("수동으로 쿠폰 재고 설정 완료 - couponId: {}, quantity: {}", couponId, quantity);
+    }
+
+
+    /**
+     * 개발/테스트용: 모든 쿠폰 관련 Redis 데이터 삭제
+     */
+    public void clearAllCouponData(Long couponId) {
+        String couponKey = getCouponKey(couponId);
+        String queueKey = getQueueKey(couponId);
+        String issuedPattern = COUPON_ISSUED_KEY_PREFIX + couponId + ":*";
+        
+        // 쿠폰 재고 데이터 삭제
+        redisTemplate.delete(couponKey);
+        
+        // 대기 큐 삭제
+        redisTemplate.delete(queueKey);
+        
+        // 발급 기록 삭제 (패턴 매칭으로 일괄 삭제)
+        Set<String> keysToDelete = redisTemplate.keys(issuedPattern);
+        if (keysToDelete != null && !keysToDelete.isEmpty()) {
+            redisTemplate.delete(keysToDelete);
+        }
+        
+        log.info("쿠폰 관련 모든 Redis 데이터 삭제 완료 - couponId: {}", couponId);
     }
 }
