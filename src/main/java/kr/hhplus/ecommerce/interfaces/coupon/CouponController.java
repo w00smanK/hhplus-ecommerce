@@ -24,7 +24,7 @@ public class CouponController implements CouponApi {
 
     @Override
     public StatusResponse<String> createUserCouponWithKafka(CouponRequest.Issue request) {
-        couponService.issueCouponKafka(request.toCommand());
+        couponService.requestCouponIssue(request.toCommand());
         return StatusResponse.of(200, "쿠폰 발급 요청 성공", "쿠폰 발급이 요청되었습니다. 잠시 후 발급됩니다.");
     }
 
