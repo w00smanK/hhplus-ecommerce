@@ -1,4 +1,4 @@
-version: '3'
+version: '2.4'
 services:
   mysql:
     image: mysql:8.0
@@ -29,7 +29,7 @@ services:
       KAFKA_CFG_PROCESS_ROLES: broker,controller
       KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
-      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://kafka:9094
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
       KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
@@ -46,13 +46,15 @@ services:
       - kafka
     environment:
       KAFKA_CLUSTERS_0_NAME: kafka
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9094
+#      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9094
 
   k6:
     image: grafana/k6:latest
     container_name: k6
     volumes:
       - ./k6/scripts:/scripts
+    command: run --out influxdb=http://influxdb:8086/k6 /scripts/rank-products-test.js
+    command: run --out influxdb=http://influxdb:8086/k6 /scripts/coupon-issue-test.js
     depends_on:
       - influxdb
     ports:
@@ -72,6 +74,9 @@ services:
     networks:
       - k6
       - grafana
+#    volumes:
+#      - ./docker_file/influxdb:/var/lib/influxdb
+#      - ./docker_file/influxdb/config:/etc/influxdb
 
   grafana:
     image: grafana/grafana
@@ -79,8 +84,10 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./grafana:/etc/grafana/provisioning/
+      - grafana:/var/lib/grafana
     environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_BASIC_ENABLED=false
@@ -88,8 +95,25 @@ services:
       - grafana
     #    volumes:
     #      - ./grafana/volume:/var/lib/grafana
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: myapp
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - redis
+      - kafka
+    mem_limit: 4g
+    cpus: 2.0
+
 networks:
   k6:
   grafana:
   default:
     driver: bridge
+volumes:
+  influxdb:
+  grafana:

@@ -77,3 +77,8 @@ tasks.withType<Test> {
 	useJUnitPlatform()
 	systemProperty("user.timezone", "UTC")
 }
+
+tasks.bootJar {
+	archiveFileName = "app.jar"
+	destinationDirectory = file("./docker/app")
+}
